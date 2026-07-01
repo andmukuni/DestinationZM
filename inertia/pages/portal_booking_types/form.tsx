@@ -1,5 +1,6 @@
 import { Form, Link } from '@adonisjs/inertia/react'
 import { Button } from '~/components/ui/button'
+import { ConfirmSubmitButton } from '~/components/ui/confirm_submit_button'
 import { Card, CardBody, CardHeader } from '~/components/ui/card'
 import { Input } from '~/components/ui/input'
 import { Table, TBody, TD, THead, TH, TR } from '~/components/ui/table'
@@ -151,9 +152,16 @@ export default function PortalBookingTypesForm({
                             method="post"
                             className="inline"
                           >
-                            <Button type="submit" variant="secondary" className="h-8 px-3 text-xs">
+                            <ConfirmSubmitButton
+                              variant="secondary"
+                              className="h-8 px-3 text-xs"
+                              title="Remove field?"
+                              description={`Remove the field "${field.label}"?`}
+                              confirmLabel="Remove field"
+                              confirmVariant="danger"
+                            >
                               Remove
-                            </Button>
+                            </ConfirmSubmitButton>
                           </Form>
                         </TD>
                       </TR>

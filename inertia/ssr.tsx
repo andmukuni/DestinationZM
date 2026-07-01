@@ -10,8 +10,12 @@ import { TuyauProvider } from '@adonisjs/inertia/react'
 import { resolvePageComponent } from '@adonisjs/inertia/helpers'
 
 const authPages = new Set(['auth/login', 'portal/login', 'portal/maintenance', 'portal/register'])
+const legalPages = new Set(['legal/eula', 'legal/privacy'])
 
 function resolveLayout(name: string, page: ReactElement<Data.SharedProps>) {
+  if (legalPages.has(name)) {
+    return <AuthLayout wide children={page} />
+  }
   if (authPages.has(name)) {
     return <AuthLayout children={page} />
   }

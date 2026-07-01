@@ -5,6 +5,7 @@ import RecoveryTravelItemsTable, {
 } from '~/components/recovery_travel_items_table'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
+import { ConfirmSubmitButton } from '~/components/ui/confirm_submit_button'
 import { Card, CardBody, CardHeader } from '~/components/ui/card'
 import { statusTone } from '~/lib/status_tone'
 
@@ -147,19 +148,40 @@ export default function PortalRecoveryReportsShow({
           <CardBody className="space-y-4">
             {canApprove ? (
               <Form action={`/portal/recovery-reports/${item.id}/approve`} method="post">
-                <Button type="submit" className="bg-orange-600 hover:bg-orange-700">Approve recovery item</Button>
+                <ConfirmSubmitButton
+                  className="bg-orange-600 hover:bg-orange-700"
+                  title="Approve recovery item?"
+                  description="Approve this recovery item for reimbursement?"
+                  confirmLabel="Approve"
+                >
+                  Approve recovery item
+                </ConfirmSubmitButton>
               </Form>
             ) : null}
             {canQuery ? (
               <Form action={`/portal/recovery-reports/${item.id}/query`} method="post" className="space-y-3">
                 <textarea name="query" rows={3} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="Describe your query…" required />
-                <Button type="submit" variant="secondary">Raise query</Button>
+                <ConfirmSubmitButton
+                  variant="secondary"
+                  title="Raise query?"
+                  description="Send your query to the travel agent about this recovery item?"
+                  confirmLabel="Raise query"
+                >
+                  Raise query
+                </ConfirmSubmitButton>
               </Form>
             ) : null}
             {canReject ? (
               <Form action={`/portal/recovery-reports/${item.id}/reject`} method="post" className="space-y-3">
                 <textarea name="reason" rows={3} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="Reason for rejection…" required />
-                <Button type="submit" variant="danger">Reject recovery item</Button>
+                <ConfirmSubmitButton
+                  variant="danger"
+                  title="Reject recovery item?"
+                  description="Reject this recovery item? This action cannot be undone."
+                  confirmLabel="Reject item"
+                >
+                  Reject recovery item
+                </ConfirmSubmitButton>
               </Form>
             ) : null}
           </CardBody>

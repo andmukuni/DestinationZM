@@ -19,6 +19,30 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/home_controller').default['index']>>>
     }
   }
+  'legal.eula': {
+    methods: ["GET","HEAD"]
+    pattern: '/legal/eula'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'legal.privacy': {
+    methods: ["GET","HEAD"]
+    pattern: '/legal/privacy'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'portal.login': {
     methods: ["GET","HEAD"]
     pattern: '/portal/login'

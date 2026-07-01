@@ -3,6 +3,7 @@ import { QuickbooksTestConnection } from '~/components/settings/quickbooks_test_
 import { SettingsShell } from '~/components/settings/settings_shell'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
+import { ConfirmSubmitButton } from '~/components/ui/confirm_submit_button'
 import { Card, CardBody, CardHeader } from '~/components/ui/card'
 import { Input } from '~/components/ui/input'
 import { brandCheckboxClass, brandInputFocusClass, brandSurfaceAccentClass } from '~/lib/brand_theme'
@@ -238,9 +239,16 @@ export default function QuickbooksSettings({
 
               {connection ? (
                 <Form route="settings.quickbooks.disconnect">
-                  <Button type="submit" variant="secondary" className="w-full">
+                  <ConfirmSubmitButton
+                    variant="secondary"
+                    className="w-full"
+                    title="Disconnect QuickBooks?"
+                    description="Disconnect the linked QuickBooks company? Invoice sync will stop until you reconnect."
+                    confirmLabel="Disconnect"
+                    confirmVariant="danger"
+                  >
                     Disconnect company
-                  </Button>
+                  </ConfirmSubmitButton>
                 </Form>
               ) : null}
             </CardBody>

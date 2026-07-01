@@ -1,6 +1,7 @@
 import { Form } from '@adonisjs/inertia/react'
 import { useEffect, useRef, useState } from 'react'
 import { CheckCircleIcon, PencilIcon, XMarkIcon } from '~/components/icons'
+import { Button } from '~/components/ui/button'
 import type { EnquiryCartItem } from '~/components/portal/enquiry_cart_panel'
 
 type EnquiryCartBudgetCellProps = {
@@ -54,15 +55,17 @@ export default function EnquiryCartBudgetCell({ item }: EnquiryCartBudgetCellPro
                 aria-label={`Budget estimate for ${item.tabLabel}`}
               />
             </div>
-            <button
+            <Button
               type="submit"
-              disabled={processing}
+              size="sm"
+              loading={processing}
+              loadingLabel=""
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md border-transparent bg-orange-600 p-0 hover:bg-orange-700"
               title="Save budget estimate"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-orange-600 text-white transition hover:bg-orange-700 disabled:opacity-60"
               aria-label="Save budget estimate"
             >
               <CheckCircleIcon className="h-4 w-4" />
-            </button>
+            </Button>
             <button
               type="button"
               disabled={processing}

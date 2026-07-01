@@ -1,7 +1,7 @@
 import { Form, Link } from '@adonisjs/inertia/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { TrashIcon } from '~/components/icons'
-import { Button } from '~/components/ui/button'
+import { ConfirmSubmitButton } from '~/components/ui/confirm_submit_button'
 import { TR } from '~/components/ui/table'
 import EnquiryCartBudgetCell from '~/components/portal/enquiry_cart_budget_cell'
 
@@ -307,14 +307,18 @@ export default function EnquiryCartPanel({
                   </td>
                   <td className={`${cartTdClass} text-center`}>
                     <Form route="portal.bookings.cart.remove" routeParams={{ itemId: item.id }}>
-                      <button
-                        type="submit"
-                        title={`Remove ${item.tabLabel}`}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-700"
-                        aria-label={`Remove ${item.tabLabel}`}
+                      <ConfirmSubmitButton
+                        size="sm"
+                        variant="ghost"
+                        loadingLabel=""
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 p-0 text-slate-500 hover:border-red-200 hover:bg-red-50 hover:text-red-700"
+                        title="Remove service?"
+                        description={`Remove ${item.tabLabel} from your enquiry?`}
+                        confirmLabel="Remove"
+                        confirmVariant="danger"
                       >
                         <TrashIcon className="h-4 w-4" />
-                      </button>
+                      </ConfirmSubmitButton>
                     </Form>
                   </td>
                 </TR>
@@ -335,9 +339,14 @@ export default function EnquiryCartPanel({
               <strong>one enquiry</strong> for {organizationName}. We will prepare a single quotation.
             </p>
           </div>
-          <Button type="submit" className="bg-orange-600 hover:bg-orange-700">
+          <ConfirmSubmitButton
+            className="bg-orange-600 hover:bg-orange-700"
+            title="Submit enquiry?"
+            description={`Submit ${items.length} service${items.length === 1 ? '' : 's'} as one enquiry for ${organizationName}?`}
+            confirmLabel="Submit enquiry"
+          >
             Submit enquiry{items.length > 1 ? ` (${items.length} items)` : ''}
-          </Button>
+          </ConfirmSubmitButton>
         </div>
       </Form>
     </div>

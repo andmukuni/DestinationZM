@@ -12,6 +12,18 @@ const routes = {
     tokens: [{"old":"/","type":0,"val":"/","end":""}],
     types: placeholder as Registry['home']['types'],
   },
+  'legal.eula': {
+    methods: ["GET","HEAD"],
+    pattern: '/legal/eula',
+    tokens: [{"old":"/legal/eula","type":0,"val":"legal","end":""},{"old":"/legal/eula","type":0,"val":"eula","end":""}],
+    types: placeholder as Registry['legal.eula']['types'],
+  },
+  'legal.privacy': {
+    methods: ["GET","HEAD"],
+    pattern: '/legal/privacy',
+    tokens: [{"old":"/legal/privacy","type":0,"val":"legal","end":""},{"old":"/legal/privacy","type":0,"val":"privacy","end":""}],
+    types: placeholder as Registry['legal.privacy']['types'],
+  },
   'portal.login': {
     methods: ["GET","HEAD"],
     pattern: '/portal/login',

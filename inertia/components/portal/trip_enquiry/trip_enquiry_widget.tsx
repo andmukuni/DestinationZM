@@ -9,6 +9,7 @@ import FlightsEnquiryForm from './forms/flights_enquiry_form'
 import HotelsEnquiryForm from './forms/hotels_enquiry_form'
 import TripCategoryTabs, { TripSearchPanel, TripSearchShell } from './trip_category_tabs'
 import TripHero from './trip_hero'
+import { TripEnquirySubmitProvider } from './shared/search_button'
 
 export type BookingTypeOption = {
   id: number
@@ -185,6 +186,7 @@ export default function TripEnquiryWidget({
   }
 
   return (
+    <TripEnquirySubmitProvider submitting={submitting}>
     <div className="min-w-0 pb-8">
       <TripHero />
       <div ref={stickySentinelRef} className="h-px" aria-hidden />
@@ -287,5 +289,6 @@ export default function TripEnquiryWidget({
         />
       </div>
     </div>
+    </TripEnquirySubmitProvider>
   )
 }

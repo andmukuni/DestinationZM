@@ -9,6 +9,7 @@ import { FileDownloadLink } from '~/components/ui/file_download_link'
 import { Input } from '~/components/ui/input'
 import { Table, TBody, TD, THead, TH, TR } from '~/components/ui/table'
 import { tableIconButtonClass } from '~/components/ui/table_icon_button'
+import { ConfirmSubmitButton } from '~/components/ui/confirm_submit_button'
 import { brandLinkClass } from '~/lib/brand_theme'
 import { formatCurrency } from '~/lib/format'
 import { buildRecoveryExportUrl } from '~/lib/recovery_export'
@@ -240,14 +241,16 @@ export default function RecoveryReportsIndex({
                             method="post"
                             className="inline-flex"
                           >
-                            <button
-                              type="submit"
-                              className={tableIconButtonClass('primary')}
-                              title="Send to client"
-                              aria-label="Send to client"
-                            >
-                              <LetterIcon className="h-4 w-4" />
-                            </button>
+                          <ConfirmSubmitButton
+                            size="sm"
+                            loadingLabel=""
+                            className={tableIconButtonClass('primary')}
+                            title="Send to client?"
+                            description={`Send recovery item ${report.recoveryReference} to the client?`}
+                            confirmLabel="Send to client"
+                          >
+                            <LetterIcon className="h-4 w-4" />
+                          </ConfirmSubmitButton>
                           </Form>
                         ) : null}
                         <Link

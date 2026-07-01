@@ -5,9 +5,8 @@ import {
   DropdownMenuItem,
   DropdownMenuLink,
   DropdownMenuSeparator,
-  dropdownMenuItemClassName,
 } from '~/components/ui/dropdown_menu'
-import { Spinner } from '~/components/ui/spinner'
+import { ConfirmDropdownSubmit } from '~/components/ui/confirm_dropdown_submit'
 
 type QuotationDocumentActionsProps = {
   quotationId: number
@@ -69,28 +68,15 @@ export default function QuotationDocumentActions({
             routeParams={{ id: quotationId }}
             className="block"
             onClick={(event) => event.stopPropagation()}
-            onSubmit={(event) => {
-              if (!window.confirm(`Send quotation ${reference} to the client?`)) {
-                event.preventDefault()
-              }
-            }}
           >
-            {({ processing }) => (
-              <button
-                type="submit"
-                role="menuitem"
-                disabled={processing}
-                aria-busy={processing || undefined}
-                className={dropdownMenuItemClassName('primary')}
-              >
-                {processing ? (
-                  <Spinner size="sm" tone="dark" />
-                ) : (
-                  <CheckCircleIcon className="h-4 w-4" />
-                )}
-                Send to client
-              </button>
-            )}
+            <ConfirmDropdownSubmit
+              title="Send quotation?"
+              description={`Send quotation ${reference} to the client?`}
+              confirmLabel="Send to client"
+              icon={<CheckCircleIcon className="h-4 w-4" />}
+            >
+              Send to client
+            </ConfirmDropdownSubmit>
           </Form>
         </>
       ) : null}

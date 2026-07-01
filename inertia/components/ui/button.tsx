@@ -35,12 +35,14 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: Variant
   size?: Size
   loading?: boolean
+  loadingLabel?: string
 }
 
 export function Button({
   variant = 'primary',
   size = 'md',
   loading: loadingProp,
+  loadingLabel = 'Processing…',
   disabled,
   type = 'button',
   className = '',
@@ -59,9 +61,13 @@ export function Button({
       {...props}
     >
       {loading ? (
-        <Spinner size={spinnerSize[size]} tone={spinnerTone[variant]} />
-      ) : null}
-      {children}
+        <>
+          <Spinner size={spinnerSize[size]} tone={spinnerTone[variant]} />
+          {loadingLabel}
+        </>
+      ) : (
+        children
+      )}
     </button>
   )
 }

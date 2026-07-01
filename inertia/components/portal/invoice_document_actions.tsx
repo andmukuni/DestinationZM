@@ -5,9 +5,8 @@ import {
   DropdownMenuItem,
   DropdownMenuLink,
   DropdownMenuSeparator,
-  dropdownMenuItemClassName,
 } from '~/components/ui/dropdown_menu'
-import { Spinner } from '~/components/ui/spinner'
+import { ConfirmDropdownSubmit } from '~/components/ui/confirm_dropdown_submit'
 
 import { formatCurrency } from '~/lib/format'
 
@@ -67,28 +66,15 @@ export default function InvoiceDocumentActions({
               routeParams={{ id: invoiceId }}
               className="block"
               onClick={(event) => event.stopPropagation()}
-              onSubmit={(event) => {
-                if (!window.confirm(`Issue invoice ${invoiceNumber} to the client?`)) {
-                  event.preventDefault()
-                }
-              }}
             >
-              {({ processing }) => (
-                <button
-                  type="submit"
-                  role="menuitem"
-                  disabled={processing}
-                  aria-busy={processing || undefined}
-                  className={dropdownMenuItemClassName('primary')}
-                >
-                  {processing ? (
-                    <Spinner size="sm" tone="dark" />
-                  ) : (
-                    <CheckCircleIcon className="h-4 w-4" />
-                  )}
-                  Issue invoice
-                </button>
-              )}
+              <ConfirmDropdownSubmit
+                title="Issue invoice?"
+                description={`Issue invoice ${invoiceNumber} to the client?`}
+                confirmLabel="Issue invoice"
+                icon={<CheckCircleIcon className="h-4 w-4" />}
+              >
+                Issue invoice
+              </ConfirmDropdownSubmit>
             </Form>
           ) : null}
           {canMarkPaid ? (
@@ -97,32 +83,15 @@ export default function InvoiceDocumentActions({
               routeParams={{ id: invoiceId }}
               className="block"
               onClick={(event) => event.stopPropagation()}
-              onSubmit={(event) => {
-                if (
-                  !window.confirm(
-                    `Mark invoice ${invoiceNumber} as paid (${formatCurrency(balanceDue, currency)})?`
-                  )
-                ) {
-                  event.preventDefault()
-                }
-              }}
             >
-              {({ processing }) => (
-                <button
-                  type="submit"
-                  role="menuitem"
-                  disabled={processing}
-                  aria-busy={processing || undefined}
-                  className={dropdownMenuItemClassName('primary')}
-                >
-                  {processing ? (
-                    <Spinner size="sm" tone="dark" />
-                  ) : (
-                    <WalletIcon className="h-4 w-4" />
-                  )}
-                  Mark as paid
-                </button>
-              )}
+              <ConfirmDropdownSubmit
+                title="Mark invoice as paid?"
+                description={`Mark invoice ${invoiceNumber} as paid (${formatCurrency(balanceDue, currency)})?`}
+                confirmLabel="Mark as paid"
+                icon={<WalletIcon className="h-4 w-4" />}
+              >
+                Mark as paid
+              </ConfirmDropdownSubmit>
             </Form>
           ) : null}
         </>

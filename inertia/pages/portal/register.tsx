@@ -1,4 +1,5 @@
 import { Form, Link } from '@adonisjs/inertia/react'
+import { AuthLegalLinks } from '~/components/auth_legal_links'
 import { Button } from '~/components/ui/button'
 
 const fieldClass =
@@ -93,6 +94,7 @@ export default function PortalRegister() {
 
             <Button
               type="submit"
+              loadingLabel="Submitting…"
               className="h-12 w-full rounded-lg border-transparent bg-orange-600 text-base font-semibold hover:bg-orange-700"
             >
               Submit request
@@ -107,6 +109,8 @@ export default function PortalRegister() {
           Sign in
         </Link>
       </p>
+
+      <AuthLegalLinks />
     </div>
   )
 }

@@ -1,12 +1,19 @@
 import { Form } from '@adonisjs/inertia/react'
 import { useState } from 'react'
 import { EyeIcon } from '~/components/icons'
+import { AuthLegalLinks } from '~/components/auth_legal_links'
 import { brandButtonPrimaryClass, brandInputFocusClass } from '~/lib/brand_theme'
 import { Button } from '~/components/ui/button'
 
 function EyeSlashIcon({ className = 'h-5 w-5' }: { className?: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className} aria-hidden>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={className}
+      aria-hidden
+    >
       <path
         fillRule="evenodd"
         d="M3.28 2.22a.75.75 0 0 0-1.06 1.06l14.5 14.5a.75.75 0 1 0 1.06-1.06l-1.745-1.745a10.029 10.029 0 0 0 3.3-4.38 1.651 1.651 0 0 0 0-1.185A10.004 10.004 0 0 0 9.999 3a9.956 9.956 0 0 0-4.744 1.194L3.28 2.22ZM7.752 6.69l1.092 1.092a2.5 2.5 0 0 1 3.374 3.373l1.092 1.093a4 4 0 0 0-5.558-5.558Z"
@@ -17,8 +24,7 @@ function EyeSlashIcon({ className = 'h-5 w-5' }: { className?: string }) {
   )
 }
 
-const fieldClass =
-  `h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 ${brandInputFocusClass}`
+const fieldClass = `h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 ${brandInputFocusClass}`
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false)
@@ -78,6 +84,7 @@ export default function Login() {
 
             <Button
               type="submit"
+              loadingLabel="Signing in…"
               className={`h-12 w-full rounded-lg border-transparent text-base font-semibold text-white ${brandButtonPrimaryClass}`}
             >
               Sign in
@@ -85,6 +92,8 @@ export default function Login() {
           </>
         )}
       </Form>
+
+      <AuthLegalLinks />
     </div>
   )
 }

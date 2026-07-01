@@ -2,8 +2,8 @@ import { Form, Link } from '@adonisjs/inertia/react'
 import { ArrowLeftIcon } from '~/components/icons'
 import InvoiceDocument, { type InvoiceDocumentData } from '~/components/portal/invoice_document'
 import PortalInvoiceDocumentActions from '~/components/portal/portal_invoice_document_actions'
-import { Button } from '~/components/ui/button'
 import { Card, CardBody, CardHeader } from '~/components/ui/card'
+import { ConfirmSubmitButton } from '~/components/ui/confirm_submit_button'
 import { formatCurrency } from '~/lib/format'
 
 type PortalInvoicesShowProps = {
@@ -100,9 +100,14 @@ export default function PortalInvoicesShow({
                         className={fieldClass}
                       />
                     </div>
-                    <Button type="submit" className="bg-orange-600 hover:bg-orange-700">
+                    <ConfirmSubmitButton
+                      className="bg-orange-600 hover:bg-orange-700"
+                      title="Pay invoice?"
+                      description={`Submit payment of ${formatCurrency(balance, currency)} for this invoice?`}
+                      confirmLabel="Pay invoice"
+                    >
                       Pay {formatCurrency(balance, currency)}
-                    </Button>
+                    </ConfirmSubmitButton>
                   </>
                 )}
               </Form>

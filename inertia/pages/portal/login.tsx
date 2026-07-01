@@ -1,6 +1,7 @@
 import { Form, Link } from '@adonisjs/inertia/react'
 import { useState } from 'react'
 import { EyeIcon } from '~/components/icons'
+import { AuthLegalLinks } from '~/components/auth_legal_links'
 import { Button } from '~/components/ui/button'
 
 function EyeSlashIcon({ className = 'h-5 w-5' }: { className?: string }) {
@@ -85,6 +86,7 @@ export default function PortalLogin({
 
             <Button
               type="submit"
+              loadingLabel="Signing in…"
               className="h-12 w-full rounded-lg border-transparent bg-orange-600 text-base font-semibold hover:bg-orange-700"
             >
               Sign in
@@ -104,6 +106,8 @@ export default function PortalLogin({
           </>
         )}
       </Form>
+
+      <AuthLegalLinks />
     </div>
   )
 }

@@ -5,6 +5,8 @@ type ParamValue = string | number | bigint | boolean
 export type ScannedRoutes = {
   ALL: {
     'home': { paramsTuple?: []; params?: {} }
+    'legal.eula': { paramsTuple?: []; params?: {} }
+    'legal.privacy': { paramsTuple?: []; params?: {} }
     'portal.login': { paramsTuple?: []; params?: {} }
     'portal.login.store': { paramsTuple?: []; params?: {} }
     'portal.register': { paramsTuple?: []; params?: {} }
@@ -147,6 +149,8 @@ export type ScannedRoutes = {
   }
   GET: {
     'home': { paramsTuple?: []; params?: {} }
+    'legal.eula': { paramsTuple?: []; params?: {} }
+    'legal.privacy': { paramsTuple?: []; params?: {} }
     'portal.login': { paramsTuple?: []; params?: {} }
     'portal.register': { paramsTuple?: []; params?: {} }
     'portal.dashboard': { paramsTuple?: []; params?: {} }
@@ -231,6 +235,8 @@ export type ScannedRoutes = {
   }
   HEAD: {
     'home': { paramsTuple?: []; params?: {} }
+    'legal.eula': { paramsTuple?: []; params?: {} }
+    'legal.privacy': { paramsTuple?: []; params?: {} }
     'portal.login': { paramsTuple?: []; params?: {} }
     'portal.register': { paramsTuple?: []; params?: {} }
     'portal.dashboard': { paramsTuple?: []; params?: {} }

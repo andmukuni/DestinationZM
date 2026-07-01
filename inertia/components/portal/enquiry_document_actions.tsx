@@ -5,9 +5,8 @@ import {
   DropdownMenuItem,
   DropdownMenuLink,
   DropdownMenuSeparator,
-  dropdownMenuItemClassName,
 } from '~/components/ui/dropdown_menu'
-import { Spinner } from '~/components/ui/spinner'
+import { ConfirmDropdownSubmit } from '~/components/ui/confirm_dropdown_submit'
 
 type EnquiryDocumentActionsProps = {
   enquiryId: number
@@ -67,32 +66,17 @@ export default function EnquiryDocumentActions({
             routeParams={{ id: enquiryId }}
             className="block"
             onClick={(event) => event.stopPropagation()}
-            onSubmit={(event) => {
-              if (
-                !window.confirm(
-                  `Cancel enquiry ${reference}? DestinationZM will stop preparing your quotation.`
-                )
-              ) {
-                event.preventDefault()
-              }
-            }}
           >
-            {({ processing }) => (
-              <button
-                type="submit"
-                role="menuitem"
-                disabled={processing}
-                aria-busy={processing || undefined}
-                className={dropdownMenuItemClassName('danger')}
-              >
-                {processing ? (
-                  <Spinner size="sm" tone="dark" />
-                ) : (
-                  <TrashIcon className="h-4 w-4" />
-                )}
-                Cancel enquiry
-              </button>
-            )}
+            <ConfirmDropdownSubmit
+              title="Cancel enquiry?"
+              description={`Cancel enquiry ${reference}? DestinationZM will stop preparing your quotation.`}
+              confirmLabel="Cancel enquiry"
+              confirmVariant="danger"
+              tone="danger"
+              icon={<TrashIcon className="h-4 w-4" />}
+            >
+              Cancel enquiry
+            </ConfirmDropdownSubmit>
           </Form>
         </>
       ) : null}

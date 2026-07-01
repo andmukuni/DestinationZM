@@ -4,6 +4,7 @@ import InvoiceDocument, { type InvoiceDocumentData } from '~/components/portal/i
 import InvoiceDocumentActions from '~/components/portal/invoice_document_actions'
 import { Badge } from '~/components/ui/badge'
 import { Card, CardBody, CardHeader } from '~/components/ui/card'
+import { ConfirmSubmitButton } from '~/components/ui/confirm_submit_button'
 import { Table, TBody, TD, THead, TH, TR } from '~/components/ui/table'
 import { formatCurrency, formatStatusLabel } from '~/lib/format'
 import { statusTone } from '~/lib/status_tone'
@@ -138,9 +139,14 @@ export default function InvoicesShow({
             ) : null}
             {canManage && quickbooks.connected && quickbooks.status === 'failed' ? (
               <Form route="invoices.quickbooks.retry" routeParams={{ id: invoiceId }}>
-                <Button type="submit" variant="secondary">
+                <ConfirmSubmitButton
+                  variant="secondary"
+                  title="Retry QuickBooks sync?"
+                  description="Retry syncing this invoice to QuickBooks Online?"
+                  confirmLabel="Retry sync"
+                >
                   Retry QuickBooks sync
-                </Button>
+                </ConfirmSubmitButton>
               </Form>
             ) : null}
           </CardBody>

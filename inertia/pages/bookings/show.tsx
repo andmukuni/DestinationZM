@@ -4,6 +4,7 @@ import { ArrowLeftIcon, CheckCircleIcon } from '~/components/icons'
 import EnquiryDetailsCard from '~/components/portal/enquiry_details_card'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
+import { ConfirmSubmitButton } from '~/components/ui/confirm_submit_button'
 import { Card, CardBody, CardHeader } from '~/components/ui/card'
 import { Input } from '~/components/ui/input'
 import { Table, TBody, TD, THead, TH, TR } from '~/components/ui/table'
@@ -188,37 +189,62 @@ function WorkflowActions({
     <>
       {actions.canCreateQuotation ? (
         <Form route="bookings.quotations.store" routeParams={{ id: bookingId }}>
-          <Button type="submit" size="sm">
+          <ConfirmSubmitButton
+            size="sm"
+            title="Create quotation?"
+            description="Create a draft quotation from this enquiry?"
+            confirmLabel="Create quotation"
+          >
             Create quotation
-          </Button>
+          </ConfirmSubmitButton>
         </Form>
       ) : null}
       {actions.canSendQuotation && latestQuotation ? (
         <Form route="quotations.send" routeParams={{ id: latestQuotation.id }}>
-          <Button type="submit" size="sm">
+          <ConfirmSubmitButton
+            size="sm"
+            title="Send quotation?"
+            description={`Send quotation ${latestQuotation.reference} to the client?`}
+            confirmLabel="Send quotation"
+          >
             Send quotation
-          </Button>
+          </ConfirmSubmitButton>
         </Form>
       ) : null}
       {actions.canSendRecoveryItem && latestRecoveryItem ? (
         <Form action={`/recovery-reports/items/${latestRecoveryItem.id}/send-to-client`} method="post">
-          <Button type="submit" size="sm">
+          <ConfirmSubmitButton
+            size="sm"
+            title="Send recovery report?"
+            description="Send this recovery item to the client for review?"
+            confirmLabel="Send to client"
+          >
             Send recovery to client
-          </Button>
+          </ConfirmSubmitButton>
         </Form>
       ) : null}
       {actions.canCreateInvoice ? (
         <Form route="bookings.create_invoice" routeParams={{ id: bookingId }}>
-          <Button type="submit" size="sm">
+          <ConfirmSubmitButton
+            size="sm"
+            title="Create client invoice?"
+            description="Create a draft client invoice for this enquiry?"
+            confirmLabel="Create invoice"
+          >
             Create client invoice
-          </Button>
+          </ConfirmSubmitButton>
         </Form>
       ) : null}
       {actions.canIssueInvoice && latestInvoice ? (
         <Form route="invoices.issue" routeParams={{ id: latestInvoice.id }}>
-          <Button type="submit" size="sm">
+          <ConfirmSubmitButton
+            size="sm"
+            title="Issue invoice?"
+            description={`Issue invoice ${latestInvoice.invoiceNumber} to the client?`}
+            confirmLabel="Issue invoice"
+          >
             Issue invoice
-          </Button>
+          </ConfirmSubmitButton>
         </Form>
       ) : null}
     </>
@@ -488,7 +514,13 @@ export default function BookingsShow({
                                 </select>
                               </div>
                             </div>
-                            <Button type="submit">Confirm enquiry</Button>
+                            <ConfirmSubmitButton
+                              title="Confirm enquiry?"
+                              description="Capture travel details and confirm this enquiry after client quotation approval?"
+                              confirmLabel="Confirm enquiry"
+                            >
+                              Confirm enquiry
+                            </ConfirmSubmitButton>
                           </>
                         )}
                       </Form>
@@ -560,7 +592,13 @@ export default function BookingsShow({
                             />
                           </div>
                         </div>
-                        <Button type="submit">Record supplier payment</Button>
+                        <ConfirmSubmitButton
+                          title="Record supplier payment?"
+                          description="Record supplier payment and upload the supplier invoice?"
+                          confirmLabel="Record payment"
+                        >
+                          Record supplier payment
+                        </ConfirmSubmitButton>
                       </Form>
                     ) : null}
                   </div>

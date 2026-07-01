@@ -23,7 +23,13 @@ function BrandingTitle({ compact = false }: { compact?: boolean }) {
   )
 }
 
-export default function AuthLayout({ children }: { children: ReactElement<Data.SharedProps> }) {
+export default function AuthLayout({
+  children,
+  wide = false,
+}: {
+  children: ReactElement<Data.SharedProps>
+  wide?: boolean
+}) {
   return (
     <div className="min-h-screen lg:flex">
       <aside className="relative hidden min-h-screen overflow-hidden lg:flex lg:w-1/2">
@@ -49,13 +55,16 @@ export default function AuthLayout({ children }: { children: ReactElement<Data.S
 
       <main className="flex min-h-screen flex-1 flex-col justify-center bg-[#fafaf9] px-6 py-12 sm:px-10 lg:w-1/2 lg:px-16 xl:px-24">
         <div className="relative mb-10 overflow-hidden rounded-2xl lg:hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-orange-900 via-slate-900 to-amber-900" aria-hidden />
+          <div
+            className="absolute inset-0 bg-gradient-to-br from-orange-900 via-slate-900 to-amber-900"
+            aria-hidden
+          />
           <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
             <BrandingTitle compact />
           </div>
         </div>
 
-        <div className="mx-auto w-full max-w-md">{children}</div>
+        <div className={`mx-auto w-full ${wide ? 'max-w-3xl' : 'max-w-md'}`}>{children}</div>
       </main>
 
       <FlashListener />

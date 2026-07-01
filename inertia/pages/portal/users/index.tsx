@@ -6,7 +6,8 @@ import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { Card, CardHeader } from '~/components/ui/card'
 import { portalTableIconPrimaryClass } from '~/lib/portal_theme'
-import { TableActions, TableIconButton, tableIconButtonClass } from '~/components/ui/table_icon_button'
+import { TableActions, tableIconButtonClass } from '~/components/ui/table_icon_button'
+import { ConfirmTableIconSubmit } from '~/components/ui/confirm_table_icon_submit'
 import { Table, TBody, TD, THead, TH, TR } from '~/components/ui/table'
 import { stopRowClickProps } from '~/lib/table_row'
 import { UserAvatar } from '~/components/ui/user_avatar'
@@ -192,10 +193,17 @@ export default function PortalUsersIndex({ canManageUsers, users }: PortalUsersI
                                     {({ processing }) => (
                                       <>
                                         <input type="hidden" name="isActive" value={member.isActive ? '0' : '1'} />
-                                        <TableIconButton
-                                          type="submit"
+                                        <ConfirmTableIconSubmit
                                           label={member.isActive ? 'Deactivate user' : 'Activate user'}
                                           variant={member.isActive ? 'danger' : 'secondary'}
+                                          title={member.isActive ? 'Deactivate user?' : 'Activate user?'}
+                                          description={
+                                            member.isActive
+                                              ? `Deactivate ${member.fullName}? They will lose portal access.`
+                                              : `Activate ${member.fullName}? They will regain portal access.`
+                                          }
+                                          confirmLabel={member.isActive ? 'Deactivate' : 'Activate'}
+                                          confirmVariant={member.isActive ? 'danger' : 'primary'}
                                           loading={processing}
                                         >
                                           {member.isActive ? (
@@ -203,7 +211,7 @@ export default function PortalUsersIndex({ canManageUsers, users }: PortalUsersI
                                           ) : (
                                             <CheckCircleIcon className="h-4 w-4" />
                                           )}
-                                        </TableIconButton>
+                                        </ConfirmTableIconSubmit>
                                       </>
                                     )}
                                   </Form>

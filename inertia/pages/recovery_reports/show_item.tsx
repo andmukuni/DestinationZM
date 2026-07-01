@@ -5,6 +5,7 @@ import RecoveryTravelItemsTable, {
 } from '~/components/recovery_travel_items_table'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
+import { ConfirmSubmitButton } from '~/components/ui/confirm_submit_button'
 import { Card, CardBody, CardHeader } from '~/components/ui/card'
 import { FileDownloadLink } from '~/components/ui/file_download_link'
 import { brandLinkClass } from '~/lib/brand_theme'
@@ -75,9 +76,14 @@ export default function RecoveryReportShowItem({
     ) : null,
     canManage && (recoveryStatus === 'READY_FOR_CLIENT' || recoveryStatus === 'QUERY_RAISED') ? (
       <Form key="send" action={`/recovery-reports/items/${item.id}/send-to-client`} method="post">
-        <Button type="submit" size="sm">
+        <ConfirmSubmitButton
+          size="sm"
+          title="Send to client?"
+          description={`Send recovery item ${item.recoveryReference} to the client for review?`}
+          confirmLabel="Send to client"
+        >
           Send to client
-        </Button>
+        </ConfirmSubmitButton>
       </Form>
     ) : null,
     <FileDownloadLink
@@ -100,9 +106,14 @@ export default function RecoveryReportShowItem({
     </FileDownloadLink>,
     canManage && recoveryStatus === 'APPROVED_BY_CLIENT' ? (
       <Form key="recover" action={`/recovery-reports/items/${item.id}/mark-recovered`} method="post">
-        <Button type="submit" size="sm">
+        <ConfirmSubmitButton
+          size="sm"
+          title="Mark as recovered?"
+          description={`Mark recovery item ${item.recoveryReference} as recovered?`}
+          confirmLabel="Mark recovered"
+        >
           Mark recovered
-        </Button>
+        </ConfirmSubmitButton>
       </Form>
     ) : null,
   ].filter(Boolean)

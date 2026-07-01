@@ -15,6 +15,9 @@ router.get('/health', async ({ response }) => response.ok({ status: 'ok' }))
 
 router.get('/', [controllers.Home, 'index']).as('home')
 
+router.on('/legal/eula').renderInertia('legal/eula').as('legal.eula')
+router.on('/legal/privacy').renderInertia('legal/privacy').as('legal.privacy')
+
 router
   .group(() => {
     router
