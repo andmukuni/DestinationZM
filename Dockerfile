@@ -4,11 +4,17 @@ RUN apk add --no-cache python3 make g++
 
 WORKDIR /app
 
+# Coolify may inject NODE_ENV=production at build time — force dev deps for ace/vite.
+ENV NODE_ENV=development
+ENV NPM_CONFIG_PRODUCTION=false
+
 COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY . .
-RUN node ace build --ignore-ts-errors
+COPY docker/.env.build .env
+
+RUN NODE_ENV=development node ace build --ignore-ts-errors
 
 FROM node:24-alpine AS production
 

@@ -52,6 +52,8 @@ In Coolify: **Storages** → add `/app/storage`. With `SESSION_DRIVER=redis`, `/
 
 Set all variables in the Coolify UI. **Do not commit secrets to Git.**
 
+**Important:** In Coolify, set `NODE_ENV`, `APP_ENV`, `APP_KEY`, `DB_*`, and `REDIS_*` as **Runtime only** (uncheck “Available at Buildtime”). Coolify’s build-time `NODE_ENV=production` breaks the Docker build by skipping devDependencies needed for Vite/TypeScript.
+
 Coolify auto-generates `SERVICE_URL_APP` and `SERVICE_FQDN_APP`. The app maps LoanTrack-style names automatically (`DB_USERNAME` → `DB_USER`, `APP_ENV` → `NODE_ENV`, `SERVICE_URL_APP` → `APP_URL`). See [coolify-env.example](./coolify-env.example) for a full copy-paste template.
 
 #### Required
@@ -148,6 +150,7 @@ Entrypoint (`docker/entrypoint.sh`):
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
+| `node ace build` failed during Docker build | `NODE_ENV=production` available at build time | Set `NODE_ENV` and `APP_ENV` to **Runtime only** in Coolify. Dockerfile also forces dev deps via `docker/.env.build`. |
 | `Bind for 0.0.0.0:3333 failed: port is already allocated` | Another container or app on the server already uses host port 3333 | Redeploy after pulling latest `docker-compose.yml` (no host port bind). Or stop the other service using 3333. In Coolify, only set **Port Exposes** to `3333` (container port) — do not add a duplicate host port mapping. |
 | Exited (10x restarts) | Missing required env vars (`APP_KEY`, `DB_*`, `REDIS_*`, `HOST`) | Paste full template from [coolify-env.example](./coolify-env.example) into Coolify Environment Variables |
 | Health check fails | App not binding to `0.0.0.0` | Set `HOST=0.0.0.0` |

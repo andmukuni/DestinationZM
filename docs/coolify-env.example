@@ -1,5 +1,8 @@
 # Paste into Coolify → Environment Variables (Production)
 # Structured like LoanTrack — AdonisJS reads DB_USERNAME/APP_ENV aliases automatically.
+#
+# Coolify: set NODE_ENV, APP_ENV, APP_KEY, DB_*, REDIS_* as RUNTIME ONLY
+# (uncheck "Available at Buildtime") so the Docker build can install devDependencies.
 
 APP_NAME=DestinationZM
 APP_ENV=production
