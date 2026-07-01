@@ -17,6 +17,10 @@ COPY docker/.env.build .env
 
 RUN node ace build --ignore-ts-errors
 
+# Install production deps inside build output (native modules e.g. better-sqlite3 need g++).
+WORKDIR /app/build
+RUN npm ci --omit=dev
+
 FROM node:24-alpine AS production
 
 RUN apk add --no-cache dumb-init wget curl
@@ -35,8 +39,6 @@ RUN chmod +x /entrypoint.sh \
   && chown -R adonis:adonis storage tmp
 
 USER adonis
-
-RUN npm ci --omit=dev
 
 EXPOSE 3333
 
