@@ -7,10 +7,10 @@ Deploy DestinationZM as a single Docker container on [Coolify](https://coolify.i
 ```
 Browser → Coolify (HTTPS) → App container :3333 → MySQL + Redis (external)
                               ↓
-                    Volumes: /app/storage, /app/tmp
+                    Volumes: /app/storage
 ```
 
-The app container does **not** include MySQL or Redis. Point environment variables at your existing remote services.
+The app container does **not** include MySQL or Redis. Point environment variables at your existing remote services. Environment layout matches **LoanTrack** on the same server (`DB_USERNAME`, `APP_ENV`, `SESSION_DRIVER=redis`, etc.).
 
 ## Prerequisites
 
@@ -45,37 +45,41 @@ Mount these paths so uploads and sessions survive redeploys:
 | Container path | Purpose |
 |----------------|---------|
 | `/app/storage` | Uploaded documents, report templates |
-| `/app/tmp` | File-based sessions (`SESSION_DRIVER=file`) |
 
-In Coolify: **Storages** → add both paths as persistent volumes.
+In Coolify: **Storages** → add `/app/storage`. With `SESSION_DRIVER=redis`, `/app/tmp` is not required.
 
 ### 4. Environment variables
 
 Set all variables in the Coolify UI. **Do not commit secrets to Git.**
 
-Coolify auto-generates `SERVICE_URL_APP` and `SERVICE_FQDN_APP`. The app uses `SERVICE_URL_APP` as `APP_URL` when `APP_URL` is not set. See [coolify-env.example](./coolify-env.example) for a full copy-paste template.
+Coolify auto-generates `SERVICE_URL_APP` and `SERVICE_FQDN_APP`. The app maps LoanTrack-style names automatically (`DB_USERNAME` → `DB_USER`, `APP_ENV` → `NODE_ENV`, `SERVICE_URL_APP` → `APP_URL`). See [coolify-env.example](./coolify-env.example) for a full copy-paste template.
 
 #### Required
 
 | Variable | Example | Notes |
 |----------|---------|-------|
+| `APP_NAME` | `DestinationZM` | Display name (optional) |
+| `APP_ENV` | `production` | Alias for `NODE_ENV` |
 | `NODE_ENV` | `production` | |
 | `HOST` | `0.0.0.0` | Must bind all interfaces in container |
 | `PORT` | `3333` | Must match exposed port |
 | `TZ` | `UTC` | |
 | `LOG_LEVEL` | `info` | |
 | `APP_KEY` | *(generate)* | Run `node ace generate:key` locally; keep stable across redeploys |
-| `APP_URL` | `http://vikwerqjk3n08u5bjy2uwqok.13.140.178.28.sslip.io` | Public URL (no trailing slash). Optional if `SERVICE_URL_APP` is set. |
-| `SESSION_DRIVER` | `file` | Requires `/app/tmp` volume |
+| `APP_URL` | `http://vikwerqjk3n08u5bjy2uwqok.13.140.178.28.sslip.io` | Public URL. Optional if `SERVICE_URL_APP` is set. |
+| `SESSION_DRIVER` | `redis` | Same as LoanTrack; uses Redis store |
+| `DB_CONNECTION` | `mysql` | Documentation only (Adonis always uses MySQL) |
 | `DB_HOST` | `13.140.178.27` | External MySQL host |
-| `DB_PORT` | `3310` | |
-| `DB_USER` | `mysql` | |
+| `DB_PORT` | `3310` | DestinationZM MySQL port (LoanTrack uses `3306`) |
+| `DB_USERNAME` | `mysql` | Alias for `DB_USER` |
 | `DB_PASSWORD` | *(secret)* | |
 | `DB_DATABASE` | `default` | |
 | `REDIS_HOST` | `13.140.178.27` | External Redis host |
-| `REDIS_PORT` | `6378` | |
+| `REDIS_PORT` | `6379` | Same Redis instance as LoanTrack |
 | `REDIS_USERNAME` | `default` | Required for Redis ACL auth |
 | `REDIS_PASSWORD` | *(secret)* | |
+| `SERVICE_URL_APP` | *(Coolify)* | Auto-injected by Coolify |
+| `SERVICE_FQDN_APP` | *(Coolify)* | Auto-injected by Coolify |
 
 #### Optional
 

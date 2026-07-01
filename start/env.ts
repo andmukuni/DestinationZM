@@ -12,11 +12,19 @@
 import { Env } from '@adonisjs/core/env'
 
 /**
- * Coolify injects SERVICE_URL_APP / SERVICE_FQDN_APP automatically.
- * Map to APP_URL when not set explicitly in the Coolify UI.
+ * Coolify / Laravel-style env aliases (LoanTrack-compatible).
  */
 if (!process.env.APP_URL?.trim() && process.env.SERVICE_URL_APP?.trim()) {
   process.env.APP_URL = process.env.SERVICE_URL_APP.trim()
+}
+
+if (!process.env.DB_USER?.trim() && process.env.DB_USERNAME?.trim()) {
+  process.env.DB_USER = process.env.DB_USERNAME.trim()
+}
+
+if (!process.env.NODE_ENV?.trim() && process.env.APP_ENV?.trim()) {
+  const appEnv = process.env.APP_ENV.trim()
+  process.env.NODE_ENV = appEnv === 'production' ? 'production' : appEnv === 'test' ? 'test' : 'development'
 }
 
 export default await Env.create(new URL('../', import.meta.url), {
@@ -31,7 +39,7 @@ export default await Env.create(new URL('../', import.meta.url), {
   APP_URL: Env.schema.string({ format: 'url', tld: false }),
 
   // Session
-  SESSION_DRIVER: Env.schema.enum(['cookie', 'memory', 'file', 'database'] as const),
+  SESSION_DRIVER: Env.schema.enum(['cookie', 'memory', 'file', 'database', 'redis'] as const),
   // Database
   DB_HOST: Env.schema.string({ format: 'host' }),
   DB_PORT: Env.schema.number(),

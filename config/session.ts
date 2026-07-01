@@ -79,6 +79,11 @@ const sessionConfig = defineConfig({
      * Store session data inside the configured database.
      */
     database: stores.database(),
+
+    /**
+     * Store session data in Redis (recommended for Coolify / production).
+     */
+    redis: stores.redis({ connection: 'main' }),
   },
 })
 
