@@ -23,13 +23,13 @@ export default function PortalBookingTypesIndex({ types }: PortalBookingTypesInd
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Portal booking types</h1>
+          <h1 className="text-2xl font-semibold text-slate-900">Portal enquiry types</h1>
           <p className="mt-1 text-sm text-slate-600">
             Tabs and fields shown on the client portal new enquiry page.
           </p>
         </div>
         <Link href="/portal-booking-types/create">
-          <Button>New booking type</Button>
+          <Button>New enquiry type</Button>
         </Link>
       </div>
 
@@ -50,7 +50,7 @@ export default function PortalBookingTypesIndex({ types }: PortalBookingTypesInd
               {types.length === 0 ? (
                 <TR>
                   <TD colSpan={6} className="py-8 text-center text-sm text-slate-500">
-                    No booking types yet.
+                    No enquiry types yet.
                   </TD>
                 </TR>
               ) : (

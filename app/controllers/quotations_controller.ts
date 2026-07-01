@@ -312,7 +312,7 @@ export default class QuotationsController {
     }
 
     if (!WorkflowService.canCreateQuotation(booking.status as never)) {
-      session.flash('error', 'Cannot create quotation for this booking status.')
+      session.flash('error', 'Cannot create quotation for this enquiry status.')
       return response.redirect().back()
     }
 
@@ -322,7 +322,7 @@ export default class QuotationsController {
       ipAddress: request.ip(),
     })
 
-    session.flash('success', 'Draft quotation created from booking.')
+    session.flash('success', 'Draft quotation created from enquiry.')
     return response.redirect().toRoute('quotations.show', { id: quotation.id })
   }
 

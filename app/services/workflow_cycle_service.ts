@@ -72,11 +72,11 @@ function nextIncompleteStage(
   const status = booking.status as BookingStatus
 
   if (WorkflowService.canConfirmBooking(status)) {
-    return 'Confirm booking'
+    return 'Confirm enquiry'
   }
 
   if (!WorkflowService.canRecordSupplierPayment(status)) {
-    return 'Confirm booking'
+    return 'Confirm enquiry'
   }
 
   if (booking.dzPaymentStatus !== 'PAID') {

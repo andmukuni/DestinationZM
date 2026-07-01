@@ -221,7 +221,7 @@ export default function EnquiryCartPanel({
           </p>
         </div>
         <Link route="portal.bookings.index" className="text-sm font-medium text-slate-600 hover:text-slate-900">
-          View existing bookings
+          View existing enquiries
         </Link>
       </div>
 

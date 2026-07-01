@@ -55,7 +55,7 @@ export default function InvoiceDocumentActions({
       ) : null}
       {booking ? (
         <DropdownMenuLink href={`/bookings/${booking.id}`} icon={<EyeIcon />}>
-          View booking
+          View enquiry
         </DropdownMenuLink>
       ) : null}
       {canIssue || canMarkPaid ? (

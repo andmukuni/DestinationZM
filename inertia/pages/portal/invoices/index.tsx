@@ -36,7 +36,7 @@ export default function PortalInvoicesIndex({ invoices }: PortalInvoicesIndexPro
           <CardBody>
             <p className="text-sm text-slate-600">You have no invoices yet.</p>
             <p className="mt-1 text-sm text-slate-500">
-              Invoices appear here after your booking is confirmed and issued by our team.
+              Invoices appear here after your enquiry is confirmed and issued by our team.
             </p>
           </CardBody>
         ) : (
@@ -45,7 +45,7 @@ export default function PortalInvoicesIndex({ invoices }: PortalInvoicesIndexPro
               <THead>
                 <TR>
                   <TH>Invoice</TH>
-                  <TH>Booking</TH>
+                  <TH>Enquiry</TH>
                   <TH>Issue date</TH>
                   <TH>Due date</TH>
                   <TH>Status</TH>

@@ -8,7 +8,7 @@ import { Input } from '~/components/ui/input'
 
 const DOCUMENT_TYPES = [
   { value: 'quotation', label: 'Quotation' },
-  { value: 'booking_confirmation', label: 'Booking confirmation' },
+  { value: 'booking_confirmation', label: 'Enquiry confirmation' },
   { value: 'supplier_document', label: 'Supplier document' },
   { value: 'invoice', label: 'Invoice' },
   { value: 'receipt', label: 'Receipt' },

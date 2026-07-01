@@ -77,7 +77,7 @@ export default function Dashboard({ role, officeName, stats, recentBookings, pop
   const kpis = [
     {
       key: 'active-bookings',
-      label: 'Active bookings',
+      label: 'Active enquiries',
       value: stats.activeBookings,
       icon: PlaneIcon,
       variant: 'accent' as const,
@@ -160,7 +160,7 @@ export default function Dashboard({ role, officeName, stats, recentBookings, pop
         title="Dashboard"
         description={
           isBranchUser
-            ? `Your bookings overview${officeName ? ` for ${officeName}` : ''}.`
+            ? `Your enquiries overview${officeName ? ` for ${officeName}` : ''}.`
             : officeName
               ? `Agency overview for ${officeName}.`
               : 'DestinationZM agency overview across all offices.'
@@ -182,11 +182,11 @@ export default function Dashboard({ role, officeName, stats, recentBookings, pop
 
       <Card>
         <div className="border-b border-slate-200 px-6 py-4">
-          <h2 className="text-base font-semibold text-slate-900">Recent bookings</h2>
+          <h2 className="text-base font-semibold text-slate-900">Recent enquiries</h2>
           <p className="mt-0.5 text-sm text-slate-600">Latest tour and travel reservations</p>
         </div>
         {recentBookings.length === 0 ? (
-          <p className="px-6 py-8 text-sm text-slate-500">No bookings yet.</p>
+          <p className="px-6 py-8 text-sm text-slate-500">No enquiries yet.</p>
         ) : (
           <CardBody className="p-0">
             <Table>
@@ -225,7 +225,7 @@ export default function Dashboard({ role, officeName, stats, recentBookings, pop
         <Card>
           <div className="border-b border-slate-200 px-6 py-4">
             <h2 className="text-base font-semibold text-slate-900">Popular destinations</h2>
-            <p className="mt-0.5 text-sm text-slate-600">Top Zambia destinations by bookings</p>
+            <p className="mt-0.5 text-sm text-slate-600">Top Zambia destinations by enquiries</p>
           </div>
           <CardBody className="divide-y divide-slate-100 p-0">
             {popularDestinations.map((destination) => (
@@ -234,7 +234,7 @@ export default function Dashboard({ role, officeName, stats, recentBookings, pop
                   <MapPinIcon className="h-5 w-5 text-orange-600" />
                   <div>
                     <p className="font-medium text-slate-900">{destination.name}</p>
-                    <p className="text-sm text-slate-500">{destination.bookings} bookings</p>
+                    <p className="text-sm text-slate-500">{destination.bookings} enquiries</p>
                   </div>
                 </div>
                 <p className="text-sm font-medium text-slate-900">{destination.revenue}</p>

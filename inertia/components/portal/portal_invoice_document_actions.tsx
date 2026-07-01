@@ -42,7 +42,7 @@ export default function PortalInvoiceDocumentActions({
       ) : null}
       {booking ? (
         <DropdownMenuLink href={`/portal/bookings/${booking.id}`} icon={<EyeIcon />}>
-          View booking
+          View enquiry
         </DropdownMenuLink>
       ) : null}
       {canPay ? (

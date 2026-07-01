@@ -159,7 +159,7 @@ export default class PortalQuotationsController {
       ipAddress: request.ip(),
     })
 
-    session.flash('success', 'Quotation approved. Our team will confirm your booking and prepare your invoice.')
+    session.flash('success', 'Quotation approved. Our team will confirm your enquiry and prepare your invoice.')
     return response.redirect().toRoute('portal.quotations.show', { id: quotation.id })
   }
 }

@@ -19,7 +19,7 @@ export default class PortalBookingsController {
     const canCreateBooking = PortalPrivilegeService.has(account, 'create_booking')
 
     return inertia.render('portal/bookings/index', {
-      pageTitle: 'My bookings',
+      pageTitle: 'My enquiries',
       pageDescription: context.organization.name,
       canCreateBooking,
       bookings,
@@ -74,7 +74,7 @@ export default class PortalBookingsController {
       : null
 
     if (!bookingType) {
-      session.flash('error', 'Please choose a valid booking type.')
+      session.flash('error', 'Please choose a valid enquiry type.')
       response.status(303)
       return response.redirect().back()
     }

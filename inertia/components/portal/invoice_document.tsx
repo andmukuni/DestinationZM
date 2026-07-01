@@ -84,7 +84,7 @@ export default function InvoiceDocument({
             </div>
             {document.bookingReference ? (
               <div className="flex justify-end gap-3">
-                <dt className="font-semibold text-slate-700">Booking:</dt>
+                <dt className="font-semibold text-slate-700">Enquiry:</dt>
                 <dd className="text-slate-900">{document.bookingReference}</dd>
               </div>
             ) : null}

@@ -486,7 +486,7 @@ export default class BookingService {
     await booking.save()
 
     const confirmationText = [
-      'DestinationZM — Booking Confirmation',
+      'DestinationZM — Enquiry Confirmation',
       `Reference: ${booking.reference}`,
       `Customer: ${booking.customer?.fullName ?? 'N/A'}`,
       `Destination: ${booking.destination}`,

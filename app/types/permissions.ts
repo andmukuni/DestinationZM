@@ -70,13 +70,13 @@ export const PERMISSION_GROUPS: PermissionGroup[] = [
     permissions: [
       {
         slug: 'bookings.view',
-        label: 'View bookings',
-        description: 'Browse tour and travel bookings',
+        label: 'View enquiries',
+        description: 'Browse tour and travel enquiries',
       },
       {
         slug: 'bookings.manage',
-        label: 'Manage bookings',
-        description: 'Create and update bookings',
+        label: 'Manage enquiries',
+        description: 'Create and update enquiries',
       },
       {
         slug: 'packages.view',
@@ -138,7 +138,7 @@ export const PERMISSION_GROUPS: PermissionGroup[] = [
       {
         slug: 'quotations.approve',
         label: 'Approve quotations',
-        description: 'Approve quotations for booking confirmation',
+        description: 'Approve quotations for enquiry confirmation',
       },
     ],
   },

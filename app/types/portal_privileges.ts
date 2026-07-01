@@ -35,13 +35,13 @@ export const PORTAL_PRIVILEGE_META: Record<
     group: 'overview',
   },
   view_bookings: {
-    label: 'View all bookings',
-    description: 'See every booking and workflow stage for the organization',
+    label: 'View all enquiries',
+    description: 'See every enquiry and workflow stage for the organization',
     group: 'bookings',
   },
   view_confirmed_bookings: {
-    label: 'View confirmed bookings',
-    description: 'See bookings after quotation approval (confirmed trips only)',
+    label: 'View confirmed enquiries',
+    description: 'See enquiries after quotation approval (confirmed trips only)',
     group: 'bookings',
   },
   create_booking: {
@@ -56,7 +56,7 @@ export const PORTAL_PRIVILEGE_META: Record<
   },
   approve_quotations: {
     label: 'Approve quotations',
-    description: 'Approve quotations so the booking can proceed',
+    description: 'Approve quotations so the enquiry can proceed',
     group: 'quotations',
   },
   view_recovery_reports: {
@@ -115,8 +115,8 @@ export const PORTAL_PRIVILEGE_GROUPS: PortalPrivilegeGroup[] = [
   },
   {
     id: 'bookings',
-    label: 'Bookings',
-    description: 'Trip enquiries and booking visibility',
+    label: 'Enquiries',
+    description: 'Trip enquiries and enquiry visibility',
     privileges: ['view_bookings', 'view_confirmed_bookings', 'create_booking'],
   },
   {
@@ -167,7 +167,7 @@ export const PORTAL_PRIVILEGE_PRESETS: Record<
     privileges: PORTAL_PRIVILEGES.filter((p) => p !== 'manage_users'),
   },
   coordinator: {
-    label: 'Bookings coordinator',
+    label: 'Enquiries coordinator',
     description: 'Enquiries, approvals, and workflow actions',
     privileges: [
       'view_dashboard',
@@ -199,7 +199,7 @@ export const PORTAL_PRIVILEGE_PRESETS: Record<
   },
   read_only: {
     label: 'Read only',
-    description: 'View confirmed bookings and invoices only',
+    description: 'View confirmed enquiries and invoices only',
     privileges: ['view_dashboard', 'view_confirmed_bookings', 'view_invoices', 'view_team'],
   },
 }

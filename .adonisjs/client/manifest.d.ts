@@ -9,3 +9,4 @@
 /// <reference path="../../config/logger.ts" />
 /// <reference path="../../config/quickbooks.ts" />
 /// <reference path="../../config/redis.ts" />
+/// <reference path="../../config/security.ts" />

@@ -59,7 +59,7 @@ export default function BookingsIndex({ filters, branches, bookings }: BookingsI
         ? 'All offices'
         : null,
     status ? formatStatusLabel(status) : 'All statuses',
-    search ? `"${search}"` : 'All bookings',
+    search ? `"${search}"` : 'All enquiries',
   ]
     .filter(Boolean)
     .join(' · ')
@@ -161,10 +161,10 @@ export default function BookingsIndex({ filters, branches, bookings }: BookingsI
       </form>
 
       <ResourceTable
-        title="Bookings"
-        description={`${bookings.length} booking${bookings.length === 1 ? '' : 's'} · ${filterSummary}`}
+        title="Enquiries"
+        description={`${bookings.length} ${bookings.length === 1 ? 'enquiry' : 'enquiries'} · ${filterSummary}`}
         createHref="/bookings/create"
-        createLabel="Create booking"
+        createLabel="Create enquiry"
         columns={[
           { key: 'reference', label: 'Reference', className: 'font-medium text-slate-900' },
           { key: 'customer', label: 'Customer' },
@@ -187,7 +187,7 @@ export default function BookingsIndex({ filters, branches, bookings }: BookingsI
         ]}
         rows={bookings}
         rowHref={(row) => `/bookings/${row.id}`}
-        emptyMessage="No bookings match these filters."
+        emptyMessage="No enquiries match these filters."
       />
     </div>
   )

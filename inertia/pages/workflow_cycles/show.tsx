@@ -211,19 +211,19 @@ function stageViewMore(milestoneId: string, cycle: CycleDetail): { href: string;
 
   switch (milestoneId) {
     case 'enquiry':
-      return { href: bookingHref, label: 'View booking workspace' }
+      return { href: bookingHref, label: 'View enquiry workspace' }
     case 'quotation':
       return cycle.quotationId
         ? { href: `/quotations/${cycle.quotationId}`, label: 'View quotation' }
-        : { href: bookingHref, label: 'Open booking to create quotation' }
+        : { href: bookingHref, label: 'Open enquiry to create quotation' }
     case 'confirmed':
-      return { href: bookingHref, label: 'View booking workspace' }
+      return { href: bookingHref, label: 'View enquiry workspace' }
     case 'supplier':
-      return { href: bookingHref, label: 'View supplier payment in booking workspace' }
+      return { href: bookingHref, label: 'View supplier payment in enquiry workspace' }
     case 'invoice':
       return cycle.invoiceId
         ? { href: `/invoices/${cycle.invoiceId}`, label: 'View invoice' }
-        : { href: bookingHref, label: 'Open booking to issue invoice' }
+        : { href: bookingHref, label: 'Open enquiry to issue invoice' }
     case 'recovery':
       return cycle.recoveryItemId
         ? {
@@ -282,7 +282,7 @@ export default function WorkflowCyclesShow({
         </div>
         {canManageBookings ? (
           <Link href={`/bookings/${cycle.id}`}>
-            <Button>Open booking workspace</Button>
+            <Button>Open enquiry workspace</Button>
           </Link>
         ) : null}
       </div>
@@ -315,7 +315,7 @@ export default function WorkflowCyclesShow({
                   <DetailField label="Passengers" value={cycle.pax} />
                   <DetailField label="Branch" value={cycle.branch} />
                   <DetailField label="Agent" value={cycle.agent} />
-                  <DetailField label="Booking status" value={cycle.bookingStatusLabel} />
+                  <DetailField label="Enquiry status" value={cycle.bookingStatusLabel} />
                 </DetailGrid>
               </StagePanel>
             </TabsContent>
@@ -362,7 +362,7 @@ export default function WorkflowCyclesShow({
                   </DetailGrid>
                 ) : (
                   <p className="text-sm text-slate-500">
-                    Supplier payment not recorded yet. Use the booking workspace to upload the supplier
+                    Supplier payment not recorded yet. Use the enquiry workspace to upload the supplier
                     invoice and record payment.
                   </p>
                 )}

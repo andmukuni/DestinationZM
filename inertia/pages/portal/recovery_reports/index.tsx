@@ -202,7 +202,7 @@ export default function PortalRecoveryReportsIndex({
                     <TD>
                       <div className="font-semibold text-slate-900">{report.recoveryReference}</div>
                       <div className="mt-0.5 text-xs text-slate-500">
-                        Booking {report.bookingReference}
+                        Enquiry {report.bookingReference}
                         {report.invoice ? (
                           <>
                             {' '}

@@ -32,7 +32,7 @@ export default class PortalBookingTypesController {
     const types = await PortalBookingTypeService.listAllForAdmin()
 
     return inertia.render('portal_booking_types/index', {
-      pageTitle: 'Portal booking types',
+      pageTitle: 'Portal enquiry types',
       pageDescription: 'Configure enquiry forms shown to client portal users',
       types,
     })
@@ -45,7 +45,7 @@ export default class PortalBookingTypesController {
     }
 
     return inertia.render('portal_booking_types/form', {
-      pageTitle: 'New portal booking type',
+      pageTitle: 'New portal enquiry type',
       pageDescription: 'Create a tab and field set for client enquiries',
       bookingType: null,
       fieldMaps: [
@@ -77,7 +77,7 @@ export default class PortalBookingTypesController {
       isActive: payload.isActive ?? true,
     })
 
-    session.flash('success', 'Portal booking type created')
+    session.flash('success', 'Portal enquiry type created')
     return response.redirect().toRoute('portal_booking_types.edit', { id: bookingType.id })
   }
 
@@ -124,7 +124,7 @@ export default class PortalBookingTypesController {
     })
     await bookingType.save()
 
-    session.flash('success', 'Portal booking type updated')
+    session.flash('success', 'Portal enquiry type updated')
     return response.redirect().toRoute('portal_booking_types.edit', { id: bookingType.id })
   }
 

@@ -493,7 +493,7 @@ export default class InvoicesController {
 
     const existing = await Invoice.query().where('booking_id', booking.id).first()
     if (existing) {
-      session.flash('error', 'An invoice already exists for this booking.')
+      session.flash('error', 'An invoice already exists for this enquiry.')
       return response.redirect().toRoute('invoices.show', { id: existing.id })
     }
 

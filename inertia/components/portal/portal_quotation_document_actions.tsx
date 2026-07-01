@@ -51,7 +51,7 @@ export default function PortalQuotationDocumentActions({
             onSubmit={(event) => {
               if (
                 !window.confirm(
-                  `Approve quotation ${reference}? Our team will confirm your booking and prepare your invoice.`
+                  `Approve quotation ${reference}? Our team will confirm your enquiry and prepare your invoice.`
                 )
               ) {
                 event.preventDefault()

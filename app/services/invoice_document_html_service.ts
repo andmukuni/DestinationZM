@@ -92,7 +92,7 @@ export default class InvoiceDocumentHtmlService {
         <p style="margin:4px 0 0;"><strong>Issue date:</strong> ${escapeHtml(document.issueDate)}</p>
         <p style="margin:4px 0 0;"><strong>Due date:</strong> ${escapeHtml(document.dueDate)}</p>
         <p style="margin:4px 0 0;"><strong>Status:</strong> ${escapeHtml(document.statusLabel)}</p>
-        ${document.bookingReference ? `<p style="margin:4px 0 0;"><strong>Booking:</strong> ${escapeHtml(document.bookingReference)}</p>` : ''}
+        ${document.bookingReference ? `<p style="margin:4px 0 0;"><strong>Enquiry:</strong> ${escapeHtml(document.bookingReference)}</p>` : ''}
         ${document.quotationReference ? `<p style="margin:4px 0 0;"><strong>Quotation:</strong> ${escapeHtml(document.quotationReference)}</p>` : ''}
       </div>
     </div>

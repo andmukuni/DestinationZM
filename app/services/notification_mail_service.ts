@@ -64,7 +64,7 @@ export default class NotificationMailService {
     await this.send(
       params.customerEmail,
       `Quotation ${params.quotationReference} — DestinationZM`,
-      `Dear ${params.customerName},\n\nYour quotation ${params.quotationReference} for booking ${params.bookingReference} is ready.\nTotal: ${params.currency} ${params.totalAmount}\n\nPlease review and approve in your client portal:\n${this.appUrl('/portal/login')}`
+      `Dear ${params.customerName},\n\nYour quotation ${params.quotationReference} for enquiry ${params.bookingReference} is ready.\nTotal: ${params.currency} ${params.totalAmount}\n\nPlease review and approve in your client portal:\n${this.appUrl('/portal/login')}`
     )
   }
 
@@ -77,7 +77,7 @@ export default class NotificationMailService {
     await this.send(
       params.staffEmail,
       `Client approved quotation ${params.quotationReference}`,
-      `${params.customerName} approved quotation ${params.quotationReference} for booking ${params.bookingReference}.\n\nReview in admin: ${this.appUrl('/bookings')}`
+      `${params.customerName} approved quotation ${params.quotationReference} for enquiry ${params.bookingReference}.\n\nReview in admin: ${this.appUrl('/bookings')}`
     )
   }
 
@@ -102,7 +102,7 @@ export default class NotificationMailService {
     await this.send(
       params.customerEmail,
       `Recovery report ${params.reportReference} — please confirm`,
-      `Dear ${params.customerName},\n\nPlease review and confirm recovery report ${params.reportReference} for booking ${params.bookingReference}.\n\nClient portal: ${this.appUrl('/portal/login')}`
+      `Dear ${params.customerName},\n\nPlease review and confirm recovery report ${params.reportReference} for enquiry ${params.bookingReference}.\n\nClient portal: ${this.appUrl('/portal/login')}`
     )
   }
 
@@ -115,7 +115,7 @@ export default class NotificationMailService {
     await this.send(
       params.staffEmail,
       `Client confirmed recovery report ${params.reportReference}`,
-      `${params.customerName} confirmed recovery report ${params.reportReference} for booking ${params.bookingReference}. You may now create the invoice.`
+      `${params.customerName} confirmed recovery report ${params.reportReference} for enquiry ${params.bookingReference}. You may now create the invoice.`
     )
   }
 

@@ -85,7 +85,7 @@ export default function PortalRegister() {
                 id="message"
                 name="message"
                 rows={3}
-                placeholder="Tell us about your travel needs or existing bookings..."
+                placeholder="Tell us about your travel needs or existing enquiries..."
                 className={`${fieldClass} min-h-[96px] py-3 ${errors.message ? 'border-red-500 focus:border-red-500 focus:ring-red-100' : ''}`}
               />
               {errors.message ? <p className="text-sm text-red-600">{errors.message}</p> : null}

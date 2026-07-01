@@ -57,10 +57,10 @@ export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
 
 export function portalPageMeta(url: string): { title: string; description: string } {
   if (url === '/portal/dashboard') {
-    return { title: 'Dashboard', description: 'Your bookings, quotations, and payments' }
+    return { title: 'Dashboard', description: 'Your enquiries, quotations, and payments' }
   }
   if (url === '/portal/bookings') {
-    return { title: 'My bookings', description: 'Confirmed reservations and trip records' }
+    return { title: 'My enquiries', description: 'Confirmed reservations and trip records' }
   }
   if (url === '/portal/enquiries') {
     return { title: 'Enquiries', description: 'Submitted enquiries awaiting a quotation' }
@@ -72,7 +72,7 @@ export function portalPageMeta(url: string): { title: string; description: strin
     return { title: 'Your enquiry', description: 'Add travel services and submit for a quotation' }
   }
   if (/^\/portal\/bookings\/\d+/.test(url)) {
-    return { title: 'Booking', description: 'Track workflow progress and take action' }
+    return { title: 'Enquiry', description: 'Track workflow progress and take action' }
   }
   if (/^\/portal\/quotations\/\d+/.test(url)) {
     return { title: 'Quotation', description: 'Review and approve your quotation' }

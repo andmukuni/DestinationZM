@@ -70,7 +70,7 @@ export default function WorkflowCyclesIndex({
         <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Full workflow cycles</h1>
         <p className="mt-1 text-sm text-slate-600">
           {pageDescription ??
-            'Track bookings through the middleman workflow from quotation approval to client payment.'}
+            'Track enquiries through the middleman workflow from quotation approval to client payment.'}
         </p>
       </div>
 
@@ -117,7 +117,7 @@ export default function WorkflowCyclesIndex({
               label="Search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Booking, customer, quotation, recovery, invoice…"
+              placeholder="Enquiry, customer, quotation, recovery, invoice…"
             />
           </div>
           <Button type="submit" loading={loading} className="gap-2">
@@ -149,7 +149,7 @@ export default function WorkflowCyclesIndex({
         <Table scrollContainer={false}>
           <THead>
             <TR>
-              <TH>Booking</TH>
+              <TH>Enquiry</TH>
               <TH>Customer</TH>
               {tab === 'in_progress' ? <TH>Next step</TH> : null}
               <TH>Quotation</TH>

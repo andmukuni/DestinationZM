@@ -133,7 +133,7 @@ export default class WorkflowService {
       },
       {
         id: 'booking_confirmed',
-        label: 'Admin confirms booking',
+        label: 'Admin confirms enquiry',
         actor: 'admin',
         status: stepStatus(
           ['confirmed', 'invoiced', 'paid', 'closed'].includes(status),
@@ -142,7 +142,7 @@ export default class WorkflowService {
         detail: booking.confirmedAt
           ? `Confirmed ${booking.confirmedAt.toFormat('dd LLL yyyy')}`
           : 'Capture travel details after client approval',
-        action: status === 'quotation_approved' ? 'Confirm booking' : undefined,
+        action: status === 'quotation_approved' ? 'Confirm enquiry' : undefined,
       },
       {
         id: 'supplier_payment',

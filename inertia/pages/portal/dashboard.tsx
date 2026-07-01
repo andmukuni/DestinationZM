@@ -84,7 +84,7 @@ export default function PortalDashboard({
   const kpis = [
     {
       key: 'active-bookings',
-      label: 'Active bookings',
+      label: 'Active enquiries',
       value: stats.activeBookings,
       icon: PlaneIcon,
       variant: 'accent' as const,
@@ -171,12 +171,12 @@ export default function PortalDashboard({
 
       <Card>
         <div className="border-b border-slate-200 px-6 py-4">
-          <h2 className="text-base font-semibold text-slate-900">Recent bookings</h2>
+          <h2 className="text-base font-semibold text-slate-900">Recent enquiries</h2>
           <p className="mt-0.5 text-sm text-slate-600">Your latest enquiries and reservations</p>
         </div>
         {bookings.length === 0 ? (
           <CardBody>
-            <p className="text-sm text-slate-600">You have no bookings yet.</p>
+            <p className="text-sm text-slate-600">You have no enquiries yet.</p>
             {canCreateBooking ? (
               <Link
                 route="portal.bookings.create"
@@ -218,8 +218,8 @@ export default function PortalDashboard({
                           route="portal.bookings.show"
                           routeParams={{ id: booking.id }}
                           className={portalTableIconPrimaryClass}
-                          title="View booking"
-                          aria-label="View booking"
+                          title="View enquiry"
+                          aria-label="View enquiry"
                         >
                           <EyeIcon className="h-4 w-4" />
                         </Link>

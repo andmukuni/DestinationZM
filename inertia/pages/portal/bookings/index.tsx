@@ -44,7 +44,7 @@ export default function PortalBookingsIndex({ canCreateBooking, bookings }: Port
       <Card className="overflow-hidden">
         {bookings.length === 0 ? (
           <CardBody>
-            <p className="text-sm text-slate-600">No bookings to show yet.</p>
+            <p className="text-sm text-slate-600">No enquiries to show yet.</p>
             {canCreateBooking ? (
               <Link
                 route="portal.bookings.create"
@@ -86,8 +86,8 @@ export default function PortalBookingsIndex({ canCreateBooking, bookings }: Port
                           route="portal.bookings.show"
                           routeParams={{ id: booking.id }}
                           className={portalTableIconPrimaryClass}
-                          title="View booking"
-                          aria-label="View booking"
+                          title="View enquiry"
+                          aria-label="View enquiry"
                         >
                           <EyeIcon className="h-4 w-4" />
                         </Link>

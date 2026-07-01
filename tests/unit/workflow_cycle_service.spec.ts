@@ -13,7 +13,7 @@ import WorkflowCycleService from '#services/workflow_cycle_service'
 test.group('WorkflowCycleService', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
-  test('next incomplete stage starts with confirm booking when quotation approved', async ({ assert }) => {
+  test('next incomplete stage starts with confirm enquiry when quotation approved', async ({ assert }) => {
     const branch = await Branch.firstOrFail()
     const customer = await Customer.create({
       fullName: 'Cycle Stage Test',
@@ -53,7 +53,7 @@ test.group('WorkflowCycleService', (group) => {
     const row = rows.find((entry) => entry.id === booking.id)
 
     assert.exists(row)
-    assert.equal(row!.stageLabel, 'Confirm booking')
+    assert.equal(row!.stageLabel, 'Confirm enquiry')
   })
 
   test('completed cycles require recovered recovery item and paid invoice', async ({ assert }) => {

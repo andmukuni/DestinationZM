@@ -160,13 +160,13 @@ export default function QuotationsCreate({
                       </div>
                       <div>
                         <label className="mb-1 block text-sm font-medium text-slate-700">
-                          Booking (optional)
+                          Enquiry (optional)
                         </label>
                         <select
                           name="bookingId"
                           className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
                         >
-                          <option value="">No linked booking</option>
+                          <option value="">No linked enquiry</option>
                           {bookings.map((booking) => (
                             <option key={booking.id} value={booking.id}>
                               {booking.reference}

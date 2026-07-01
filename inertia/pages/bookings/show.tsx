@@ -303,7 +303,7 @@ export default function BookingsShow({
             className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900"
           >
             <ArrowLeftIcon />
-            Back to bookings
+            Back to enquiries
           </Link>
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <h1 className="text-2xl font-semibold text-slate-900">{booking.reference}</h1>
@@ -390,7 +390,7 @@ export default function BookingsShow({
                   <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <h3 className="text-sm font-semibold text-amber-950">Confirm booking</h3>
+                        <h3 className="text-sm font-semibold text-amber-950">Confirm enquiry</h3>
                         <p className="mt-1 text-sm text-amber-900/80">
                           Capture travel and recovery metadata after the client approves the quotation.
                         </p>
@@ -488,7 +488,7 @@ export default function BookingsShow({
                                 </select>
                               </div>
                             </div>
-                            <Button type="submit">Confirm booking</Button>
+                            <Button type="submit">Confirm enquiry</Button>
                           </>
                         )}
                       </Form>
@@ -661,7 +661,7 @@ export default function BookingsShow({
             {activeTab === 'items' ? (
               <CardBody className="p-0">
                 {booking.items.length === 0 ? (
-                  <p className="px-6 py-8 text-sm text-slate-500">No line items on this booking.</p>
+                  <p className="px-6 py-8 text-sm text-slate-500">No line items on this enquiry.</p>
                 ) : (
                   <Table scrollContainer={false}>
                     <THead>
@@ -755,7 +755,7 @@ export default function BookingsShow({
           ) : null}
 
           <Card>
-            <CardHeader title="Booking summary" />
+            <CardHeader title="Enquiry summary" />
             <CardBody className="space-y-4">
               <div>
                 <p className="text-sm text-slate-500">Total</p>

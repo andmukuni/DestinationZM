@@ -74,7 +74,7 @@ export default function PortalRecoveryReportsShow({
             <Badge tone={statusTone(item.recoveryStatus.toLowerCase())}>{item.recoveryStatusLabel}</Badge>
           </div>
           <p className="mt-1 text-sm text-slate-600">
-            Booking {item.bookingReference} · {item.travelerName}
+            Enquiry {item.bookingReference} · {item.travelerName}
             {invoice ? (
               <>
                 {' '}
@@ -102,7 +102,7 @@ export default function PortalRecoveryReportsShow({
             </Link>
           ) : null}
           <Link route="portal.bookings.show" routeParams={{ id: item.bookingId }}>
-            <Button>View booking</Button>
+            <Button>View enquiry</Button>
           </Link>
         </div>
       </div>

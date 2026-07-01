@@ -25,7 +25,7 @@ export default class DbFreshData extends BaseCommand {
     const confirmed =
       this.force ||
       (await this.prompt.confirm(
-        'This will permanently delete all bookings, customers, enquiries, invoices, and portal accounts. Users will be kept. Continue?'
+        'This will permanently delete all enquiries, customers, invoices, and portal accounts. Users will be kept. Continue?'
       ))
 
     if (!confirmed) {

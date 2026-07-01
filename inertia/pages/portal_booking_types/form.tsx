@@ -46,10 +46,10 @@ export default function PortalBookingTypesForm({
     <div className="space-y-6">
       <div>
         <Link href="/portal-booking-types" className="text-sm font-medium text-slate-600 hover:text-slate-900">
-          ← Back to portal booking types
+          ← Back to portal enquiry types
         </Link>
         <h1 className="mt-3 text-2xl font-semibold text-slate-900">
-          {isEdit ? bookingType!.name : 'New portal booking type'}
+          {isEdit ? bookingType!.name : 'New portal enquiry type'}
         </h1>
       </div>
 

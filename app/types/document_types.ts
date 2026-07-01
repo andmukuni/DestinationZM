@@ -15,7 +15,7 @@ export type DocumentType = (typeof DOCUMENT_TYPES)[number]
 
 export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
   quotation: 'Quotation',
-  booking_confirmation: 'Booking confirmation',
+  booking_confirmation: 'Enquiry confirmation',
   supplier_document: 'Supplier document',
   invoice: 'Invoice',
   receipt: 'Receipt',

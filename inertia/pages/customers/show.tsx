@@ -76,12 +76,12 @@ export default function CustomersShow({ customer }: CustomersShowProps) {
 
       <Card>
         <CardHeader
-          title="Bookings"
-          description={`${customer.bookings.length} booking${customer.bookings.length === 1 ? '' : 's'}`}
+          title="Enquiries"
+          description={`${customer.bookings.length} enquir${customer.bookings.length === 1 ? 'y' : 'ies'}`}
         />
         {customer.bookings.length === 0 ? (
           <CardBody>
-            <p className="text-sm text-slate-600">No bookings for this customer yet.</p>
+            <p className="text-sm text-slate-600">No enquiries for this customer yet.</p>
           </CardBody>
         ) : (
           <CardBody className="p-0">

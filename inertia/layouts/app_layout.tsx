@@ -8,7 +8,6 @@ import { NotificationBell } from '~/components/notification_bell'
 import { SidebarNavIcon } from '~/components/sidebar_nav_icon'
 import { UserMenu } from '~/components/user_menu'
 import {
-  brandAccentBarClass,
   brandLogoClass,
   brandNavActiveClass,
   brandNavBadgeClass,
@@ -184,7 +183,7 @@ function NavGroupSection({
 
 function SidebarBrand() {
   return (
-    <div className="relative flex h-16 shrink-0 items-center border-b border-slate-200 px-3.5">
+    <div className="flex h-16 shrink-0 items-center border-b border-slate-200 px-3.5">
       <Link route="dashboard" className="flex min-w-0 items-center gap-2.5">
         <span className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${brandLogoClass}`}>
           <AppLogoIcon className="h-[18px] w-[18px]" />
@@ -196,7 +195,6 @@ function SidebarBrand() {
           <span className="block text-[11px] text-slate-500">Travel Agency</span>
         </span>
       </Link>
-      <div className={`pointer-events-none absolute inset-x-0 bottom-0 h-1 ${brandAccentBarClass}`} aria-hidden />
     </div>
   )
 }

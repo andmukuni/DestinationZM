@@ -217,7 +217,7 @@ export default class RecoveryReportingService {
 
   static async updateItemFromBooking(item: RecoveryReportItem, booking: Booking, actor: ActorContext) {
     if (['APPROVED_BY_CLIENT', 'RECOVERED', 'VOID', 'REJECTED'].includes(item.recoveryStatus)) {
-      throw new Error('This recovery item can no longer be updated from the booking.')
+      throw new Error('This recovery item can no longer be updated from the enquiry.')
     }
 
     await booking.load('supplier')
@@ -259,7 +259,7 @@ export default class RecoveryReportingService {
         action: 'RECOVERY_ITEM_UPDATED',
         oldStatus,
         newStatus: item.recoveryStatus,
-        description: 'Recovery item updated from booking changes.',
+        description: 'Recovery item updated from enquiry changes.',
         ...actor,
       })
     }
@@ -472,7 +472,7 @@ export default class RecoveryReportingService {
       action: 'VOIDED',
       oldStatus,
       newStatus: 'VOID',
-      description: 'Recovery item voided because booking was cancelled.',
+      description: 'Recovery item voided because enquiry was cancelled.',
       ...actor,
     })
 

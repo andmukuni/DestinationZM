@@ -136,7 +136,7 @@ export default function QuotationsIndex({ filters, branches, quotations }: Quota
         columns={[
           { key: 'reference', label: 'Reference', className: 'font-medium text-slate-900' },
           { key: 'customer', label: 'Customer' },
-          { key: 'bookingReference', label: 'Booking', className: 'text-slate-600' },
+          { key: 'bookingReference', label: 'Enquiry', className: 'text-slate-600' },
           {
             key: 'status',
             label: 'Status',

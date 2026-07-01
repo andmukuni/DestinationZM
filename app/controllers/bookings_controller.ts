@@ -316,7 +316,7 @@ export default class BookingsController {
       ipAddress: request.ip(),
     })
 
-    session.flash('success', 'Booking created successfully')
+    session.flash('success', 'Enquiry created successfully')
     return response.redirect().toRoute('bookings.show', { id: booking.id })
   }
 
@@ -333,7 +333,7 @@ export default class BookingsController {
     }
 
     if (!WorkflowService.canConfirmBooking(booking.status)) {
-      session.flash('error', 'Booking must have client-approved quotation before confirmation.')
+      session.flash('error', 'Enquiry must have client-approved quotation before confirmation.')
       return response.redirect().back()
     }
 
@@ -355,7 +355,7 @@ export default class BookingsController {
 
     await BookingService.confirm(booking, { userId: user.id, ipAddress: request.ip() })
 
-    session.flash('success', 'Booking confirmed successfully')
+    session.flash('success', 'Enquiry confirmed successfully')
     return response.redirect().toRoute('bookings.show', { id: booking.id })
   }
 
@@ -372,7 +372,7 @@ export default class BookingsController {
     }
 
     if (!WorkflowService.canRecordSupplierPayment(booking.status)) {
-      session.flash('error', 'Supplier payment can only be recorded after the booking is confirmed.')
+      session.flash('error', 'Supplier payment can only be recorded after the enquiry is confirmed.')
       return response.redirect().back()
     }
 

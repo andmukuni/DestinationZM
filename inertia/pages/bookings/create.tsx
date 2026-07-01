@@ -27,14 +27,14 @@ export default function BookingsCreate({
           className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900"
         >
           <ArrowLeftIcon />
-          Back to bookings
+          Back to enquiries
         </Link>
-        <h1 className="mt-4 text-2xl font-semibold text-slate-900">Create booking</h1>
-        <p className="mt-1 text-sm text-slate-600">Record a new travel booking for a customer.</p>
+        <h1 className="mt-4 text-2xl font-semibold text-slate-900">Create enquiry</h1>
+        <p className="mt-1 text-sm text-slate-600">Record a new travel enquiry for a customer.</p>
       </div>
 
       <Card>
-        <CardHeader title="Booking details" />
+        <CardHeader title="Enquiry details" />
         <CardBody>
           {branches.length === 0 || customers.length === 0 ? (
             <p className="text-sm text-slate-600">
@@ -120,7 +120,7 @@ export default function BookingsCreate({
                   <div className="flex gap-3 pt-2">
                     <Button type="submit" className="gap-2">
                       <PlusIcon />
-                      Create booking
+                      Create enquiry
                     </Button>
                     <Link
                       route="bookings"

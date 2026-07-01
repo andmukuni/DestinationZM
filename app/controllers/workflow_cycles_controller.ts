@@ -45,8 +45,8 @@ export default class WorkflowCyclesController {
         pageTitle: 'Full workflow cycles',
         pageDescription:
           tab === 'completed'
-            ? 'Bookings that completed enquiry through quotation, supplier payment, client invoice, recovery report, and client payment'
-            : 'Bookings with an approved quotation still moving through the middleman workflow',
+            ? 'Enquiries that completed enquiry through quotation, supplier payment, client invoice, recovery report, and client payment'
+            : 'Enquiries with an approved quotation still moving through the middleman workflow',
         filters: { search },
         incompleteCount,
         cycles,

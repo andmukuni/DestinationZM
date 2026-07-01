@@ -135,7 +135,7 @@ export default function TripEnquiryWidget({
   if (!bookingTypes.length || !activeType || !ActiveForm) {
     return (
       <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-        No booking enquiry types are available yet. Please contact DestinationZM to configure your portal forms.
+        No enquiry types are available yet. Please contact DestinationZM to configure your portal forms.
       </div>
     )
   }

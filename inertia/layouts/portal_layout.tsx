@@ -80,7 +80,7 @@ function PortalNavLink({
 
 function SidebarBrand({ organizationName }: { organizationName?: string }) {
   return (
-    <div className="relative flex h-16 shrink-0 items-center border-b border-slate-200 px-3.5">
+    <div className="flex h-16 shrink-0 items-center border-b border-slate-200 px-3.5">
       <Link route="portal.dashboard" className="flex min-w-0 items-center gap-2.5">
         <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-orange-600 text-white">
           <AppLogoIcon className="h-[18px] w-[18px]" />
@@ -92,7 +92,6 @@ function SidebarBrand({ organizationName }: { organizationName?: string }) {
           <span className="block text-[11px] text-slate-500">Client portal</span>
         </span>
       </Link>
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1 bg-orange-500" aria-hidden />
     </div>
   )
 }
@@ -175,7 +174,7 @@ function SidebarNav({
       <div className="mt-auto border-t border-slate-200 pt-4">
         <p className="px-2.5 text-[11px] font-medium uppercase tracking-wider text-slate-400">Need help?</p>
         <p className="mt-1 px-2.5 text-xs leading-relaxed text-slate-500">
-          Contact your travel agent for changes to confirmed bookings.
+          Contact your travel agent for changes to confirmed enquiries.
         </p>
       </div>
     </nav>

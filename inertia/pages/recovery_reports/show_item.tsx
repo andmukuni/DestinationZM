@@ -108,7 +108,7 @@ export default function RecoveryReportShowItem({
   ].filter(Boolean)
 
   const metaItems = [
-    { label: 'Booking', value: item.bookingReference },
+    { label: 'Enquiry', value: item.bookingReference },
     invoice ? { label: 'Invoice', value: invoice.invoiceNumber, href: `/invoices/${invoice.id}` } : null,
     quotation ? { label: 'Quotation', value: quotation.reference, href: `/quotations/${quotation.id}` } : null,
     { label: 'Traveler', value: item.travelerName },
