@@ -27,6 +27,36 @@ if (!process.env.NODE_ENV?.trim() && process.env.APP_ENV?.trim()) {
   process.env.NODE_ENV = appEnv === 'production' ? 'production' : appEnv === 'test' ? 'test' : 'development'
 }
 
+/** Till360 / LoanTrack SMTP env aliases */
+if (!process.env.SMTP_HOST?.trim() && process.env.MAIL_HOST?.trim()) {
+  process.env.SMTP_HOST = process.env.MAIL_HOST.trim()
+}
+if (!process.env.SMTP_USER?.trim() && process.env.SMTP_USERNAME?.trim()) {
+  process.env.SMTP_USER = process.env.SMTP_USERNAME.trim()
+}
+if (!process.env.SMTP_USER?.trim() && process.env.MAIL_USERNAME?.trim()) {
+  process.env.SMTP_USER = process.env.MAIL_USERNAME.trim()
+}
+if (!process.env.SMTP_PASSWORD?.trim() && process.env.MAIL_PASSWORD?.trim()) {
+  process.env.SMTP_PASSWORD = process.env.MAIL_PASSWORD.trim()
+}
+if (!process.env.MAIL_FROM?.trim() && process.env.SMTP_FROM_ADDRESS?.trim()) {
+  process.env.MAIL_FROM = process.env.SMTP_FROM_ADDRESS.trim()
+}
+if (!process.env.MAIL_FROM?.trim() && process.env.MAIL_FROM_ADDRESS?.trim()) {
+  process.env.MAIL_FROM = process.env.MAIL_FROM_ADDRESS.trim()
+}
+if (!process.env.MAIL_FROM_NAME?.trim() && process.env.SMTP_FROM_NAME?.trim()) {
+  process.env.MAIL_FROM_NAME = process.env.SMTP_FROM_NAME.trim()
+}
+if (process.env.SMTP_SECURE === undefined && process.env.MAIL_ENCRYPTION?.trim()) {
+  const encryption = process.env.MAIL_ENCRYPTION.trim().toLowerCase()
+  process.env.SMTP_SECURE = encryption === 'tls' || encryption === 'ssl' ? 'true' : 'false'
+}
+if (process.env.SMTP_PORT === undefined && process.env.MAIL_PORT?.trim()) {
+  process.env.SMTP_PORT = process.env.MAIL_PORT.trim()
+}
+
 export default await Env.create(new URL('../', import.meta.url), {
   // Node
   NODE_ENV: Env.schema.enum(['development', 'production', 'test'] as const),

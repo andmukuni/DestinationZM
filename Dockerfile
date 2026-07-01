@@ -18,7 +18,7 @@ RUN NODE_ENV=development node ace build --ignore-ts-errors
 
 FROM node:24-alpine AS production
 
-RUN apk add --no-cache dumb-init wget
+RUN apk add --no-cache dumb-init wget curl
 
 WORKDIR /app
 
@@ -37,8 +37,8 @@ USER adonis
 
 EXPOSE 3333
 
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-  CMD wget -qO- http://127.0.0.1:${PORT:-3333}/health || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 --start-period=30s \
+  CMD curl -sf http://127.0.0.1:${PORT:-3333}/health || exit 1
 
 ENTRYPOINT ["dumb-init", "/entrypoint.sh"]
 CMD ["node", "bin/server.js"]

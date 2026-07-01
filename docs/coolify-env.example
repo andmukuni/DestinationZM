@@ -1,5 +1,5 @@
 # Paste into Coolify → Environment Variables (Production)
-# Structured like LoanTrack — AdonisJS reads DB_USERNAME/APP_ENV aliases automatically.
+# Till360 / LoanTrack-style names — see start/env.ts for aliases.
 #
 # Coolify: set NODE_ENV, APP_ENV, APP_KEY, DB_*, REDIS_* as RUNTIME ONLY
 # (uncheck "Available at Buildtime") so the Docker build can install devDependencies.
@@ -33,22 +33,12 @@ REDIS_PORT=6379
 REDIS_USERNAME=default
 REDIS_PASSWORD=REPLACE_WITH_REDIS_PASSWORD
 
-MAIL_MAILER=smtp
-MAIL_HOST=
-MAIL_PORT=465
-MAIL_USERNAME=
-MAIL_PASSWORD=
-MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS=
-MAIL_FROM_NAME=DestinationZM
+SMTP_HOST=
+SMTP_PORT=465
+SMTP_USERNAME=
+SMTP_PASSWORD=
+SMTP_FROM_ADDRESS=
+SMTP_FROM_NAME=DestinationZM
 
 SERVICE_URL_APP=http://vikwerqjk3n08u5bjy2uwqok.13.140.178.28.sslip.io
 SERVICE_FQDN_APP=vikwerqjk3n08u5bjy2uwqok.13.140.178.28.sslip.io
-
-# Optional SMTP fallbacks (prefer Settings → Email in the admin UI)
-SMTP_HOST=
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=
-SMTP_PASSWORD=
-MAIL_FROM=

@@ -122,8 +122,8 @@ cp .env.example .env.production
 # Run
 docker run --env-file .env.production -p 3333:3333 destination-zm
 
-# Or with docker-compose (includes persistent volumes)
-docker compose -f docker-compose.local.yml up --build
+# Or with docker-compose (includes persistent volumes + Till360-style env block)
+docker compose -f docker-compose.yml -f docker-compose.local.yml --env-file .env.production up --build
 ```
 
 Verify:
