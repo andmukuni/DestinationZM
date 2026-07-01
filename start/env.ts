@@ -11,6 +11,14 @@
 
 import { Env } from '@adonisjs/core/env'
 
+/**
+ * Coolify injects SERVICE_URL_APP / SERVICE_FQDN_APP automatically.
+ * Map to APP_URL when not set explicitly in the Coolify UI.
+ */
+if (!process.env.APP_URL?.trim() && process.env.SERVICE_URL_APP?.trim()) {
+  process.env.APP_URL = process.env.SERVICE_URL_APP.trim()
+}
+
 export default await Env.create(new URL('../', import.meta.url), {
   // Node
   NODE_ENV: Env.schema.enum(['development', 'production', 'test'] as const),

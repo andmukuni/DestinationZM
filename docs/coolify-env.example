@@ -1,0 +1,31 @@
+# Paste into Coolify → Environment Variables (Production)
+# Coolify auto-injects SERVICE_URL_* — keep those lines as-is.
+
+SERVICE_URL_APP=http://vikwerqjk3n08u5bjy2uwqok.13.140.178.28.sslip.io
+SERVICE_FQDN_APP=vikwerqjk3n08u5bjy2uwqok.13.140.178.28.sslip.io
+
+NODE_ENV=production
+HOST=0.0.0.0
+PORT=3333
+TZ=UTC
+LOG_LEVEL=info
+
+# Generate locally: node ace generate:key
+APP_KEY=REPLACE_WITH_APP_KEY
+
+# Optional if SERVICE_URL_APP is set — app falls back automatically
+APP_URL=http://vikwerqjk3n08u5bjy2uwqok.13.140.178.28.sslip.io
+
+SESSION_DRIVER=file
+RUN_MIGRATIONS=true
+
+DB_HOST=13.140.178.27
+DB_PORT=3310
+DB_USER=mysql
+DB_PASSWORD=REPLACE_WITH_DB_PASSWORD
+DB_DATABASE=default
+
+REDIS_HOST=13.140.178.27
+REDIS_PORT=6378
+REDIS_USERNAME=default
+REDIS_PASSWORD=REPLACE_WITH_REDIS_PASSWORD

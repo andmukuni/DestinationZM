@@ -53,6 +53,8 @@ In Coolify: **Storages** → add both paths as persistent volumes.
 
 Set all variables in the Coolify UI. **Do not commit secrets to Git.**
 
+Coolify auto-generates `SERVICE_URL_APP` and `SERVICE_FQDN_APP`. The app uses `SERVICE_URL_APP` as `APP_URL` when `APP_URL` is not set. See [coolify-env.example](./coolify-env.example) for a full copy-paste template.
+
 #### Required
 
 | Variable | Example | Notes |
@@ -63,7 +65,7 @@ Set all variables in the Coolify UI. **Do not commit secrets to Git.**
 | `TZ` | `UTC` | |
 | `LOG_LEVEL` | `info` | |
 | `APP_KEY` | *(generate)* | Run `node ace generate:key` locally; keep stable across redeploys |
-| `APP_URL` | `https://your-domain.com` | Public HTTPS URL (no trailing slash) |
+| `APP_URL` | `http://vikwerqjk3n08u5bjy2uwqok.13.140.178.28.sslip.io` | Public URL (no trailing slash). Optional if `SERVICE_URL_APP` is set. |
 | `SESSION_DRIVER` | `file` | Requires `/app/tmp` volume |
 | `DB_HOST` | `13.140.178.27` | External MySQL host |
 | `DB_PORT` | `3310` | |
@@ -87,11 +89,11 @@ Set all variables in the Coolify UI. **Do not commit secrets to Git.**
 1. Save environment variables
 2. Deploy the application
 3. Confirm health check is green
-4. Visit `https://your-domain.com/login`
+4. Visit `http://vikwerqjk3n08u5bjy2uwqok.13.140.178.28.sslip.io/login`
 
 ### 6. Post-deploy
 
-- **QuickBooks OAuth**: update redirect URI in the Intuit developer portal to `https://your-domain.com/settings/quickbooks/callback`
+- **QuickBooks OAuth**: update redirect URI in the Intuit developer portal to `http://vikwerqjk3n08u5bjy2uwqok.13.140.178.28.sslip.io/settings/quickbooks/callback`
 - **SMTP / SMS / WhatsApp**: configure via **Settings** in the admin UI (stored in database)
 - **Seed data**: if the database is empty, run seeders manually or set `RUN_MIGRATIONS=true` and exec into the container:
 
@@ -143,6 +145,7 @@ Entrypoint (`docker/entrypoint.sh`):
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
 | `Bind for 0.0.0.0:3333 failed: port is already allocated` | Another container or app on the server already uses host port 3333 | Redeploy after pulling latest `docker-compose.yml` (no host port bind). Or stop the other service using 3333. In Coolify, only set **Port Exposes** to `3333` (container port) — do not add a duplicate host port mapping. |
+| Exited (10x restarts) | Missing required env vars (`APP_KEY`, `DB_*`, `REDIS_*`, `HOST`) | Paste full template from [coolify-env.example](./coolify-env.example) into Coolify Environment Variables |
 | Health check fails | App not binding to `0.0.0.0` | Set `HOST=0.0.0.0` |
 | 502 from Coolify | Wrong port | Expose port `3333` |
 | DB connection refused | Firewall / wrong host | Verify Coolify server can reach MySQL port |
