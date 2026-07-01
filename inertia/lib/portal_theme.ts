@@ -1,0 +1,20 @@
+/** @deprecated Import from ~/lib/brand_theme instead. Kept for portal call sites. */
+export {
+  brandAvatarClass as portalAvatarClass,
+  brandBadgeClass as portalBadgeClass,
+  brandButtonPrimaryClass as portalButtonPrimaryClass,
+  brandCheckboxClass as portalCheckboxClass,
+  brandHighlightRowClass as portalHighlightRowClass,
+  brandHoverSurfaceClass as portalHoverSurfaceClass,
+  brandInputFocusClass as portalInputFocusClass,
+  brandLinkClass as portalLinkClass,
+  brandLinkClassSm as portalLinkClassSm,
+  brandPrivilegeCheckedClass as portalPrivilegeCheckedClass,
+  brandSurfaceAccentClass as portalSurfaceAccentClass,
+  brandSurfaceAccentMutedClass as portalSurfaceAccentMutedClass,
+  brandSurfaceAccentTextClass as portalSurfaceAccentTextClass,
+  brandTabActiveClass as portalTabActiveClass,
+  brandTableIconPrimaryClass as portalTableIconPrimaryClass,
+  brandWorkflowActiveClass as portalWorkflowActiveClass,
+  brandWorkflowCompleteClass as portalWorkflowCompleteClass,
+} from '~/lib/brand_theme'

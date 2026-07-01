@@ -1,0 +1,180 @@
+import SystemSetting, { type SystemSettingGroup } from '#models/system_setting'
+import SecretCipher from '#services/settings/secret_cipher'
+
+export type GeneralSettingsView = {
+  appDisplayName: string
+  supportEmail: string
+  supportPhone: string
+  defaultCurrency: string
+  defaultTimezone: string
+  portalWelcomeMessage: string
+}
+
+export type OtherSettingsView = {
+  maintenanceMode: boolean
+  allowPortalRegistration: boolean
+  enableClientNotifications: boolean
+  defaultInvoiceDueDays: number
+  auditRetentionDays: number
+}
+
+const GENERAL_DEFAULTS: GeneralSettingsView = {
+  appDisplayName: 'DestinationZM',
+  supportEmail: '',
+  supportPhone: '',
+  defaultCurrency: 'ZMW',
+  defaultTimezone: 'Africa/Lusaka',
+  portalWelcomeMessage: '',
+}
+
+const OTHER_DEFAULTS: OtherSettingsView = {
+  maintenanceMode: false,
+  allowPortalRegistration: false,
+  enableClientNotifications: true,
+  defaultInvoiceDueDays: 30,
+  auditRetentionDays: 365,
+}
+
+function parseBoolean(value: string | null | undefined, fallback: boolean) {
+  if (value === undefined || value === null || value === '') {
+    return fallback
+  }
+
+  return value === '1' || value === 'true' || value === 'on'
+}
+
+function parseNumber(value: string | null | undefined, fallback: number) {
+  if (value === undefined || value === null || value === '') {
+    return fallback
+  }
+
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : fallback
+}
+
+export default class SystemSettingsService {
+  static async getGroupMap(group: SystemSettingGroup) {
+    const rows = await SystemSetting.query().where('group', group)
+    const map = new Map<string, string>()
+
+    for (const row of rows) {
+      map.set(row.key, row.value ?? '')
+    }
+
+    return map
+  }
+
+  static async generalToView(): Promise<GeneralSettingsView> {
+    const map = await this.getGroupMap('general')
+
+    return {
+      appDisplayName: map.get('app_display_name') ?? GENERAL_DEFAULTS.appDisplayName,
+      supportEmail: map.get('support_email') ?? GENERAL_DEFAULTS.supportEmail,
+      supportPhone: map.get('support_phone') ?? GENERAL_DEFAULTS.supportPhone,
+      defaultCurrency: map.get('default_currency') ?? GENERAL_DEFAULTS.defaultCurrency,
+      defaultTimezone: map.get('default_timezone') ?? GENERAL_DEFAULTS.defaultTimezone,
+      portalWelcomeMessage:
+        map.get('portal_welcome_message') ?? GENERAL_DEFAULTS.portalWelcomeMessage,
+    }
+  }
+
+  static async isMaintenanceMode() {
+    const map = await this.getGroupMap('other')
+    return parseBoolean(map.get('maintenance_mode'), OTHER_DEFAULTS.maintenanceMode)
+  }
+
+  static async isPortalRegistrationAllowed() {
+    const map = await this.getGroupMap('other')
+    return parseBoolean(
+      map.get('allow_portal_registration'),
+      OTHER_DEFAULTS.allowPortalRegistration
+    )
+  }
+
+  static async otherToView(): Promise<OtherSettingsView> {
+    const map = await this.getGroupMap('other')
+
+    return {
+      maintenanceMode: parseBoolean(map.get('maintenance_mode'), OTHER_DEFAULTS.maintenanceMode),
+      allowPortalRegistration: parseBoolean(
+        map.get('allow_portal_registration'),
+        OTHER_DEFAULTS.allowPortalRegistration
+      ),
+      enableClientNotifications: parseBoolean(
+        map.get('enable_client_notifications'),
+        OTHER_DEFAULTS.enableClientNotifications
+      ),
+      defaultInvoiceDueDays: parseNumber(
+        map.get('default_invoice_due_days'),
+        OTHER_DEFAULTS.defaultInvoiceDueDays
+      ),
+      auditRetentionDays: parseNumber(
+        map.get('audit_retention_days'),
+        OTHER_DEFAULTS.auditRetentionDays
+      ),
+    }
+  }
+
+  static async saveGroup(
+    group: SystemSettingGroup,
+    values: Record<string, { value: string | boolean | number; isSecret?: boolean }>,
+    userId: number
+  ) {
+    for (const [key, entry] of Object.entries(values)) {
+      const normalized =
+        typeof entry.value === 'boolean'
+          ? entry.value
+            ? 'true'
+            : 'false'
+          : String(entry.value ?? '')
+
+      let row = await SystemSetting.query().where('group', group).where('key', key).first()
+
+      if (!row) {
+        row = new SystemSetting()
+        row.group = group
+        row.key = key
+      }
+
+      if (entry.isSecret && normalized) {
+        row.value = SecretCipher.encrypt(normalized)
+        row.isSecret = true
+      } else {
+        row.value = normalized
+        row.isSecret = entry.isSecret ?? false
+      }
+
+      row.updatedByUserId = userId
+      await row.save()
+    }
+  }
+
+  static async saveGeneral(input: GeneralSettingsView, userId: number) {
+    await this.saveGroup(
+      'general',
+      {
+        app_display_name: { value: input.appDisplayName },
+        support_email: { value: input.supportEmail },
+        support_phone: { value: input.supportPhone },
+        default_currency: { value: input.defaultCurrency },
+        default_timezone: { value: input.defaultTimezone },
+        portal_welcome_message: { value: input.portalWelcomeMessage },
+      },
+      userId
+    )
+  }
+
+  static async saveOther(input: OtherSettingsView, userId: number) {
+    await this.saveGroup(
+      'other',
+      {
+        maintenance_mode: { value: input.maintenanceMode },
+        allow_portal_registration: { value: input.allowPortalRegistration },
+        enable_client_notifications: { value: input.enableClientNotifications },
+        default_invoice_due_days: { value: input.defaultInvoiceDueDays },
+        audit_retention_days: { value: input.auditRetentionDays },
+      },
+      userId
+    )
+  }
+}

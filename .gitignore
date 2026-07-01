@@ -1,0 +1,45 @@
+# Dependencies and AdonisJS build
+node_modules
+build
+tmp/*
+!tmp/.gitkeep
+
+# Secrets
+.env
+.env.local
+.env.production
+.env.production.local
+.env.development.local
+storage/backups/
+storage/app/documents/*
+storage/app/report-templates/*
+
+# Local data files (not part of the application)
+*.xlsx
+
+# Frontend assets compiled code
+public/assets
+
+# Build tools specific
+npm-debug.log
+yarn-error.log
+
+# Editors specific
+.fleet
+.idea
+.vscode
+
+# Platform specific
+.DS_Store
+
+# TypeScript emit artifacts co-located with sources (Adonis resolves *.js via import map)
+app/**/*.js
+app/**/*.d.ts
+start/**/*.js
+start/**/*.d.ts
+inertia/**/*.js
+inertia/**/*.d.ts
+!inertia/**/*.config.js
+adonisrc.js
+adonisrc.d.ts
+database/migrations/**/*.js

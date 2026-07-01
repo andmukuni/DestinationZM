@@ -1,0 +1,14 @@
+services:
+  app:
+    build: .
+    ports:
+      - '3333:3333'
+    env_file: .env.production
+    volumes:
+      - app_storage:/app/storage
+      - app_tmp:/app/tmp
+    restart: unless-stopped
+
+volumes:
+  app_storage:
+  app_tmp:

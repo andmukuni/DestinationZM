@@ -1,0 +1,45 @@
+@import 'tailwindcss';
+
+html {
+  font-size: 15px;
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
+body {
+  @apply bg-slate-100 text-slate-900 antialiased;
+}
+
+@media print {
+  body {
+    background: white;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  #enquiry-document,
+  #enquiry-document *,
+  #quotation-document,
+  #quotation-document *,
+  #invoice-document,
+  #invoice-document * {
+    visibility: visible;
+  }
+
+  #enquiry-document,
+  #quotation-document,
+  #invoice-document {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    border: 0;
+    box-shadow: none;
+  }
+}

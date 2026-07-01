@@ -1,0 +1,25 @@
+export declare const controllers: {
+    Bookings: () => Promise<typeof import("#controllers/bookings_controller")>;
+    Customers: () => Promise<typeof import("#controllers/customers_controller")>;
+    Dashboard: () => Promise<typeof import("#controllers/dashboard_controller")>;
+    Documents: () => Promise<typeof import("#controllers/documents_controller")>;
+    Home: () => Promise<typeof import("#controllers/home_controller")>;
+    Invoices: () => Promise<typeof import("#controllers/invoices_controller")>;
+    Payments: () => Promise<typeof import("#controllers/payments_controller")>;
+    Profile: () => Promise<typeof import("#controllers/profile_controller")>;
+    Quotations: () => Promise<typeof import("#controllers/quotations_controller")>;
+    Receipts: () => Promise<typeof import("#controllers/receipts_controller")>;
+    Recovery: () => Promise<typeof import("#controllers/recovery_controller")>;
+    Reports: () => Promise<typeof import("#controllers/reports_controller")>;
+    Roles: () => Promise<typeof import("#controllers/roles_controller")>;
+    Session: () => Promise<typeof import("#controllers/session_controller")>;
+    Suppliers: () => Promise<typeof import("#controllers/suppliers_controller")>;
+    Users: () => Promise<typeof import("#controllers/users_controller")>;
+    PortalDashboard: () => Promise<typeof import("#controllers/portal_dashboard_controller")>;
+    PortalSession: () => Promise<typeof import("#controllers/portal_session_controller")>;
+    PortalBookings: () => Promise<typeof import("#controllers/portal_bookings_controller")>;
+    PortalQuotations: () => Promise<typeof import("#controllers/portal_quotations_controller")>;
+    PortalRecoveryReports: () => Promise<typeof import("#controllers/portal_recovery_reports_controller")>;
+    PortalInvoices: () => Promise<typeof import("#controllers/portal_invoices_controller")>;
+    RecoveryReports: () => Promise<typeof import("#controllers/recovery_reports_controller")>;
+};
