@@ -1,4 +1,5 @@
 import { defineConfig } from '@adonisjs/shield'
+import { useHttpsHeaders } from '#config/security'
 
 const shieldConfig = defineConfig({
   /**
@@ -72,7 +73,7 @@ const shieldConfig = defineConfig({
     /**
      * Enable the Strict-Transport-Security header.
      */
-    enabled: true,
+    enabled: useHttpsHeaders(),
 
     /**
      * HSTS policy duration remembered by browsers.

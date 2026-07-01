@@ -1,5 +1,5 @@
 import env from '#start/env'
-import app from '@adonisjs/core/services/app'
+import { useSecureCookies } from '#config/security'
 import { defineConfig } from '@adonisjs/core/http'
 
 /**
@@ -74,7 +74,7 @@ export const http = defineConfig({
     /**
      * Send cookies only over HTTPS in production.
      */
-    secure: app.inProduction,
+    secure: useSecureCookies(),
 
     /**
      * Cross-site policy for cookie sending.

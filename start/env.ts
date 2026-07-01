@@ -81,4 +81,7 @@ export default await Env.create(new URL('../', import.meta.url), {
   WHATSAPP_PHONE_NUMBER_ID: Env.schema.string.optional(),
   WHATSAPP_BUSINESS_ACCOUNT_ID: Env.schema.string.optional(),
   WHATSAPP_FROM_NUMBER: Env.schema.string.optional(),
+
+  // Production (LoanTrack-compatible)
+  SESSION_SECURE_COOKIE: Env.schema.boolean.optional(),
 })

@@ -33,6 +33,8 @@ const staticServerConfig = defineConfig({
         'Cache-Control': 'public, max-age=2592000, immutable',
       }
     }
+
+    return {}
   },
 
   /**
