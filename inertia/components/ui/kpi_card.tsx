@@ -54,23 +54,23 @@ function KpiCardContent({
   const context = trend ?? subValue
 
   return (
-    <div className={`relative flex h-full min-h-[9.5rem] flex-col rounded-2xl p-5 ${styles.card}`}>
-      <div className="flex items-start justify-between gap-3">
+    <div className={`relative flex h-full min-h-[5.75rem] flex-col rounded-xl p-3.5 ${styles.card}`}>
+      <div className="flex items-start justify-between gap-2">
         <span
-          className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${styles.icon}`}
+          className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${styles.icon}`}
         >
-          <Icon className="h-5 w-5" />
+          <Icon className="h-4 w-4" />
         </span>
         {context ? (
-          <span className={`pt-1 text-right text-sm font-semibold ${contextClassName(variant, contextTone)}`}>
+          <span className={`pt-0.5 text-right text-xs font-semibold ${contextClassName(variant, contextTone)}`}>
             {context}
           </span>
         ) : null}
       </div>
 
-      <div className="mt-auto pt-6">
-        <p className="text-3xl font-bold tracking-tight text-white">{value}</p>
-        <p className="mt-1 text-sm font-medium text-white/85">{label}</p>
+      <div className="mt-auto pt-2">
+        <p className="text-xl font-bold tracking-tight text-white">{value}</p>
+        <p className="mt-0.5 text-xs font-medium text-white/85">{label}</p>
       </div>
     </div>
   )
@@ -90,7 +90,7 @@ export function KpiCard({
     return (
       <Link
         href={href}
-        className="group block rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+        className="group block rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
       >
         <div className="h-full transition group-hover:scale-[1.01] group-hover:shadow-md">
           <KpiCardContent

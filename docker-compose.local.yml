@@ -1,9 +1,10 @@
-# Production / Coolify — no host port binding (Coolify proxy routes to expose:3333)
+# Local smoke test only — maps host port 3333
 services:
   app:
     build: .
-    expose:
-      - '3333'
+    ports:
+      - '3333:3333'
+    env_file: .env.production
     volumes:
       - app_storage:/app/storage
       - app_tmp:/app/tmp

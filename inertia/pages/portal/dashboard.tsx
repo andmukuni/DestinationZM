@@ -154,7 +154,7 @@ export default function PortalDashboard({
         }
       />
 
-      <div className={`grid gap-4 ${kpiGridClass(kpis.length)}`}>
+      <div className={`grid gap-3 ${kpiGridClass(kpis.length)}`}>
         {kpis.map((kpi) => (
           <KpiCard
             key={kpi.key}

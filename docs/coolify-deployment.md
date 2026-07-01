@@ -26,9 +26,9 @@ The app container does **not** include MySQL or Redis. Point environment variabl
 
 1. In Coolify: **New Resource** → **Application**
 2. Connect your Git repository
-3. **Build Pack**: Dockerfile
+3. **Build Pack**: Dockerfile (or Docker Compose — both work; compose no longer binds host port 3333)
 4. **Dockerfile location**: `Dockerfile` (repo root)
-5. **Port Exposes**: `3333`
+5. **Port Exposes**: `3333` (container port — Coolify proxy handles public HTTPS)
 
 ### 2. Health check
 
@@ -115,7 +115,7 @@ cp .env.example .env.production
 docker run --env-file .env.production -p 3333:3333 destination-zm
 
 # Or with docker-compose (includes persistent volumes)
-docker compose up --build
+docker compose -f docker-compose.local.yml up --build
 ```
 
 Verify:
@@ -142,6 +142,7 @@ Entrypoint (`docker/entrypoint.sh`):
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
+| `Bind for 0.0.0.0:3333 failed: port is already allocated` | Another container or app on the server already uses host port 3333 | Redeploy after pulling latest `docker-compose.yml` (no host port bind). Or stop the other service using 3333. In Coolify, only set **Port Exposes** to `3333` (container port) — do not add a duplicate host port mapping. |
 | Health check fails | App not binding to `0.0.0.0` | Set `HOST=0.0.0.0` |
 | 502 from Coolify | Wrong port | Expose port `3333` |
 | DB connection refused | Firewall / wrong host | Verify Coolify server can reach MySQL port |
