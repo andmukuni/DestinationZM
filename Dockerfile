@@ -4,7 +4,8 @@ RUN apk add --no-cache python3 make g++
 
 WORKDIR /app
 
-# Coolify may inject NODE_ENV=production at build time — force dev deps for ace/vite.
+# Coolify injects NODE_ENV=production at build time — force dev deps for ace/vite/tsc.
+ARG NODE_ENV=development
 ENV NODE_ENV=development
 ENV NPM_CONFIG_PRODUCTION=false
 
@@ -14,7 +15,7 @@ RUN npm ci
 COPY . .
 COPY docker/.env.build .env
 
-RUN NODE_ENV=development node ace build --ignore-ts-errors
+RUN node ace build --ignore-ts-errors
 
 FROM node:24-alpine AS production
 
@@ -24,16 +25,18 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY --from=build /app/build ./
-RUN npm ci --omit=dev
+RUN addgroup -S adonis && adduser -S adonis -G adonis
+
+COPY --from=build --chown=adonis:adonis /app/build ./
 
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh \
   && mkdir -p storage/app/documents storage/app/report-templates tmp/sessions \
-  && addgroup -S adonis && adduser -S adonis -G adonis \
-  && chown -R adonis:adonis /app
+  && chown -R adonis:adonis storage tmp
 
 USER adonis
+
+RUN npm ci --omit=dev
 
 EXPOSE 3333
 

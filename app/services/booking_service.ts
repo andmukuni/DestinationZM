@@ -194,7 +194,7 @@ export default class BookingService {
     return Booking.query()
       .where('customer_id', customerId)
       .where('status', 'enquiry_submitted')
-      .whereDoesntHave('quotations')
+      .whereDoesntHave('quotations', () => {})
       .orderBy('created_at', 'asc')
   }
 
