@@ -1,5 +1,5 @@
+import { Link } from '@inertiajs/react'
 import { type ReactNode } from 'react'
-import { Link } from '@adonisjs/inertia/react'
 
 type LegalDocumentProps = {
   title: string
@@ -22,11 +22,11 @@ export function LegalDocument({ title, lastUpdated, children }: LegalDocumentPro
 
       <footer className="border-t border-slate-200 pt-6 text-sm text-slate-500">
         Return to{' '}
-        <Link route="session.create" className="font-medium text-orange-600 hover:text-orange-700">
+        <Link href="/login" className="font-medium text-orange-600 hover:text-orange-700">
           staff sign in
         </Link>{' '}
         or{' '}
-        <Link route="portal.login" className="font-medium text-orange-600 hover:text-orange-700">
+        <Link href="/portal/login" className="font-medium text-orange-600 hover:text-orange-700">
           client portal
         </Link>
       </footer>

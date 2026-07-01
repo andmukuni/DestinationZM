@@ -14,8 +14,20 @@ import { Env } from '@adonisjs/core/env'
 /**
  * Coolify / Laravel-style env aliases (LoanTrack-compatible).
  */
-if (!process.env.APP_URL?.trim() && process.env.SERVICE_URL_APP?.trim()) {
-  process.env.APP_URL = process.env.SERVICE_URL_APP.trim()
+function isLocalhostAppUrl(url: string) {
+  return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/?$/i.test(url.trim())
+}
+
+const serviceUrlApp = process.env.SERVICE_URL_APP?.trim()
+const configuredAppUrl = process.env.APP_URL?.trim()
+
+if (serviceUrlApp) {
+  // Docker build bakes docker/.env.build (APP_URL=localhost) into the image — prefer Coolify's public URL.
+  if (!configuredAppUrl || isLocalhostAppUrl(configuredAppUrl)) {
+    process.env.APP_URL = serviceUrlApp
+  }
+} else if (!configuredAppUrl) {
+  process.env.APP_URL = 'http://localhost:3333'
 }
 
 if (!process.env.DB_USER?.trim() && process.env.DB_USERNAME?.trim()) {
