@@ -1,6 +1,6 @@
-import { Form } from '@adonisjs/inertia/react'
+import { Form, Link } from '@adonisjs/inertia/react'
 import { useState } from 'react'
-import { ArrowPathIcon, FunnelIcon } from '~/components/icons'
+import { ArrowPathIcon, FunnelIcon, PlusIcon } from '~/components/icons'
 import ResourceTable from '~/components/resource_table'
 import { Badge } from '~/components/ui/badge'
 import { useRouterLoading } from '~/hooks/use_router_loading'
@@ -114,81 +114,99 @@ export default function InvoicesIndex({
 
   return (
     <div className="space-y-6">
-      <form
-        method="get"
-        action="/invoices"
-        className="rounded-lg border border-slate-200 bg-white p-4"
-        onSubmit={handleApply}
-      >
-        <div className="flex flex-wrap items-end gap-3">
-          {branches.length > 0 ? (
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold text-slate-900">Invoices</h1>
+          <p className="mt-1 text-sm text-slate-600">
+            {invoices.length} invoice{invoices.length === 1 ? '' : 's'} · {filterSummary}
+          </p>
+        </div>
+        {canManage ? (
+          <Link
+            href="/invoices/create"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-transparent bg-slate-900 px-4 text-sm font-medium text-white transition-colors hover:bg-slate-800"
+          >
+            <PlusIcon />
+            Create invoice
+          </Link>
+        ) : null}
+      </div>
+
+      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <form
+          method="get"
+          action="/invoices"
+          className="border-b border-slate-200 bg-slate-50/60 p-4"
+          onSubmit={handleApply}
+        >
+          <div className="flex flex-wrap items-end gap-3">
+            {branches.length > 0 ? (
+              <div className="min-w-[8.5rem] flex-1 basis-[8.5rem]">
+                <label htmlFor="office" className="mb-1 block text-sm font-medium text-slate-700">
+                  Office
+                </label>
+                <select
+                  id="office"
+                  value={branchId === null ? '' : String(branchId)}
+                  onChange={(event) =>
+                    applyFilters({ branchId: event.target.value ? Number(event.target.value) : null })
+                  }
+                  className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm"
+                >
+                  <option value="">All offices</option>
+                  {branches.map((branch) => (
+                    <option key={branch.id} value={branch.id}>
+                      {branch.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
             <div className="min-w-[8.5rem] flex-1 basis-[8.5rem]">
-              <label htmlFor="office" className="mb-1 block text-sm font-medium text-slate-700">
-                Office
+              <label htmlFor="status" className="mb-1 block text-sm font-medium text-slate-700">
+                Status
               </label>
               <select
-                id="office"
-                value={branchId === null ? '' : String(branchId)}
-                onChange={(event) =>
-                  applyFilters({ branchId: event.target.value ? Number(event.target.value) : null })
-                }
-                className="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm"
+                id="status"
+                value={status ?? ''}
+                onChange={(event) => applyFilters({ status: event.target.value || null })}
+                className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm"
               >
-                <option value="">All offices</option>
-                {branches.map((branch) => (
-                  <option key={branch.id} value={branch.id}>
-                    {branch.name}
+                <option value="">All statuses</option>
+                {STATUS_OPTIONS.map((item) => (
+                  <option key={item.value} value={item.value}>
+                    {item.label}
                   </option>
                 ))}
               </select>
             </div>
-          ) : null}
-          <div className="min-w-[8.5rem] flex-1 basis-[8.5rem]">
-            <label htmlFor="status" className="mb-1 block text-sm font-medium text-slate-700">
-              Status
-            </label>
-            <select
-              id="status"
-              value={status ?? ''}
-              onChange={(event) => applyFilters({ status: event.target.value || null })}
-              className="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm"
-            >
-              <option value="">All statuses</option>
-              {STATUS_OPTIONS.map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
+            <div className="min-w-[10rem] flex-1 basis-[10rem]">
+              <Input
+                label="Search"
+                name="search"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Invoice number"
+              />
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <Button type="submit" className="gap-2" loading={filterLoading}>
+                <FunnelIcon />
+                Apply filters
+              </Button>
+              <Button type="button" variant="secondary" className="gap-2" onClick={handleReset}>
+                <ArrowPathIcon />
+                Reset
+              </Button>
+            </div>
           </div>
-          <div className="min-w-[10rem] flex-1 basis-[10rem]">
-            <Input
-              label="Search"
-              name="search"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Invoice number"
-            />
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <Button type="submit" className="gap-2" loading={filterLoading}>
-              <FunnelIcon />
-              Apply filters
-            </Button>
-            <Button type="button" variant="secondary" className="gap-2" onClick={handleReset}>
-              <ArrowPathIcon />
-              Reset
-            </Button>
-          </div>
-        </div>
-      </form>
+        </form>
 
-      <ResourceTable
-        title="Invoices"
-        description={`${invoices.length} invoice${invoices.length === 1 ? '' : 's'} · ${filterSummary}`}
-        createHref={canManage ? '/invoices/create' : undefined}
-        createLabel="Create invoice"
-        columns={[
+        <ResourceTable
+          title="Invoices"
+          showHeader={false}
+          embedded
+          columns={[
           { key: 'invoiceNumber', label: 'Number', className: 'font-medium text-slate-900' },
           { key: 'customer', label: 'Customer' },
           {
@@ -283,10 +301,11 @@ export default function InvoicesIndex({
               ]
             : []),
         ]}
-        rows={invoices}
-        rowHref={(row) => `/invoices/${row.id}`}
-        emptyMessage="No invoices match these filters."
-      />
+          rows={invoices}
+          rowHref={(row) => `/invoices/${row.id}`}
+          emptyMessage="No invoices match these filters."
+        />
+      </div>
     </div>
   )
 }

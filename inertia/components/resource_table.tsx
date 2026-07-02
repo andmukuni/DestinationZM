@@ -22,6 +22,10 @@ type ResourceTableProps<T extends { id: number }> = {
   rows: T[]
   rowHref?: (row: T) => string | undefined
   emptyMessage?: string
+  /** Hide the title row (use when the page renders its own header). */
+  showHeader?: boolean
+  /** Render only the table body inside a parent card (no outer border/title). */
+  embedded?: boolean
 }
 
 export default function ResourceTable<T extends { id: number }>({
@@ -33,65 +37,82 @@ export default function ResourceTable<T extends { id: number }>({
   rows,
   rowHref,
   emptyMessage = 'No records found.',
+  showHeader = true,
+  embedded = false,
 }: ResourceTableProps<T>) {
   const summary = description ?? `${rows.length} record${rows.length === 1 ? '' : 's'}`
 
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">{title}</h1>
-          <p className="mt-1 text-sm text-slate-600">{summary}</p>
-        </div>
-        {createHref ? (
-          <Link
-            href={createHref}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-transparent bg-slate-900 px-4 text-sm font-medium text-white transition-colors hover:bg-slate-800"
-          >
-            <PlusIcon />
-            {createLabel}
-          </Link>
-        ) : null}
-      </div>
-
-      {rows.length === 0 ? (
+  const tableContent =
+    rows.length === 0 ? (
+      embedded ? (
+        <div className="p-8 text-center text-sm text-slate-600">{emptyMessage}</div>
+      ) : (
         <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-600">
           {emptyMessage}
         </div>
-      ) : (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-          <Table scrollContainer={false}>
-            <THead>
-              <TR>
-                {columns.map((column) => (
-                  <TH key={column.key}>{column.label}</TH>
-                ))}
+      )
+    ) : (
+      <Table scrollContainer={false}>
+        <THead>
+          <TR>
+            {columns.map((column) => (
+              <TH key={column.key}>{column.label}</TH>
+            ))}
+          </TR>
+        </THead>
+        <TBody>
+          {rows.map((row) => {
+            const href = rowHref?.(row)
+            return (
+              <TR key={row.id} href={href}>
+                {columns.map((column) => {
+                  const value = (row as Record<string, unknown>)[column.key]
+                  return (
+                    <TD
+                      key={column.key}
+                      className={column.className}
+                      onClick={href && column.stopRowClick ? stopRowClick : undefined}
+                      onKeyDown={href && column.stopRowClick ? stopRowClick : undefined}
+                    >
+                      {column.render ? column.render(value, row) : (value as ReactNode)}
+                    </TD>
+                  )
+                })}
               </TR>
-            </THead>
-            <TBody>
-              {rows.map((row) => {
-                const href = rowHref?.(row)
-                return (
-                  <TR key={row.id} href={href}>
-                    {columns.map((column) => {
-                      const value = (row as Record<string, unknown>)[column.key]
-                      return (
-                        <TD
-                          key={column.key}
-                          className={column.className}
-                          onClick={href && column.stopRowClick ? stopRowClick : undefined}
-                          onKeyDown={href && column.stopRowClick ? stopRowClick : undefined}
-                        >
-                          {column.render ? column.render(value, row) : (value as ReactNode)}
-                        </TD>
-                      )
-                    })}
-                  </TR>
-                )
-              })}
-            </TBody>
-          </Table>
+            )
+          })}
+        </TBody>
+      </Table>
+    )
+
+  if (embedded) {
+    return tableContent
+  }
+
+  return (
+    <div className="space-y-6">
+      {showHeader ? (
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-semibold text-slate-900">{title}</h1>
+            <p className="mt-1 text-sm text-slate-600">{summary}</p>
+          </div>
+          {createHref ? (
+            <Link
+              href={createHref}
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-transparent bg-slate-900 px-4 text-sm font-medium text-white transition-colors hover:bg-slate-800"
+            >
+              <PlusIcon />
+              {createLabel}
+            </Link>
+          ) : null}
         </div>
+      ) : null}
+
+      {rows.length === 0 ? (
+        tableContent
+      ) : (
+        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">{tableContent}</div>
       )}
     </div>
   )
