@@ -283,6 +283,17 @@ router
       .post('invoices/:id/mark-paid', [controllers.Invoices, 'markPaid'])
       .as('invoices.mark_paid')
 
+    router
+      .get('quickbooks/accounts', [controllers.QuickbooksAccounts, 'index'])
+      .as('quickbooks.accounts')
+    router
+      .post('quickbooks/accounts/refresh', [controllers.QuickbooksAccounts, 'refresh'])
+      .as('quickbooks.accounts.refresh')
+    router.get('quickbooks/items', [controllers.QuickbooksItems, 'index']).as('quickbooks.items')
+    router
+      .post('quickbooks/items/refresh', [controllers.QuickbooksItems, 'refresh'])
+      .as('quickbooks.items.refresh')
+
     router.get('receipts', [controllers.Receipts, 'index']).as('receipts')
     router.get('receipts/create', [controllers.Receipts, 'create']).as('receipts.create')
     router.post('receipts', [controllers.Receipts, 'store']).as('receipts.store')
@@ -362,7 +373,9 @@ router
     router
       .patch('settings/other', [controllers.SystemSettings, 'updateOther'])
       .as('settings.other.update')
-    router.get('settings/security', [controllers.SystemSettings, 'security']).as('settings.security')
+    router
+      .get('settings/security', [controllers.SystemSettings, 'security'])
+      .as('settings.security')
     router
       .patch('settings/security', [controllers.SystemSettings, 'updateSecurity'])
       .as('settings.security.update')
@@ -400,6 +413,10 @@ router
     router
       .post('invoices/:id/quickbooks/retry', [controllers.Invoices, 'retryQuickbooksSync'])
       .as('invoices.quickbooks.retry')
+
+    router
+      .post('customers/:id/quickbooks/retry', [controllers.Customers, 'retryQuickbooksSync'])
+      .as('customers.quickbooks.retry')
 
     router.get('profile', [controllers.Profile, 'show']).as('profile')
     router.get('user-settings', [controllers.Profile, 'settings']).as('user_settings')

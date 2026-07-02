@@ -1,9 +1,13 @@
+import { Form } from '@adonisjs/inertia/react'
 import { useState } from 'react'
-import { ArrowPathIcon, FunnelIcon } from '~/components/icons'
+import { ArrowPathIcon, FunnelIcon, QuickbooksIcon } from '~/components/icons'
 import ResourceTable from '~/components/resource_table'
 import { useRouterLoading } from '~/hooks/use_router_loading'
+import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
+import { ConfirmSubmitButton } from '~/components/ui/confirm_submit_button'
 import { Input } from '~/components/ui/input'
+import { quickbooksInvoiceLabel, quickbooksInvoiceTone } from '~/lib/quickbooks'
 
 type CustomerRow = {
   id: number
@@ -14,12 +18,16 @@ type CustomerRow = {
   branch: string
   branchId: number | null
   createdAt: string
+  quickbooksStatus: 'pending' | 'synced' | 'failed' | 'skipped' | null
+  quickbooksId: string | null
 }
 
 type CustomersIndexProps = {
   filters: { search: string; branchId: number | null }
   branches: Array<{ id: number; name: string }>
   customers: CustomerRow[]
+  canManage: boolean
+  quickbooksConnected: boolean
 }
 
 function buildQuery(filters: CustomersIndexProps['filters']) {
@@ -29,14 +37,20 @@ function buildQuery(filters: CustomersIndexProps['filters']) {
   return params.toString()
 }
 
-export default function CustomersIndex({ filters, branches, customers }: CustomersIndexProps) {
+export default function CustomersIndex({
+  filters,
+  branches,
+  customers,
+  canManage,
+  quickbooksConnected,
+}: CustomersIndexProps) {
   const [search, setSearch] = useState(filters.search)
   const [branchId, setBranchId] = useState<number | null>(filters.branchId)
   const { loading: filterLoading, get } = useRouterLoading()
 
   const filterSummary = [
     branches.length > 0 && branchId
-      ? branches.find((b) => b.id === branchId)?.name ?? 'Office'
+      ? (branches.find((b) => b.id === branchId)?.name ?? 'Office')
       : branches.length > 0
         ? 'All offices'
         : null,
@@ -133,6 +147,67 @@ export default function CustomersIndex({ filters, branches, customers }: Custome
           { key: 'company', label: 'Company', className: 'text-slate-600' },
           { key: 'branch', label: 'Office' },
           { key: 'createdAt', label: 'Created', className: 'text-slate-600' },
+          ...(quickbooksConnected
+            ? [
+                {
+                  key: 'quickbooksStatus',
+                  label: 'QBO',
+                  render: (_: unknown, row: CustomerRow) => (
+                    <Badge tone={quickbooksInvoiceTone(row.quickbooksStatus)}>
+                      {quickbooksInvoiceLabel(row.quickbooksStatus, quickbooksConnected)}
+                    </Badge>
+                  ),
+                } as const,
+              ]
+            : []),
+          ...(canManage && quickbooksConnected
+            ? [
+                {
+                  key: 'actions',
+                  label: (
+                    <span className="inline-flex items-center gap-1.5">
+                      <QuickbooksIcon className="h-3.5 w-3.5" />
+                      <span className="sr-only">QuickBooks actions</span>
+                    </span>
+                  ),
+                  stopRowClick: true,
+                  render: (_: unknown, row: CustomerRow) => {
+                    if (row.quickbooksStatus === 'synced' || row.quickbooksStatus === 'pending') {
+                      return null
+                    }
+
+                    const isRetry = row.quickbooksStatus === 'failed'
+
+                    return (
+                      <Form route="customers.quickbooks.retry" routeParams={{ id: row.id }}>
+                        <ConfirmSubmitButton
+                          variant="secondary"
+                          size="sm"
+                          className="gap-1.5"
+                          title={isRetry ? 'Retry QuickBooks sync?' : 'Post to QuickBooks?'}
+                          description={
+                            isRetry
+                              ? `Retry syncing ${row.fullName} to QuickBooks Online?`
+                              : `Post ${row.fullName} to QuickBooks Online?`
+                          }
+                          confirmLabel={isRetry ? 'Retry sync' : 'Post to QBO'}
+                        >
+                          <QuickbooksIcon className="h-4 w-4 shrink-0" />
+                          {isRetry ? (
+                            <>
+                              <ArrowPathIcon className="h-3.5 w-3.5 shrink-0" />
+                              Retry
+                            </>
+                          ) : (
+                            'Post to QBO'
+                          )}
+                        </ConfirmSubmitButton>
+                      </Form>
+                    )
+                  },
+                } as const,
+              ]
+            : []),
         ]}
         rows={customers}
         rowHref={(row) => `/customers/${row.id}`}

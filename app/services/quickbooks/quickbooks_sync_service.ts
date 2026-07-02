@@ -9,6 +9,7 @@ import {
   QUICKBOOKS_RECONNECT_MESSAGE,
 } from '#services/quickbooks/quickbooks_oauth_errors'
 import QuickbooksOauthService from '#services/quickbooks/quickbooks_oauth_service'
+import QuickbooksCustomerSync from '#services/quickbooks/quickbooks_customer_sync'
 import QuickbooksPaymentSync from '#services/quickbooks/quickbooks_payment_sync'
 
 function syncErrorDetails(error: unknown) {
@@ -39,11 +40,7 @@ function syncErrorDetails(error: unknown) {
   }
 }
 
-async function markSyncFailure(
-  record: QuickbooksSyncRecord,
-  error: unknown,
-  invoiceId?: number
-) {
+async function markSyncFailure(record: QuickbooksSyncRecord, error: unknown, invoiceId?: number) {
   const { message, intuitTid } = syncErrorDetails(error)
   record.syncStatus = 'failed'
   record.lastError = message
@@ -93,9 +90,7 @@ export default class QuickbooksSyncService {
   }
 
   static async getInvoiceListSyncSummaries(
-    invoices: Array<
-      Pick<Invoice, 'id' | 'quickbooksSyncStatus' | 'quickbooksInvoiceId' | 'status'>
-    >
+    invoices: Array<Pick<Invoice, 'id' | 'quickbooksSyncStatus' | 'quickbooksInvoiceId' | 'status'>>
   ): Promise<Map<number, InvoiceListSyncSummary>> {
     const result = new Map<number, InvoiceListSyncSummary>()
     if (invoices.length === 0) {
@@ -121,9 +116,7 @@ export default class QuickbooksSyncService {
       const paymentRecord = paymentRecords.get(invoice.id)
       const paymentSyncStatus = paymentRecord?.syncStatus
       const quickbooksPaymentStatus =
-        invoice.status === 'paid' &&
-        paymentSyncStatus &&
-        paymentSyncStatus !== 'skipped'
+        invoice.status === 'paid' && paymentSyncStatus && paymentSyncStatus !== 'skipped'
           ? paymentSyncStatus
           : null
 
@@ -177,6 +170,101 @@ export default class QuickbooksSyncService {
     })
   }
 
+  static enqueueCustomer(customerId: number) {
+    void (async () => {
+      if (!(await QuickbooksOauthService.isConfigured())) {
+        return
+      }
+
+      await this.processCustomer(customerId)
+    })().catch((error) => {
+      console.error('[QuickBooks] Customer sync failed:', error)
+    })
+  }
+
+  static async processCustomer(customerId: number, options: { manual?: boolean } = {}) {
+    const connection = await QuickbooksOauthService.getActiveConnection()
+    if (!connection?.syncEnabled) {
+      return null
+    }
+
+    const record = await this.ensurePendingRecord('customer', customerId, connection.realmId)
+
+    if (record.syncStatus === 'synced' && record.quickbooksId) {
+      return record.quickbooksId
+    }
+
+    if (
+      !options.manual &&
+      record.attemptCount >= quickbooksConfig.maxSyncAttempts &&
+      record.syncStatus === 'failed'
+    ) {
+      return null
+    }
+
+    if (options.manual) {
+      record.attemptCount = 0
+    }
+
+    try {
+      record.syncStatus = 'pending'
+      record.attemptCount = record.attemptCount + 1
+      record.lastError = null
+      record.lastIntuitTid = null
+      await record.save()
+
+      const quickbooksId = await QuickbooksCustomerSync.syncCustomer(connection, customerId)
+
+      await AuditService.log({
+        action: 'quickbooks.customer_synced',
+        entityType: 'customer',
+        entityId: customerId,
+        metadata: { quickbooksId },
+      })
+
+      return quickbooksId
+    } catch (error) {
+      const { message, intuitTid } = syncErrorDetails(error)
+      await markSyncFailure(record, error)
+
+      await AuditService.log({
+        action: 'quickbooks.customer_sync_failed',
+        entityType: 'customer',
+        entityId: customerId,
+        metadata: { error: message, intuitTid },
+      })
+
+      throw error
+    }
+  }
+
+  static async getCustomerListSyncSummaries(customerIds: number[]) {
+    const result = new Map<
+      number,
+      {
+        syncStatus: 'pending' | 'synced' | 'failed' | 'skipped' | null
+        quickbooksId: string | null
+      }
+    >()
+
+    if (customerIds.length === 0) {
+      return result
+    }
+
+    const records = await QuickbooksSyncRecord.query()
+      .where('entity_type', 'customer')
+      .whereIn('local_id', customerIds)
+
+    for (const record of records) {
+      result.set(record.localId, {
+        syncStatus: record.syncStatus,
+        quickbooksId: record.quickbooksId,
+      })
+    }
+
+    return result
+  }
+
   static async processInvoice(invoiceId: number, options: { manual?: boolean } = {}) {
     const connection = await QuickbooksOauthService.getActiveConnection()
     if (!connection?.syncEnabled) {
@@ -204,9 +292,7 @@ export default class QuickbooksSyncService {
       record.lastIntuitTid = null
       await record.save()
 
-      await Invoice.query()
-        .where('id', invoiceId)
-        .update({ quickbooksSyncStatus: 'pending' })
+      await Invoice.query().where('id', invoiceId).update({ quickbooksSyncStatus: 'pending' })
 
       const quickbooksId = await QuickbooksInvoiceSync.syncInvoice(connection, invoiceId)
 
@@ -303,6 +389,8 @@ export default class QuickbooksSyncService {
           await this.processInvoice(record.localId)
         } else if (record.entityType === 'payment') {
           await this.processPayment(record.localId)
+        } else if (record.entityType === 'customer') {
+          await this.processCustomer(record.localId)
         }
         processed += 1
       } catch {
@@ -332,7 +420,7 @@ export default class QuickbooksSyncService {
   }
 
   private static async ensurePendingRecord(
-    entityType: 'invoice' | 'payment',
+    entityType: 'invoice' | 'payment' | 'customer',
     localId: number,
     realmId: string
   ) {

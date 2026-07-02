@@ -62,8 +62,7 @@ export default class QuickbooksAppSettingsService {
       return {
         clientId: record.clientId,
         clientSecret: QuickbooksTokenCipher.decrypt(record.clientSecretEncrypted),
-        redirectUri:
-          record.redirectUri ?? `${env.get('APP_URL')}/settings/quickbooks/callback`,
+        redirectUri: record.redirectUri ?? `${env.get('APP_URL')}/settings/quickbooks/callback`,
         environment: record.environment,
         scopes: record.scopes,
         apiBaseUrl: apiBaseUrlFor(record.environment),
@@ -81,8 +80,7 @@ export default class QuickbooksAppSettingsService {
     return {
       clientId: record?.clientId ?? '',
       clientSecret: '',
-      redirectUri:
-        record?.redirectUri ?? `${env.get('APP_URL')}/settings/quickbooks/callback`,
+      redirectUri: record?.redirectUri ?? `${env.get('APP_URL')}/settings/quickbooks/callback`,
       environment,
       scopes: record?.scopes ?? quickbooksConfig.scopes,
       apiBaseUrl: apiBaseUrlFor(environment),
@@ -157,7 +155,9 @@ export default class QuickbooksAppSettingsService {
     if (secret) {
       record.clientSecretEncrypted = QuickbooksTokenCipher.encrypt(secret)
     } else if (!record.clientSecretEncrypted) {
-      throw new Error('Client secret is required when saving QuickBooks credentials for the first time.')
+      throw new Error(
+        'Client secret is required when saving QuickBooks credentials for the first time.'
+      )
     }
 
     await record.save()

@@ -210,6 +210,38 @@ test.group('Quickbooks payload builder', () => {
     assert.equal(payload.CurrencyRef?.value, 'ZMW')
     assert.equal(payload.Line[0]?.LinkedTxn[0]?.TxnId, '145')
     assert.equal(payload.Line[0]?.LinkedTxn[0]?.TxnType, 'Invoice')
+    assert.isUndefined(payload.DepositToAccountRef)
+  })
+
+  test('includes DepositToAccountRef when a deposit account is chosen', ({ assert }) => {
+    const payload = buildQuickbooksPaymentPayload(
+      {
+        customerQuickbooksId: '2',
+        invoiceQuickbooksId: '145',
+        totalAmount: 900,
+        currency: 'ZMW',
+        paymentDate: '2026-07-15',
+      },
+      { depositToAccountId: '35' }
+    )
+
+    assert.equal(payload.DepositToAccountRef?.value, '35')
+    assert.isUndefined(payload.CurrencyRef)
+  })
+
+  test('omits DepositToAccountRef when deposit account is null', ({ assert }) => {
+    const payload = buildQuickbooksPaymentPayload(
+      {
+        customerQuickbooksId: '2',
+        invoiceQuickbooksId: '145',
+        totalAmount: 900,
+        currency: 'ZMW',
+        paymentDate: '2026-07-15',
+      },
+      { depositToAccountId: null }
+    )
+
+    assert.isUndefined(payload.DepositToAccountRef)
   })
 
   test('builds customer payload with email and company', ({ assert }) => {

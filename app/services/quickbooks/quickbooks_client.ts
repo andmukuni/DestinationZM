@@ -1,10 +1,7 @@
 import quickbooksConfig from '#config/quickbooks'
 import type QuickbooksConnection from '#models/quickbooks_connection'
 import QuickbooksAppSettingsService from '#services/quickbooks/quickbooks_app_settings_service'
-import {
-  QuickbooksApiError,
-  readIntuitTid,
-} from '#services/quickbooks/quickbooks_api_error'
+import { QuickbooksApiError, readIntuitTid } from '#services/quickbooks/quickbooks_api_error'
 import QuickbooksOauthService from '#services/quickbooks/quickbooks_oauth_service'
 
 type QuickbooksRequestOptions = {
@@ -30,6 +27,41 @@ export type QuickbooksRequestResult<T> = {
   intuitTid: string | null
 }
 
+export type QuickbooksAccountEntity = {
+  Id: string
+  Name: string
+  FullyQualifiedName?: string
+  AccountType?: string
+  AccountSubType?: string
+  Classification?: string
+  CurrencyRef?: { value?: string }
+  Active?: boolean
+  CurrentBalance?: number
+  status?: string
+}
+
+export type QuickbooksItemEntity = {
+  Id: string
+  Name: string
+  Sku?: string
+  Type?: string
+  Description?: string
+  UnitPrice?: number
+  IncomeAccountRef?: { value?: string; name?: string }
+  Active?: boolean
+  status?: string
+}
+
+export type QuickbooksCdcResponse = {
+  CDCResponse?: Array<{
+    QueryResponse?: Array<{
+      Account?: QuickbooksAccountEntity[]
+      Item?: QuickbooksItemEntity[]
+    }>
+  }>
+  time?: string
+}
+
 export default class QuickbooksClient {
   static async request<T = QuickbooksQueryResponse<unknown>>(
     options: QuickbooksRequestOptions
@@ -51,8 +83,8 @@ export default class QuickbooksClient {
     const response = await fetch(url, {
       method: options.method,
       headers: {
-        Authorization: `Bearer ${accessToken}`,
-        Accept: 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+        'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
       body: options.body ? JSON.stringify(options.body) : undefined,
@@ -145,6 +177,63 @@ export default class QuickbooksClient {
     )
   }
 
+  static async listAccounts(connection: QuickbooksConnection) {
+    return this.queryAll<QuickbooksAccountEntity>(connection, 'Account', 'Account')
+  }
+
+  static async listItems(connection: QuickbooksConnection) {
+    return this.queryAll<QuickbooksItemEntity>(connection, 'Item', 'Item')
+  }
+
+  /** Paginated full pull of an entity via the query endpoint. */
+  private static async queryAll<T>(
+    connection: QuickbooksConnection,
+    entity: string,
+    responseKey: string
+  ): Promise<T[]> {
+    const pageSize = 500
+    const results: T[] = []
+    let startPosition = 1
+
+    for (;;) {
+      const response = await this.query<Record<string, T[] | undefined>>(
+        connection,
+        `select * from ${entity} startposition ${startPosition} maxresults ${pageSize}`
+      )
+      const page = response.QueryResponse?.[responseKey] ?? []
+      results.push(...page)
+
+      if (page.length < pageSize) {
+        break
+      }
+
+      startPosition += pageSize
+    }
+
+    return results
+  }
+
+  /**
+   * Change Data Capture: returns only entities created/updated/deleted since the
+   * given timestamp. Cheap no-op when nothing changed in QuickBooks.
+   */
+  static async changedSince(
+    connection: QuickbooksConnection,
+    entities: string[],
+    since: string
+  ): Promise<QuickbooksCdcResponse> {
+    const result = await this.request<QuickbooksCdcResponse>({
+      connection,
+      method: 'GET',
+      path: 'cdc',
+      query: {
+        entities: entities.join(','),
+        changedSince: since,
+      },
+    })
+    return result.data
+  }
+
   static async getInvoiceSyncPreferences(connection: QuickbooksConnection) {
     const prefs = await this.getPreferences(connection)
     const taxCodeId = prefs.usingSalesTax ? await this.findDefaultTaxCodeId(connection) : null
@@ -232,8 +321,6 @@ export default class QuickbooksClient {
       path: 'companyinfo/' + connection.realmId,
     })
 
-    return (
-      result.data.CompanyInfo?.CompanyName ?? result.data.CompanyInfo?.LegalName ?? null
-    )
+    return result.data.CompanyInfo?.CompanyName ?? result.data.CompanyInfo?.LegalName ?? null
   }
 }

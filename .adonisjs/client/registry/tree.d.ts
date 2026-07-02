@@ -65,7 +65,44 @@ export interface ApiDefinition {
   session: {
     create: typeof routes['session.create']
     store: typeof routes['session.store']
+    mfa: typeof routes['session.mfa'] & {
+      store: typeof routes['session.mfa.store']
+    }
     destroy: typeof routes['session.destroy']
+  }
+  settings: typeof routes['settings'] & {
+    quickbooks: typeof routes['settings.quickbooks'] & {
+      callback: typeof routes['settings.quickbooks.callback']
+      connect: typeof routes['settings.quickbooks.connect']
+      disconnect: typeof routes['settings.quickbooks.disconnect']
+      credentials: typeof routes['settings.quickbooks.credentials']
+      test: typeof routes['settings.quickbooks.test']
+      update: typeof routes['settings.quickbooks.update']
+    }
+    general: typeof routes['settings.general'] & {
+      update: typeof routes['settings.general.update']
+    }
+    smtp: typeof routes['settings.smtp'] & {
+      update: typeof routes['settings.smtp.update']
+      test: typeof routes['settings.smtp.test']
+    }
+    sms: typeof routes['settings.sms'] & {
+      update: typeof routes['settings.sms.update']
+    }
+    whatsapp: typeof routes['settings.whatsapp'] & {
+      update: typeof routes['settings.whatsapp.update']
+    }
+    other: typeof routes['settings.other'] & {
+      update: typeof routes['settings.other.update']
+    }
+    security: typeof routes['settings.security'] & {
+      update: typeof routes['settings.security.update']
+      mfa: {
+        start: typeof routes['settings.security.mfa.start']
+        confirm: typeof routes['settings.security.mfa.confirm']
+        disable: typeof routes['settings.security.mfa.disable']
+      }
+    }
   }
   dashboard: typeof routes['dashboard']
   enquiries: typeof routes['enquiries'] & {
@@ -105,6 +142,9 @@ export interface ApiDefinition {
     create: typeof routes['customers.create']
     store: typeof routes['customers.store']
     show: typeof routes['customers.show']
+    quickbooks: {
+      retry: typeof routes['customers.quickbooks.retry']
+    }
   }
   offices: typeof routes['offices']
   agents: typeof routes['agents']
@@ -134,6 +174,14 @@ export interface ApiDefinition {
     markPaid: typeof routes['invoices.mark_paid']
     quickbooks: {
       retry: typeof routes['invoices.quickbooks.retry']
+    }
+  }
+  quickbooks: {
+    accounts: typeof routes['quickbooks.accounts'] & {
+      refresh: typeof routes['quickbooks.accounts.refresh']
+    }
+    items: typeof routes['quickbooks.items'] & {
+      refresh: typeof routes['quickbooks.items.refresh']
     }
   }
   receipts: typeof routes['receipts'] & {
@@ -168,32 +216,6 @@ export interface ApiDefinition {
   }
   roles: typeof routes['roles'] & {
     update: typeof routes['roles.update']
-  }
-  settings: typeof routes['settings'] & {
-    general: typeof routes['settings.general'] & {
-      update: typeof routes['settings.general.update']
-    }
-    smtp: typeof routes['settings.smtp'] & {
-      update: typeof routes['settings.smtp.update']
-      test: typeof routes['settings.smtp.test']
-    }
-    sms: typeof routes['settings.sms'] & {
-      update: typeof routes['settings.sms.update']
-    }
-    whatsapp: typeof routes['settings.whatsapp'] & {
-      update: typeof routes['settings.whatsapp.update']
-    }
-    other: typeof routes['settings.other'] & {
-      update: typeof routes['settings.other.update']
-    }
-    quickbooks: typeof routes['settings.quickbooks'] & {
-      connect: typeof routes['settings.quickbooks.connect']
-      callback: typeof routes['settings.quickbooks.callback']
-      disconnect: typeof routes['settings.quickbooks.disconnect']
-      credentials: typeof routes['settings.quickbooks.credentials']
-      test: typeof routes['settings.quickbooks.test']
-      update: typeof routes['settings.quickbooks.update']
-    }
   }
   profile: typeof routes['profile']
   userSettings: typeof routes['user_settings'] & {

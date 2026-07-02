@@ -13,10 +13,7 @@ import { validateQuickbooksInvoicePayload } from '#services/quickbooks/quickbook
 
 export default class QuickbooksInvoiceSync {
   static async syncInvoice(connection: QuickbooksConnection, invoiceId: number) {
-    const invoice = await Invoice.query()
-      .where('id', invoiceId)
-      .preload('customer')
-      .firstOrFail()
+    const invoice = await Invoice.query().where('id', invoiceId).preload('customer').firstOrFail()
 
     const existing = await QuickbooksSyncRecord.query()
       .where('entity_type', 'invoice')
@@ -74,10 +71,7 @@ export default class QuickbooksInvoiceSync {
       await this.markSynced(invoice, connection, quickbooksId, existing)
       return quickbooksId
     } catch (error) {
-      const duplicateId = await this.tryResolveDuplicateDocNumber(
-        connection,
-        invoice.invoiceNumber
-      )
+      const duplicateId = await this.tryResolveDuplicateDocNumber(connection, invoice.invoiceNumber)
 
       if (duplicateId) {
         await this.markSynced(invoice, connection, duplicateId, existing)

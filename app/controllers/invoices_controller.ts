@@ -5,6 +5,7 @@ import Customer from '#models/customer'
 import Invoice from '#models/invoice'
 import PaymentRecord from '#models/payment_record'
 import Quotation from '#models/quotation'
+import QuickbooksAccount from '#models/quickbooks_account'
 import AuthorizationService from '#services/authorization_service'
 import AuditService from '#services/audit_service'
 import InvoiceDocumentHtmlService from '#services/invoice_document_html_service'
@@ -57,6 +58,21 @@ async function nextPaymentReference(branchId: number) {
   return `${prefix}-${String(sequence).padStart(4, '0')}`
 }
 
+/** QBO only accepts Bank / Other Current Asset accounts as payment deposit targets. */
+async function depositAccountOptions(realmId: string) {
+  const accounts = await QuickbooksAccount.query()
+    .where('realm_id', realmId)
+    .where('active', true)
+    .whereIn('account_type', ['Bank', 'Other Current Asset'])
+    .orderBy('fully_qualified_name', 'asc')
+
+  return accounts.map((account) => ({
+    quickbooksId: account.quickbooksId,
+    name: account.fullyQualifiedName ?? account.name,
+    accountType: account.accountType,
+  }))
+}
+
 function canMarkInvoicePaid(status: string) {
   return ['issued', 'partially_paid', 'overdue'].includes(status)
 }
@@ -75,7 +91,7 @@ async function nextInvoiceNumber(branchId: number) {
 
 export default class InvoicesController {
   async index({ auth, inertia, request, response }: HttpContext) {
-    const user = auth.use("web").getUserOrFail()
+    const user = auth.use('web').getUserOrFail()
     if (!canViewInvoices(user)) {
       return response.forbidden()
     }
@@ -122,11 +138,9 @@ export default class InvoicesController {
       invoices: invoices.map((inv) => {
         const sync = syncSummaries.get(inv.id)
         const canPost =
-          canManage &&
-          QuickbooksSyncService.canPostInvoiceToQuickbooks(inv, quickbooksConnected)
+          canManage && QuickbooksSyncService.canPostInvoiceToQuickbooks(inv, quickbooksConnected)
         const canRetry =
-          canManage &&
-          QuickbooksSyncService.canRetryInvoiceQuickbooksSync(inv, quickbooksConnected)
+          canManage && QuickbooksSyncService.canRetryInvoiceQuickbooksSync(inv, quickbooksConnected)
 
         return {
           id: inv.id,
@@ -150,7 +164,7 @@ export default class InvoicesController {
   }
 
   async show({ auth, inertia, params, response }: HttpContext) {
-    const user = auth.use("web").getUserOrFail()
+    const user = auth.use('web').getUserOrFail()
     if (!canViewInvoices(user)) {
       return response.forbidden()
     }
@@ -175,6 +189,9 @@ export default class InvoicesController {
     const canIssue = canManage && invoice.status === 'draft'
     const balanceDue = Math.max(Number(invoice.totalAmount) - Number(invoice.amountPaid), 0)
     const canMarkPaid = canManage && canMarkInvoicePaid(invoice.status) && balanceDue > 0
+
+    const connection = canMarkPaid ? await QuickbooksOauthService.getActiveConnection() : null
+    const depositAccounts = connection ? await depositAccountOptions(connection.realmId) : []
 
     return inertia.render('invoices/show', {
       pageTitle: invoice.invoiceNumber,
@@ -204,6 +221,7 @@ export default class InvoicesController {
       })),
       currency: invoice.currency,
       quickbooks: await QuickbooksSyncService.getInvoiceSyncSummary(invoice.id),
+      depositAccounts,
     })
   }
 
@@ -236,7 +254,10 @@ export default class InvoicesController {
     }
 
     const canPost = QuickbooksSyncService.canPostInvoiceToQuickbooks(invoice, quickbooksConnected)
-    const canRetry = QuickbooksSyncService.canRetryInvoiceQuickbooksSync(invoice, quickbooksConnected)
+    const canRetry = QuickbooksSyncService.canRetryInvoiceQuickbooksSync(
+      invoice,
+      quickbooksConnected
+    )
     if (!canPost && !canRetry && invoice.quickbooksSyncStatus !== 'pending') {
       session.flash('error', 'This invoice cannot be synced to QuickBooks right now.')
       return response.redirect().back()
@@ -251,13 +272,8 @@ export default class InvoicesController {
           await QuickbooksSyncService.processPayment(invoice.id)
         } catch (paymentError) {
           const message =
-            paymentError instanceof Error
-              ? paymentError.message
-              : 'QuickBooks payment sync failed.'
-          session.flash(
-            'success',
-            'QuickBooks invoice sync completed, but payment sync failed.'
-          )
+            paymentError instanceof Error ? paymentError.message : 'QuickBooks payment sync failed.'
+          session.flash('success', 'QuickBooks invoice sync completed, but payment sync failed.')
           session.flash('error', message)
           return response.redirect().back()
         }
@@ -301,7 +317,7 @@ export default class InvoicesController {
   }
 
   async create({ auth, inertia, request, response }: HttpContext) {
-    const user = auth.use("web").getUserOrFail()
+    const user = auth.use('web').getUserOrFail()
     if (!AuthorizationService.can(user, 'invoices.manage')) {
       return response.forbidden()
     }
@@ -356,7 +372,7 @@ export default class InvoicesController {
   }
 
   async store({ auth, request, response, session }: HttpContext) {
-    const user = auth.use("web").getUserOrFail()
+    const user = auth.use('web').getUserOrFail()
     if (!AuthorizationService.can(user, 'invoices.manage')) {
       return response.forbidden()
     }
@@ -455,7 +471,7 @@ export default class InvoicesController {
   }
 
   async issue({ auth, params, request, response, session }: HttpContext) {
-    const user = auth.use("web").getUserOrFail()
+    const user = auth.use('web').getUserOrFail()
     if (!AuthorizationService.can(user, 'invoices.manage')) {
       return response.forbidden()
     }
@@ -500,6 +516,27 @@ export default class InvoicesController {
       return response.redirect().back()
     }
 
+    const depositAccountId = String(request.input('depositAccountId') ?? '').trim()
+    if (depositAccountId) {
+      const connection = await QuickbooksOauthService.getActiveConnection()
+      const account = connection
+        ? await QuickbooksAccount.query()
+            .where('realm_id', connection.realmId)
+            .where('quickbooks_id', depositAccountId)
+            .where('active', true)
+            .first()
+        : null
+
+      if (!account) {
+        session.flash('error', 'The selected deposit account is not a valid QuickBooks account.')
+        return response.redirect().back()
+      }
+
+      invoice.quickbooksDepositAccountId = account.quickbooksId
+      invoice.quickbooksDepositAccountName = account.fullyQualifiedName ?? account.name
+      await invoice.save()
+    }
+
     const paymentReference = await nextPaymentReference(invoice.branchId)
 
     await InvoiceService.recordClientPayment(invoice, balance, {
@@ -531,7 +568,11 @@ export default class InvoicesController {
       entityId: invoice.id,
       userId: user.id,
       ipAddress: request.ip(),
-      metadata: { invoiceNumber: invoice.invoiceNumber, amount: balance },
+      metadata: {
+        invoiceNumber: invoice.invoiceNumber,
+        amount: balance,
+        depositAccountId: invoice.quickbooksDepositAccountId,
+      },
     })
 
     session.flash('success', 'Invoice marked as paid.')
@@ -539,7 +580,7 @@ export default class InvoicesController {
   }
 
   async createFromBooking({ auth, params, request, response, session }: HttpContext) {
-    const user = auth.use("web").getUserOrFail()
+    const user = auth.use('web').getUserOrFail()
     if (!AuthorizationService.can(user, 'invoices.manage')) {
       return response.forbidden()
     }

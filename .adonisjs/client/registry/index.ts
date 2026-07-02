@@ -282,6 +282,12 @@ const routes = {
     tokens: [{"old":"/login/mfa","type":0,"val":"login","end":""},{"old":"/login/mfa","type":0,"val":"mfa","end":""}],
     types: placeholder as Registry['session.mfa.store']['types'],
   },
+  'settings.quickbooks.callback': {
+    methods: ["GET","HEAD"],
+    pattern: '/settings/quickbooks/callback',
+    tokens: [{"old":"/settings/quickbooks/callback","type":0,"val":"settings","end":""},{"old":"/settings/quickbooks/callback","type":0,"val":"quickbooks","end":""},{"old":"/settings/quickbooks/callback","type":0,"val":"callback","end":""}],
+    types: placeholder as Registry['settings.quickbooks.callback']['types'],
+  },
   'dashboard': {
     methods: ["GET","HEAD"],
     pattern: '/dashboard',
@@ -588,6 +594,30 @@ const routes = {
     tokens: [{"old":"/invoices/:id/mark-paid","type":0,"val":"invoices","end":""},{"old":"/invoices/:id/mark-paid","type":1,"val":"id","end":""},{"old":"/invoices/:id/mark-paid","type":0,"val":"mark-paid","end":""}],
     types: placeholder as Registry['invoices.mark_paid']['types'],
   },
+  'quickbooks.accounts': {
+    methods: ["GET","HEAD"],
+    pattern: '/quickbooks/accounts',
+    tokens: [{"old":"/quickbooks/accounts","type":0,"val":"quickbooks","end":""},{"old":"/quickbooks/accounts","type":0,"val":"accounts","end":""}],
+    types: placeholder as Registry['quickbooks.accounts']['types'],
+  },
+  'quickbooks.accounts.refresh': {
+    methods: ["POST"],
+    pattern: '/quickbooks/accounts/refresh',
+    tokens: [{"old":"/quickbooks/accounts/refresh","type":0,"val":"quickbooks","end":""},{"old":"/quickbooks/accounts/refresh","type":0,"val":"accounts","end":""},{"old":"/quickbooks/accounts/refresh","type":0,"val":"refresh","end":""}],
+    types: placeholder as Registry['quickbooks.accounts.refresh']['types'],
+  },
+  'quickbooks.items': {
+    methods: ["GET","HEAD"],
+    pattern: '/quickbooks/items',
+    tokens: [{"old":"/quickbooks/items","type":0,"val":"quickbooks","end":""},{"old":"/quickbooks/items","type":0,"val":"items","end":""}],
+    types: placeholder as Registry['quickbooks.items']['types'],
+  },
+  'quickbooks.items.refresh': {
+    methods: ["POST"],
+    pattern: '/quickbooks/items/refresh',
+    tokens: [{"old":"/quickbooks/items/refresh","type":0,"val":"quickbooks","end":""},{"old":"/quickbooks/items/refresh","type":0,"val":"items","end":""},{"old":"/quickbooks/items/refresh","type":0,"val":"refresh","end":""}],
+    types: placeholder as Registry['quickbooks.items.refresh']['types'],
+  },
   'receipts': {
     methods: ["GET","HEAD"],
     pattern: '/receipts',
@@ -840,12 +870,6 @@ const routes = {
     tokens: [{"old":"/settings/quickbooks/connect","type":0,"val":"settings","end":""},{"old":"/settings/quickbooks/connect","type":0,"val":"quickbooks","end":""},{"old":"/settings/quickbooks/connect","type":0,"val":"connect","end":""}],
     types: placeholder as Registry['settings.quickbooks.connect']['types'],
   },
-  'settings.quickbooks.callback': {
-    methods: ["GET","HEAD"],
-    pattern: '/settings/quickbooks/callback',
-    tokens: [{"old":"/settings/quickbooks/callback","type":0,"val":"settings","end":""},{"old":"/settings/quickbooks/callback","type":0,"val":"quickbooks","end":""},{"old":"/settings/quickbooks/callback","type":0,"val":"callback","end":""}],
-    types: placeholder as Registry['settings.quickbooks.callback']['types'],
-  },
   'settings.quickbooks.disconnect': {
     methods: ["POST"],
     pattern: '/settings/quickbooks/disconnect',
@@ -875,6 +899,12 @@ const routes = {
     pattern: '/invoices/:id/quickbooks/retry',
     tokens: [{"old":"/invoices/:id/quickbooks/retry","type":0,"val":"invoices","end":""},{"old":"/invoices/:id/quickbooks/retry","type":1,"val":"id","end":""},{"old":"/invoices/:id/quickbooks/retry","type":0,"val":"quickbooks","end":""},{"old":"/invoices/:id/quickbooks/retry","type":0,"val":"retry","end":""}],
     types: placeholder as Registry['invoices.quickbooks.retry']['types'],
+  },
+  'customers.quickbooks.retry': {
+    methods: ["POST"],
+    pattern: '/customers/:id/quickbooks/retry',
+    tokens: [{"old":"/customers/:id/quickbooks/retry","type":0,"val":"customers","end":""},{"old":"/customers/:id/quickbooks/retry","type":1,"val":"id","end":""},{"old":"/customers/:id/quickbooks/retry","type":0,"val":"quickbooks","end":""},{"old":"/customers/:id/quickbooks/retry","type":0,"val":"retry","end":""}],
+    types: placeholder as Registry['customers.quickbooks.retry']['types'],
   },
   'profile': {
     methods: ["GET","HEAD"],

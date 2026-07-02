@@ -138,9 +138,7 @@ function buildInvoiceLines(input: QuickbooksInvoicePayloadInput, taxCodeId: stri
     ]
   }
 
-  const lines = input.lineItems.map((item) =>
-    lineFromItem(item, input.serviceItemId, taxCodeId)
-  )
+  const lines = input.lineItems.map((item) => lineFromItem(item, input.serviceItemId, taxCodeId))
 
   const lineSum = sumQuickbooksLineAmounts(lines)
   const targetTotal = roundMoney(input.totalAmount)
@@ -153,8 +151,7 @@ function buildInvoiceLines(input: QuickbooksInvoicePayloadInput, taxCodeId: stri
         taxCodeId,
         amount: difference,
         qty: 1,
-        description:
-          difference > 0 ? 'Tax and adjustments' : 'Discount and adjustments',
+        description: difference > 0 ? 'Tax and adjustments' : 'Discount and adjustments',
       })
     )
   }
@@ -231,6 +228,7 @@ export type QuickbooksPaymentPayload = {
   TotalAmt: number
   TxnDate: string
   CurrencyRef?: { value: string }
+  DepositToAccountRef?: { value: string }
   PrivateNote?: string
   Line: Array<{
     Amount: number
@@ -243,6 +241,7 @@ export type QuickbooksPaymentPayload = {
 
 export type QuickbooksPaymentPayloadOptions = {
   currencyRef?: string | null
+  depositToAccountId?: string | null
 }
 
 export function buildQuickbooksPaymentPayload(
@@ -268,6 +267,10 @@ export function buildQuickbooksPaymentPayload(
 
   if (options.currencyRef) {
     payload.CurrencyRef = { value: options.currencyRef }
+  }
+
+  if (options.depositToAccountId) {
+    payload.DepositToAccountRef = { value: options.depositToAccountId }
   }
 
   if (input.reference?.trim()) {

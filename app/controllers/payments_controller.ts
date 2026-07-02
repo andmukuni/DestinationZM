@@ -3,6 +3,8 @@ import Branch from '#models/branch'
 import Customer from '#models/customer'
 import Invoice from '#models/invoice'
 import PaymentRecord from '#models/payment_record'
+import QuickbooksAccount from '#models/quickbooks_account'
+import QuickbooksOauthService from '#services/quickbooks/quickbooks_oauth_service'
 import AuthorizationService from '#services/authorization_service'
 import AuditService from '#services/audit_service'
 import InvoiceService from '#services/invoice_service'
@@ -30,7 +32,7 @@ async function nextPaymentReference(branchId: number) {
 
 export default class PaymentsController {
   async index({ auth, inertia, request, response }: HttpContext) {
-    const user = auth.use("web").getUserOrFail()
+    const user = auth.use('web').getUserOrFail()
     if (!canViewPayments(user)) {
       return response.forbidden()
     }
@@ -75,7 +77,7 @@ export default class PaymentsController {
   }
 
   async create({ auth, inertia, response }: HttpContext) {
-    const user = auth.use("web").getUserOrFail()
+    const user = auth.use('web').getUserOrFail()
     if (!AuthorizationService.can(user, 'payments.manage')) {
       return response.forbidden()
     }
@@ -113,7 +115,7 @@ export default class PaymentsController {
   }
 
   async store({ auth, request, response, session }: HttpContext) {
-    const user = auth.use("web").getUserOrFail()
+    const user = auth.use('web').getUserOrFail()
     if (!AuthorizationService.can(user, 'payments.manage')) {
       return response.forbidden()
     }
@@ -151,6 +153,23 @@ export default class PaymentsController {
       const invoice = await Invoice.findOrFail(payload.invoiceId)
       if (userBranchId && invoice.branchId !== userBranchId) {
         return response.forbidden()
+      }
+
+      const depositAccountId = String(request.input('depositAccountId') ?? '').trim()
+      if (depositAccountId) {
+        const connection = await QuickbooksOauthService.getActiveConnection()
+        const account = connection
+          ? await QuickbooksAccount.query()
+              .where('realm_id', connection.realmId)
+              .where('quickbooks_id', depositAccountId)
+              .where('active', true)
+              .first()
+          : null
+
+        if (account) {
+          invoice.quickbooksDepositAccountId = account.quickbooksId
+          invoice.quickbooksDepositAccountName = account.fullyQualifiedName ?? account.name
+        }
       }
 
       invoice.amountPaid = Number(invoice.amountPaid) + payload.amount

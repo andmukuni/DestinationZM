@@ -1,4 +1,4 @@
-import OAuthClient from 'intuit-oauth'
+import type OAuthClient from 'intuit-oauth'
 import type { QuickbooksEnvironment } from '#models/quickbooks_connection'
 
 type DiscoveryDocument = {

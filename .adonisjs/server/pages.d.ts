@@ -24,7 +24,6 @@ declare module '@adonisjs/inertia/types' {
     'coming_soon': ExtractProps<(typeof import('../../inertia/pages/coming_soon.tsx'))['default']>
     'customers/create.d': ExtractProps<(typeof import('../../inertia/pages/customers/create.d.ts'))['default']>
     'customers/create': ExtractProps<(typeof import('../../inertia/pages/customers/create.tsx'))['default']>
-    'customers/index.d': ExtractProps<(typeof import('../../inertia/pages/customers/index.d.ts'))['default']>
     'customers/index': ExtractProps<(typeof import('../../inertia/pages/customers/index.tsx'))['default']>
     'customers/show.d': ExtractProps<(typeof import('../../inertia/pages/customers/show.d.ts'))['default']>
     'customers/show': ExtractProps<(typeof import('../../inertia/pages/customers/show.tsx'))['default']>
@@ -74,6 +73,8 @@ declare module '@adonisjs/inertia/types' {
     'portal/users/index': ExtractProps<(typeof import('../../inertia/pages/portal/users/index.tsx'))['default']>
     'profile/index.d': ExtractProps<(typeof import('../../inertia/pages/profile/index.d.ts'))['default']>
     'profile/index': ExtractProps<(typeof import('../../inertia/pages/profile/index.tsx'))['default']>
+    'quickbooks/accounts': ExtractProps<(typeof import('../../inertia/pages/quickbooks/accounts.tsx'))['default']>
+    'quickbooks/items': ExtractProps<(typeof import('../../inertia/pages/quickbooks/items.tsx'))['default']>
     'quotations/create.d': ExtractProps<(typeof import('../../inertia/pages/quotations/create.d.ts'))['default']>
     'quotations/create': ExtractProps<(typeof import('../../inertia/pages/quotations/create.tsx'))['default']>
     'quotations/index.d': ExtractProps<(typeof import('../../inertia/pages/quotations/index.d.ts'))['default']>

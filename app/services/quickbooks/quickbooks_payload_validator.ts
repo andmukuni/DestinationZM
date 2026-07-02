@@ -72,11 +72,15 @@ function validateInvoiceLine(
 
   const detail = line.SalesItemLineDetail
   if (!detail?.ItemRef?.value?.trim()) {
-    throw new QuickbooksPayloadValidationError(`${prefix}.SalesItemLineDetail.ItemRef.value is required.`)
+    throw new QuickbooksPayloadValidationError(
+      `${prefix}.SalesItemLineDetail.ItemRef.value is required.`
+    )
   }
 
   if (!outOfScopeTax && !detail?.TaxCodeRef?.value?.trim()) {
-    throw new QuickbooksPayloadValidationError(`${prefix}.SalesItemLineDetail.TaxCodeRef.value is required.`)
+    throw new QuickbooksPayloadValidationError(
+      `${prefix}.SalesItemLineDetail.TaxCodeRef.value is required.`
+    )
   }
 
   if (outOfScopeTax && detail?.TaxCodeRef) {
@@ -86,11 +90,15 @@ function validateInvoiceLine(
   }
 
   if (!Number.isFinite(detail.Qty) || detail.Qty <= 0) {
-    throw new QuickbooksPayloadValidationError(`${prefix}.SalesItemLineDetail.Qty must be greater than zero.`)
+    throw new QuickbooksPayloadValidationError(
+      `${prefix}.SalesItemLineDetail.Qty must be greater than zero.`
+    )
   }
 
   if (!Number.isFinite(detail.UnitPrice)) {
-    throw new QuickbooksPayloadValidationError(`${prefix}.SalesItemLineDetail.UnitPrice must be a finite number.`)
+    throw new QuickbooksPayloadValidationError(
+      `${prefix}.SalesItemLineDetail.UnitPrice must be a finite number.`
+    )
   }
 
   const expectedAmount = roundMoney(detail.Qty * detail.UnitPrice)

@@ -25,6 +25,7 @@ export type SidebarNavIcon =
   | 'enquiries'
   | 'workflow_cycles'
   | 'workflow_cycles.index'
+  | 'quickbooks'
 
 export type SidebarNavRoute =
   | 'dashboard'
@@ -142,6 +143,25 @@ export const SIDEBAR_DEFINITION = {
           href: '/recovery-reports',
           icon: 'recovery',
           permission: 'recovery_reports.view',
+        },
+      ],
+    },
+    {
+      id: 'quickbooks',
+      label: 'QuickBooks',
+      icon: 'quickbooks',
+      items: [
+        {
+          label: 'Chart of accounts',
+          href: '/quickbooks/accounts',
+          icon: 'quickbooks',
+          permission: 'invoices.view',
+        },
+        {
+          label: 'Products & services',
+          href: '/quickbooks/items',
+          icon: 'quickbooks',
+          permission: 'invoices.view',
         },
       ],
     },

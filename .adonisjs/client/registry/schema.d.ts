@@ -559,6 +559,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/session_controller').default['storeMfa']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'settings.quickbooks.callback': {
+    methods: ["GET","HEAD"]
+    pattern: '/settings/quickbooks/callback'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/quickbooks_settings_controller').default['callback']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/quickbooks_settings_controller').default['callback']>>>
+    }
+  }
   'dashboard': {
     methods: ["GET","HEAD"]
     pattern: '/dashboard'
@@ -1171,6 +1183,54 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/invoices_controller').default['markPaid']>>>
     }
   }
+  'quickbooks.accounts': {
+    methods: ["GET","HEAD"]
+    pattern: '/quickbooks/accounts'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/quickbooks_accounts_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/quickbooks_accounts_controller').default['index']>>>
+    }
+  }
+  'quickbooks.accounts.refresh': {
+    methods: ["POST"]
+    pattern: '/quickbooks/accounts/refresh'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/quickbooks_accounts_controller').default['refresh']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/quickbooks_accounts_controller').default['refresh']>>>
+    }
+  }
+  'quickbooks.items': {
+    methods: ["GET","HEAD"]
+    pattern: '/quickbooks/items'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/quickbooks_items_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/quickbooks_items_controller').default['index']>>>
+    }
+  }
+  'quickbooks.items.refresh': {
+    methods: ["POST"]
+    pattern: '/quickbooks/items/refresh'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/quickbooks_items_controller').default['refresh']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/quickbooks_items_controller').default['refresh']>>>
+    }
+  }
   'receipts': {
     methods: ["GET","HEAD"]
     pattern: '/receipts'
@@ -1675,18 +1735,6 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/quickbooks_settings_controller').default['connect']>>>
     }
   }
-  'settings.quickbooks.callback': {
-    methods: ["GET","HEAD"]
-    pattern: '/settings/quickbooks/callback'
-    types: {
-      body: {}
-      paramsTuple: []
-      params: {}
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/quickbooks_settings_controller').default['callback']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/quickbooks_settings_controller').default['callback']>>>
-    }
-  }
   'settings.quickbooks.disconnect': {
     methods: ["POST"]
     pattern: '/settings/quickbooks/disconnect'
@@ -1745,6 +1793,18 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/invoices_controller').default['retryQuickbooksSync']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/invoices_controller').default['retryQuickbooksSync']>>>
+    }
+  }
+  'customers.quickbooks.retry': {
+    methods: ["POST"]
+    pattern: '/customers/:id/quickbooks/retry'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/customers_controller').default['retryQuickbooksSync']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/customers_controller').default['retryQuickbooksSync']>>>
     }
   }
   'profile': {

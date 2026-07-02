@@ -1,16 +1,15 @@
 import { Form, Link } from '@adonisjs/inertia/react'
 import { ArrowLeftIcon, ArrowPathIcon, QuickbooksIcon } from '~/components/icons'
 import InvoiceDocument, { type InvoiceDocumentData } from '~/components/portal/invoice_document'
-import InvoiceDocumentActions from '~/components/portal/invoice_document_actions'
+import InvoiceDocumentActions, {
+  type DepositAccountOption,
+} from '~/components/portal/invoice_document_actions'
 import { Badge } from '~/components/ui/badge'
 import { Card, CardBody, CardHeader } from '~/components/ui/card'
 import { ConfirmSubmitButton } from '~/components/ui/confirm_submit_button'
 import { Table, TBody, TD, THead, TH, TR } from '~/components/ui/table'
 import { formatCurrency, formatStatusLabel } from '~/lib/format'
-import {
-  quickbooksInvoiceLabel,
-  quickbooksInvoiceTone,
-} from '~/lib/quickbooks'
+import { quickbooksInvoiceLabel, quickbooksInvoiceTone } from '~/lib/quickbooks'
 import { statusTone } from '~/lib/status_tone'
 
 type InvoicesShowProps = {
@@ -51,6 +50,7 @@ type InvoicesShowProps = {
     lastError: string | null
     syncedAt: string | null
   }
+  depositAccounts: DepositAccountOption[]
 }
 
 export default function InvoicesShow({
@@ -67,21 +67,16 @@ export default function InvoicesShow({
   payments,
   currency,
   quickbooks,
+  depositAccounts,
 }: InvoicesShowProps) {
   const downloadUrl = `/invoices/${invoiceId}/download`
   const hasPaymentHistory = receipts.length > 0 || payments.length > 0
-  const quickbooksStatus = quickbooks.status as
-    | 'pending'
-    | 'synced'
-    | 'failed'
-    | 'skipped'
-    | null
+  const quickbooksStatus = quickbooks.status as 'pending' | 'synced' | 'failed' | 'skipped' | null
   const canPostToQuickbooks =
     canManage &&
     quickbooks.connected &&
     (quickbooksStatus === null || quickbooksStatus === 'skipped')
-  const canRetryQuickbooks =
-    canManage && quickbooks.connected && quickbooksStatus === 'failed'
+  const canRetryQuickbooks = canManage && quickbooks.connected && quickbooksStatus === 'failed'
 
   return (
     <div className="space-y-6">
@@ -105,6 +100,7 @@ export default function InvoicesShow({
             currency={currency}
             booking={booking}
             quotation={quotation}
+            depositAccounts={depositAccounts}
           />
         </div>
 
@@ -142,9 +138,7 @@ export default function InvoicesShow({
                 <ConfirmSubmitButton
                   variant="secondary"
                   className="gap-1.5"
-                  title={
-                    canRetryQuickbooks ? 'Retry QuickBooks sync?' : 'Post to QuickBooks?'
-                  }
+                  title={canRetryQuickbooks ? 'Retry QuickBooks sync?' : 'Post to QuickBooks?'}
                   description={
                     canRetryQuickbooks
                       ? 'Retry syncing this invoice to QuickBooks Online?'

@@ -58,6 +58,7 @@ export default class QuickbooksPaymentSync {
       },
       {
         currencyRef: resolveQuickbooksCurrencyRef(invoice.currency, currencyPrefs),
+        depositToAccountId: invoice.quickbooksDepositAccountId,
       }
     )
 

@@ -52,7 +52,10 @@ export default class QuickbooksCustomerSync {
       const escapedEmail = customer.email.trim().replace(/'/g, "\\'")
       const response = await QuickbooksClient.query<{
         Customer?: Array<{ Id: string }>
-      }>(connection, `select Id from Customer where PrimaryEmailAddr = '${escapedEmail}' maxresults 1`)
+      }>(
+        connection,
+        `select Id from Customer where PrimaryEmailAddr = '${escapedEmail}' maxresults 1`
+      )
 
       const match = response.QueryResponse?.Customer?.[0]
       if (match?.Id) {

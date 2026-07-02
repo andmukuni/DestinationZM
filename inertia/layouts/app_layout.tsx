@@ -31,6 +31,7 @@ import {
   MenuIcon,
   OfficesIcon,
   PackagesIcon,
+  QuickbooksIcon,
   ReportsIcon,
   RolesIcon,
   SettingsIcon,
@@ -70,6 +71,7 @@ const navIcons = {
   inquiries: UserGroupIcon,
   enquiries: TicketsIcon,
   workflow_cycles: CheckCircleIcon,
+  quickbooks: QuickbooksIcon,
 } as const
 
 function isActive(url: string, href: string) {
@@ -106,11 +108,7 @@ function NavItemLink({
     <Link href={item.href} className={className} onClick={onNavigate}>
       {!nested ? <SidebarNavIcon icon={Icon} active={active} /> : null}
       <span className="min-w-0 flex-1 truncate">{item.label}</span>
-      {item.badge ? (
-        <span className={brandNavBadgeClass}>
-          {item.badge}
-        </span>
-      ) : null}
+      {item.badge ? <span className={brandNavBadgeClass}>{item.badge}</span> : null}
     </Link>
   )
 }
@@ -185,7 +183,9 @@ function SidebarBrand() {
   return (
     <div className="flex h-16 shrink-0 items-center border-b border-slate-200 px-3.5">
       <Link route="dashboard" className="flex min-w-0 items-center gap-2.5">
-        <span className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${brandLogoClass}`}>
+        <span
+          className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${brandLogoClass}`}
+        >
           <AppLogoIcon className="h-[18px] w-[18px]" />
         </span>
         <span className="min-w-0">
@@ -285,7 +285,9 @@ function SidebarPanel({
   onNavigate?: () => void
 }) {
   return (
-    <aside className={`flex h-full w-64 shrink-0 flex-col border-r border-slate-200 bg-white ${className ?? ''}`}>
+    <aside
+      className={`flex h-full w-64 shrink-0 flex-col border-r border-slate-200 bg-white ${className ?? ''}`}
+    >
       <SidebarBrand />
       <SidebarNav url={url} sidebarNav={sidebarNav} onNavigate={onNavigate} />
     </aside>

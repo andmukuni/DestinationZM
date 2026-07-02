@@ -50,6 +50,7 @@ export type ScannedRoutes = {
     'session.store': { paramsTuple?: []; params?: {} }
     'session.mfa': { paramsTuple?: []; params?: {} }
     'session.mfa.store': { paramsTuple?: []; params?: {} }
+    'settings.quickbooks.callback': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
     'enquiries': { paramsTuple?: []; params?: {} }
     'enquiries.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -101,6 +102,10 @@ export type ScannedRoutes = {
     'invoices.download': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'invoices.issue': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'invoices.mark_paid': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'quickbooks.accounts': { paramsTuple?: []; params?: {} }
+    'quickbooks.accounts.refresh': { paramsTuple?: []; params?: {} }
+    'quickbooks.items': { paramsTuple?: []; params?: {} }
+    'quickbooks.items.refresh': { paramsTuple?: []; params?: {} }
     'receipts': { paramsTuple?: []; params?: {} }
     'receipts.create': { paramsTuple?: []; params?: {} }
     'receipts.store': { paramsTuple?: []; params?: {} }
@@ -143,12 +148,12 @@ export type ScannedRoutes = {
     'settings.security.mfa.disable': { paramsTuple?: []; params?: {} }
     'settings.quickbooks': { paramsTuple?: []; params?: {} }
     'settings.quickbooks.connect': { paramsTuple?: []; params?: {} }
-    'settings.quickbooks.callback': { paramsTuple?: []; params?: {} }
     'settings.quickbooks.disconnect': { paramsTuple?: []; params?: {} }
     'settings.quickbooks.credentials': { paramsTuple?: []; params?: {} }
     'settings.quickbooks.test': { paramsTuple?: []; params?: {} }
     'settings.quickbooks.update': { paramsTuple?: []; params?: {} }
     'invoices.quickbooks.retry': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'customers.quickbooks.retry': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'profile': { paramsTuple?: []; params?: {} }
     'user_settings': { paramsTuple?: []; params?: {} }
     'user_settings.password': { paramsTuple?: []; params?: {} }
@@ -183,6 +188,7 @@ export type ScannedRoutes = {
     'portal.users.edit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'session.create': { paramsTuple?: []; params?: {} }
     'session.mfa': { paramsTuple?: []; params?: {} }
+    'settings.quickbooks.callback': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
     'enquiries': { paramsTuple?: []; params?: {} }
     'enquiries.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -215,6 +221,8 @@ export type ScannedRoutes = {
     'invoices.create': { paramsTuple?: []; params?: {} }
     'invoices.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'invoices.download': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'quickbooks.accounts': { paramsTuple?: []; params?: {} }
+    'quickbooks.items': { paramsTuple?: []; params?: {} }
     'receipts': { paramsTuple?: []; params?: {} }
     'receipts.create': { paramsTuple?: []; params?: {} }
     'payments': { paramsTuple?: []; params?: {} }
@@ -238,7 +246,6 @@ export type ScannedRoutes = {
     'settings.security': { paramsTuple?: []; params?: {} }
     'settings.quickbooks': { paramsTuple?: []; params?: {} }
     'settings.quickbooks.connect': { paramsTuple?: []; params?: {} }
-    'settings.quickbooks.callback': { paramsTuple?: []; params?: {} }
     'profile': { paramsTuple?: []; params?: {} }
     'user_settings': { paramsTuple?: []; params?: {} }
   }
@@ -271,6 +278,7 @@ export type ScannedRoutes = {
     'portal.users.edit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'session.create': { paramsTuple?: []; params?: {} }
     'session.mfa': { paramsTuple?: []; params?: {} }
+    'settings.quickbooks.callback': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
     'enquiries': { paramsTuple?: []; params?: {} }
     'enquiries.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -303,6 +311,8 @@ export type ScannedRoutes = {
     'invoices.create': { paramsTuple?: []; params?: {} }
     'invoices.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'invoices.download': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'quickbooks.accounts': { paramsTuple?: []; params?: {} }
+    'quickbooks.items': { paramsTuple?: []; params?: {} }
     'receipts': { paramsTuple?: []; params?: {} }
     'receipts.create': { paramsTuple?: []; params?: {} }
     'payments': { paramsTuple?: []; params?: {} }
@@ -326,7 +336,6 @@ export type ScannedRoutes = {
     'settings.security': { paramsTuple?: []; params?: {} }
     'settings.quickbooks': { paramsTuple?: []; params?: {} }
     'settings.quickbooks.connect': { paramsTuple?: []; params?: {} }
-    'settings.quickbooks.callback': { paramsTuple?: []; params?: {} }
     'profile': { paramsTuple?: []; params?: {} }
     'user_settings': { paramsTuple?: []; params?: {} }
   }
@@ -367,6 +376,8 @@ export type ScannedRoutes = {
     'invoices.store': { paramsTuple?: []; params?: {} }
     'invoices.issue': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'invoices.mark_paid': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'quickbooks.accounts.refresh': { paramsTuple?: []; params?: {} }
+    'quickbooks.items.refresh': { paramsTuple?: []; params?: {} }
     'receipts.store': { paramsTuple?: []; params?: {} }
     'payments.store': { paramsTuple?: []; params?: {} }
     'recovery_reports.items.send': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -382,6 +393,7 @@ export type ScannedRoutes = {
     'settings.quickbooks.disconnect': { paramsTuple?: []; params?: {} }
     'settings.quickbooks.test': { paramsTuple?: []; params?: {} }
     'invoices.quickbooks.retry': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'customers.quickbooks.retry': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'session.destroy': { paramsTuple?: []; params?: {} }
   }
   DELETE: {

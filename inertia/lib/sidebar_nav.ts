@@ -19,6 +19,7 @@ export type SidebarNavIcon =
   | 'recovery_reports'
   | 'enquiries'
   | 'workflow_cycles'
+  | 'quickbooks'
 
 export type SidebarNavRoute =
   | 'dashboard'
@@ -126,7 +127,32 @@ const SIDEBAR_DEFINITION = {
       label: 'Recovery',
       icon: 'recovery',
       items: [
-        { label: 'Recovery report', route: 'recovery_reports', href: '/recovery-reports', icon: 'recovery', permission: 'recovery_reports.view' },
+        {
+          label: 'Recovery report',
+          route: 'recovery_reports',
+          href: '/recovery-reports',
+          icon: 'recovery',
+          permission: 'recovery_reports.view',
+        },
+      ],
+    },
+    {
+      id: 'quickbooks',
+      label: 'QuickBooks',
+      icon: 'quickbooks',
+      items: [
+        {
+          label: 'Chart of accounts',
+          href: '/quickbooks/accounts',
+          icon: 'quickbooks',
+          permission: 'invoices.view',
+        },
+        {
+          label: 'Products & services',
+          href: '/quickbooks/items',
+          icon: 'quickbooks',
+          permission: 'invoices.view',
+        },
       ],
     },
     {
@@ -134,7 +160,13 @@ const SIDEBAR_DEFINITION = {
       label: 'Reports',
       icon: 'reports',
       items: [
-        { label: 'Reports', route: 'reports', href: '/reports', icon: 'reports', permission: 'reports.view' },
+        {
+          label: 'Reports',
+          route: 'reports',
+          href: '/reports',
+          icon: 'reports',
+          permission: 'reports.view',
+        },
       ],
     },
     {
@@ -142,10 +174,28 @@ const SIDEBAR_DEFINITION = {
       label: 'Administration',
       icon: 'offices',
       items: [
-        { label: 'Offices', route: 'offices', href: '/offices', icon: 'offices', permission: 'offices.view' },
-        { label: 'Travel agents', route: 'agents', href: '/agents', icon: 'agents', permission: 'agents.view' },
+        {
+          label: 'Offices',
+          route: 'offices',
+          href: '/offices',
+          icon: 'offices',
+          permission: 'offices.view',
+        },
+        {
+          label: 'Travel agents',
+          route: 'agents',
+          href: '/agents',
+          icon: 'agents',
+          permission: 'agents.view',
+        },
         { label: 'Users', route: 'users', href: '/users', icon: 'users', permission: 'users.view' },
-        { label: 'Roles & permissions', route: 'roles', href: '/roles', icon: 'roles', permission: 'roles.manage' },
+        {
+          label: 'Roles & permissions',
+          route: 'roles',
+          href: '/roles',
+          icon: 'roles',
+          permission: 'roles.manage',
+        },
         {
           label: 'Portal enquiry forms',
           href: '/portal-booking-types',
@@ -157,7 +207,12 @@ const SIDEBAR_DEFINITION = {
   ],
 } satisfies {
   topLevel: SidebarNavDefinitionItem[]
-  groups: Array<{ id: string; label: string; icon: SidebarNavIcon; items: SidebarNavDefinitionItem[] }>
+  groups: Array<{
+    id: string
+    label: string
+    icon: SidebarNavIcon
+    items: SidebarNavDefinitionItem[]
+  }>
 }
 
 function toNavItem(item: SidebarNavDefinitionItem): SidebarNavItem {

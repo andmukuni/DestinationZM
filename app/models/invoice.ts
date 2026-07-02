@@ -71,6 +71,12 @@ export default class Invoice extends BaseModel {
   @column()
   declare quickbooksSyncStatus: 'pending' | 'synced' | 'failed' | 'skipped' | null
 
+  @column()
+  declare quickbooksDepositAccountId: string | null
+
+  @column()
+  declare quickbooksDepositAccountName: string | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

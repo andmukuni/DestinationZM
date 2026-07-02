@@ -221,7 +221,7 @@ export class DocumentSchema extends BaseModel {
 }
 
 export class InvoiceSchema extends BaseModel {
-  static $columns = ['amountPaid', 'bookingId', 'branchId', 'createdAt', 'currency', 'customerId', 'documentId', 'dueDate', 'id', 'invoiceNumber', 'issueDate', 'notes', 'quickbooksInvoiceId', 'quickbooksSyncStatus', 'recoveryReportItemId', 'status', 'subtotal', 'taxAmount', 'totalAmount', 'updatedAt'] as const
+  static $columns = ['amountPaid', 'bookingId', 'branchId', 'createdAt', 'currency', 'customerId', 'documentId', 'dueDate', 'id', 'invoiceNumber', 'issueDate', 'notes', 'quickbooksDepositAccountId', 'quickbooksDepositAccountName', 'quickbooksInvoiceId', 'quickbooksSyncStatus', 'recoveryReportItemId', 'status', 'subtotal', 'taxAmount', 'totalAmount', 'updatedAt'] as const
   $columns = InvoiceSchema.$columns
   @column()
   declare amountPaid: string
@@ -247,6 +247,10 @@ export class InvoiceSchema extends BaseModel {
   declare issueDate: DateTime
   @column()
   declare notes: string | null
+  @column()
+  declare quickbooksDepositAccountId: string | null
+  @column()
+  declare quickbooksDepositAccountName: string | null
   @column()
   declare quickbooksInvoiceId: string | null
   @column()
@@ -404,6 +408,39 @@ export class PortalRegistrationRequestSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class QuickbooksAccountSchema extends BaseModel {
+  static $columns = ['accountSubType', 'accountType', 'active', 'classification', 'createdAt', 'currency', 'currentBalance', 'fullyQualifiedName', 'id', 'name', 'quickbooksId', 'realmId', 'syncedAt', 'updatedAt'] as const
+  $columns = QuickbooksAccountSchema.$columns
+  @column()
+  declare accountSubType: string | null
+  @column()
+  declare accountType: string | null
+  @column()
+  declare active: boolean
+  @column()
+  declare classification: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare currency: string | null
+  @column()
+  declare currentBalance: string | null
+  @column()
+  declare fullyQualifiedName: string | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare name: string
+  @column()
+  declare quickbooksId: string
+  @column()
+  declare realmId: string
+  @column.dateTime()
+  declare syncedAt: DateTime | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
 export class QuickbooksAppSettingSchema extends BaseModel {
   static $columns = ['clientId', 'clientSecretEncrypted', 'createdAt', 'environment', 'id', 'redirectUri', 'scopes', 'updatedAt', 'updatedByUserId'] as const
   $columns = QuickbooksAppSettingSchema.$columns
@@ -460,8 +497,56 @@ export class QuickbooksConnectionSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class QuickbooksItemSchema extends BaseModel {
+  static $columns = ['active', 'createdAt', 'description', 'id', 'incomeAccountName', 'name', 'quickbooksId', 'realmId', 'sku', 'syncedAt', 'type', 'unitPrice', 'updatedAt'] as const
+  $columns = QuickbooksItemSchema.$columns
+  @column()
+  declare active: boolean
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare description: string | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare incomeAccountName: string | null
+  @column()
+  declare name: string
+  @column()
+  declare quickbooksId: string
+  @column()
+  declare realmId: string
+  @column()
+  declare sku: string | null
+  @column.dateTime()
+  declare syncedAt: DateTime | null
+  @column()
+  declare type: string | null
+  @column()
+  declare unitPrice: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
+export class QuickbooksSyncCursorSchema extends BaseModel {
+  static $columns = ['createdAt', 'entity', 'id', 'lastSyncedAt', 'realmId', 'updatedAt'] as const
+  $columns = QuickbooksSyncCursorSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare entity: string
+  @column({ isPrimary: true })
+  declare id: number
+  @column.dateTime()
+  declare lastSyncedAt: DateTime | null
+  @column()
+  declare realmId: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
 export class QuickbooksSyncRecordSchema extends BaseModel {
-  static $columns = ['attemptCount', 'createdAt', 'entityType', 'id', 'lastError', 'localId', 'quickbooksId', 'realmId', 'syncStatus', 'syncedAt', 'updatedAt'] as const
+  static $columns = ['attemptCount', 'createdAt', 'entityType', 'id', 'lastError', 'lastIntuitTid', 'localId', 'quickbooksId', 'realmId', 'syncStatus', 'syncedAt', 'updatedAt'] as const
   $columns = QuickbooksSyncRecordSchema.$columns
   @column()
   declare attemptCount: number
@@ -473,6 +558,8 @@ export class QuickbooksSyncRecordSchema extends BaseModel {
   declare id: number
   @column()
   declare lastError: string | null
+  @column()
+  declare lastIntuitTid: string | null
   @column()
   declare localId: number
   @column()
@@ -868,7 +955,7 @@ export class SystemSettingSchema extends BaseModel {
 }
 
 export class UserSchema extends BaseModel {
-  static $columns = ['branchId', 'createdAt', 'email', 'fullName', 'id', 'lastAccessedAt', 'password', 'role', 'updatedAt'] as const
+  static $columns = ['branchId', 'createdAt', 'email', 'fullName', 'id', 'lastAccessedAt', 'mfaConfirmedAt', 'mfaEnabled', 'mfaSecretEncrypted', 'password', 'role', 'updatedAt'] as const
   $columns = UserSchema.$columns
   @column()
   declare branchId: number | null
@@ -882,6 +969,12 @@ export class UserSchema extends BaseModel {
   declare id: number
   @column.dateTime()
   declare lastAccessedAt: DateTime | null
+  @column.dateTime()
+  declare mfaConfirmedAt: DateTime | null
+  @column()
+  declare mfaEnabled: boolean
+  @column()
+  declare mfaSecretEncrypted: string | null
   @column({ serializeAs: null })
   declare password: string
   @column()

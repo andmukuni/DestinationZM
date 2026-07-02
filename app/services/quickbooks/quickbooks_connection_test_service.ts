@@ -40,7 +40,8 @@ export default class QuickbooksConnectionTestService {
       return {
         ok: false,
         stage: 'oauth',
-        message: error instanceof Error ? error.message : 'QuickBooks OAuth client could not be created.',
+        message:
+          error instanceof Error ? error.message : 'QuickBooks OAuth client could not be created.',
         details: {
           environment: appConfig.environment,
           apiBaseUrl: appConfig.apiBaseUrl,
