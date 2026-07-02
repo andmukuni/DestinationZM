@@ -402,20 +402,43 @@ export default class QuickbooksSyncService {
   }
 
   static async getInvoiceSyncSummary(invoiceId: number) {
-    const record = await QuickbooksSyncRecord.query()
-      .where('entity_type', 'invoice')
-      .where('local_id', invoiceId)
-      .first()
+    const [invoiceRecord, paymentRecord, invoice] = await Promise.all([
+      QuickbooksSyncRecord.query()
+        .where('entity_type', 'invoice')
+        .where('local_id', invoiceId)
+        .first(),
+      QuickbooksSyncRecord.query()
+        .where('entity_type', 'payment')
+        .where('local_id', invoiceId)
+        .first(),
+      Invoice.find(invoiceId),
+    ])
 
-    const invoice = await Invoice.find(invoiceId)
+    const paymentSyncStatus = paymentRecord?.syncStatus
+    const paymentStatus =
+      invoice?.status === 'paid' && paymentSyncStatus && paymentSyncStatus !== 'skipped'
+        ? paymentSyncStatus
+        : null
 
     return {
       connected: Boolean(await QuickbooksOauthService.getActiveConnection()),
-      status: invoice?.quickbooksSyncStatus ?? record?.syncStatus ?? null,
-      quickbooksInvoiceId: invoice?.quickbooksInvoiceId ?? record?.quickbooksId ?? null,
-      lastError: record?.lastError ?? null,
-      lastIntuitTid: record?.lastIntuitTid ?? null,
-      syncedAt: record?.syncedAt?.toISO() ?? null,
+      status: invoice?.quickbooksSyncStatus ?? invoiceRecord?.syncStatus ?? null,
+      quickbooksInvoiceId: invoice?.quickbooksInvoiceId ?? invoiceRecord?.quickbooksId ?? null,
+      paymentStatus,
+      depositAccount:
+        invoice?.quickbooksDepositAccountId || invoice?.quickbooksDepositAccountName
+          ? {
+              id: invoice.quickbooksDepositAccountId,
+              name:
+                invoice.quickbooksDepositAccountName ??
+                invoice.quickbooksDepositAccountId ??
+                'Unknown account',
+            }
+          : null,
+      lastError: invoiceRecord?.lastError ?? paymentRecord?.lastError ?? null,
+      lastIntuitTid: invoiceRecord?.lastIntuitTid ?? paymentRecord?.lastIntuitTid ?? null,
+      syncedAt: invoiceRecord?.syncedAt?.toISO() ?? null,
+      paymentSyncedAt: paymentRecord?.syncedAt?.toISO() ?? null,
     }
   }
 

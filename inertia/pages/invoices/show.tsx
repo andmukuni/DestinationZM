@@ -9,7 +9,12 @@ import { Card, CardBody, CardHeader } from '~/components/ui/card'
 import { ConfirmSubmitButton } from '~/components/ui/confirm_submit_button'
 import { Table, TBody, TD, THead, TH, TR } from '~/components/ui/table'
 import { formatCurrency, formatStatusLabel } from '~/lib/format'
-import { quickbooksInvoiceLabel, quickbooksInvoiceTone } from '~/lib/quickbooks'
+import {
+  quickbooksInvoiceLabel,
+  quickbooksInvoiceTone,
+  quickbooksPaymentLabel,
+  quickbooksPaymentTone,
+} from '~/lib/quickbooks'
 import { statusTone } from '~/lib/status_tone'
 
 type InvoicesShowProps = {
@@ -47,8 +52,14 @@ type InvoicesShowProps = {
     connected: boolean
     status: string | null
     quickbooksInvoiceId: string | null
+    paymentStatus: string | null
+    depositAccount: {
+      id: string | null
+      name: string
+    } | null
     lastError: string | null
     syncedAt: string | null
+    paymentSyncedAt: string | null
   }
   depositAccounts: DepositAccountOption[]
 }
@@ -72,6 +83,14 @@ export default function InvoicesShow({
   const downloadUrl = `/invoices/${invoiceId}/download`
   const hasPaymentHistory = receipts.length > 0 || payments.length > 0
   const quickbooksStatus = quickbooks.status as 'pending' | 'synced' | 'failed' | 'skipped' | null
+  const quickbooksPaymentStatus = quickbooks.paymentStatus as
+    | 'pending'
+    | 'synced'
+    | 'failed'
+    | null
+  const quickbooksPaymentBadgeLabel = quickbooksPaymentLabel(quickbooksPaymentStatus)
+  const showDepositAccount =
+    quickbooks.depositAccount !== null || (hasPaymentHistory && quickbooks.connected)
   const canPostToQuickbooks =
     canManage &&
     quickbooks.connected &&
@@ -123,9 +142,35 @@ export default function InvoicesShow({
                 </span>
               ) : null}
             </div>
+            {quickbooksPaymentBadgeLabel ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-medium text-slate-700">Payment sync</span>
+                <Badge tone={quickbooksPaymentTone(quickbooksPaymentStatus)}>
+                  {quickbooksPaymentBadgeLabel}
+                </Badge>
+                {quickbooks.paymentSyncedAt ? (
+                  <span className="text-sm text-slate-600">
+                    {new Date(quickbooks.paymentSyncedAt).toLocaleString()}
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
+            {showDepositAccount ? (
+              <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                <p className="text-sm font-medium text-slate-900">Deposited to</p>
+                <p className="text-sm text-slate-700">
+                  {quickbooks.depositAccount?.name ?? 'Undeposited Funds (QuickBooks default)'}
+                </p>
+                {quickbooks.depositAccount?.id ? (
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    QBO account ID: {quickbooks.depositAccount.id}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
             {quickbooks.syncedAt ? (
               <p className="text-sm text-slate-600">
-                Last synced: {new Date(quickbooks.syncedAt).toLocaleString()}
+                Invoice last synced: {new Date(quickbooks.syncedAt).toLocaleString()}
               </p>
             ) : null}
             {quickbooks.lastError ? (
