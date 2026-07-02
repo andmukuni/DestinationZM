@@ -48,6 +48,8 @@ export type ScannedRoutes = {
     'portal.logout': { paramsTuple?: []; params?: {} }
     'session.create': { paramsTuple?: []; params?: {} }
     'session.store': { paramsTuple?: []; params?: {} }
+    'session.mfa': { paramsTuple?: []; params?: {} }
+    'session.mfa.store': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
     'enquiries': { paramsTuple?: []; params?: {} }
     'enquiries.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -180,6 +182,7 @@ export type ScannedRoutes = {
     'portal.users.create': { paramsTuple?: []; params?: {} }
     'portal.users.edit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'session.create': { paramsTuple?: []; params?: {} }
+    'session.mfa': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
     'enquiries': { paramsTuple?: []; params?: {} }
     'enquiries.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -267,6 +270,7 @@ export type ScannedRoutes = {
     'portal.users.create': { paramsTuple?: []; params?: {} }
     'portal.users.edit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'session.create': { paramsTuple?: []; params?: {} }
+    'session.mfa': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
     'enquiries': { paramsTuple?: []; params?: {} }
     'enquiries.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -344,6 +348,7 @@ export type ScannedRoutes = {
     'portal.users.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'portal.logout': { paramsTuple?: []; params?: {} }
     'session.store': { paramsTuple?: []; params?: {} }
+    'session.mfa.store': { paramsTuple?: []; params?: {} }
     'bookings.store': { paramsTuple?: []; params?: {} }
     'portal_booking_types.store': { paramsTuple?: []; params?: {} }
     'portal_booking_types.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

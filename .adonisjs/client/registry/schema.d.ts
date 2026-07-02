@@ -535,6 +535,30 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/session_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'session.mfa': {
+    methods: ["GET","HEAD"]
+    pattern: '/login/mfa'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/session_controller').default['createMfa']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/session_controller').default['createMfa']>>>
+    }
+  }
+  'session.mfa.store': {
+    methods: ["POST"]
+    pattern: '/login/mfa'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/security_validator').mfaVerifyValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/security_validator').mfaVerifyValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/session_controller').default['storeMfa']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/session_controller').default['storeMfa']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'dashboard': {
     methods: ["GET","HEAD"]
     pattern: '/dashboard'

@@ -17,7 +17,7 @@ export default function MfaVerify() {
         </p>
       </div>
 
-      <Form route="session.mfa.store" className="space-y-5">
+      <Form action="/login/mfa" method="post" className="space-y-5">
         {({ errors }) => (
           <>
             <Input

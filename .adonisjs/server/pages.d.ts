@@ -14,6 +14,7 @@ declare module '@adonisjs/inertia/types' {
   export interface InertiaPages {
     'auth/login.d': ExtractProps<(typeof import('../../inertia/pages/auth/login.d.ts'))['default']>
     'auth/login': ExtractProps<(typeof import('../../inertia/pages/auth/login.tsx'))['default']>
+    'auth/mfa_verify': ExtractProps<(typeof import('../../inertia/pages/auth/mfa_verify.tsx'))['default']>
     'bookings/create.d': ExtractProps<(typeof import('../../inertia/pages/bookings/create.d.ts'))['default']>
     'bookings/create': ExtractProps<(typeof import('../../inertia/pages/bookings/create.tsx'))['default']>
     'bookings/index.d': ExtractProps<(typeof import('../../inertia/pages/bookings/index.d.ts'))['default']>

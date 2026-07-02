@@ -270,6 +270,18 @@ const routes = {
     tokens: [{"old":"/login","type":0,"val":"login","end":""}],
     types: placeholder as Registry['session.store']['types'],
   },
+  'session.mfa': {
+    methods: ["GET","HEAD"],
+    pattern: '/login/mfa',
+    tokens: [{"old":"/login/mfa","type":0,"val":"login","end":""},{"old":"/login/mfa","type":0,"val":"mfa","end":""}],
+    types: placeholder as Registry['session.mfa']['types'],
+  },
+  'session.mfa.store': {
+    methods: ["POST"],
+    pattern: '/login/mfa',
+    tokens: [{"old":"/login/mfa","type":0,"val":"login","end":""},{"old":"/login/mfa","type":0,"val":"mfa","end":""}],
+    types: placeholder as Registry['session.mfa.store']['types'],
+  },
   'dashboard': {
     methods: ["GET","HEAD"],
     pattern: '/dashboard',
