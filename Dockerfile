@@ -12,6 +12,8 @@ RUN NODE_ENV=development NPM_CONFIG_PRODUCTION=false npm ci --include=dev --no-a
 COPY . .
 COPY docker/.env.build .env
 
+# Cap Node heap during vite+tsc; small Coolify build hosts can OOM without this.
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 RUN NODE_ENV=development node ace build --ignore-ts-errors
 
 # Install production deps inside build output (native modules e.g. better-sqlite3 need g++).

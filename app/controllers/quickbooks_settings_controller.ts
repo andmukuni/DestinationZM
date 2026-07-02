@@ -212,7 +212,7 @@ export default class QuickbooksSettingsController {
 
   async callback({ auth, request, response, session }: HttpContext) {
     const pendingUserId = session.get('quickbooks_oauth_user_id') as number | undefined
-    let user = auth.use('web').user
+    let user: User | null = auth.use('web').user ?? null
 
     if (!user && pendingUserId) {
       user = await User.find(pendingUserId)
