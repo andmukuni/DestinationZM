@@ -13,7 +13,6 @@ type GeneralSettingsProps = {
     supportPhone: string
     defaultCurrency: string
     defaultTimezone: string
-    portalWelcomeMessage: string
   }
 }
 
@@ -23,7 +22,7 @@ export default function GeneralSettings({ migrationRequired, general }: GeneralS
       <Card>
         <CardHeader
           title="General"
-          description="Organization profile and defaults shown across admin and client portal."
+          description="Organization profile and defaults shown across the admin app."
         />
         <CardBody>
           <Form route="settings.general.update" className="space-y-4">
@@ -67,21 +66,6 @@ export default function GeneralSettings({ migrationRequired, general }: GeneralS
                     error={errors.defaultTimezone}
                     required
                   />
-                </div>
-                <div className="space-y-1.5">
-                  <label htmlFor="portalWelcomeMessage" className="text-sm font-medium text-slate-700">
-                    Portal welcome message
-                  </label>
-                  <textarea
-                    id="portalWelcomeMessage"
-                    name="portalWelcomeMessage"
-                    rows={4}
-                    defaultValue={general.portalWelcomeMessage}
-                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
-                  />
-                  {errors.portalWelcomeMessage ? (
-                    <p className="text-sm text-red-600">{errors.portalWelcomeMessage}</p>
-                  ) : null}
                 </div>
                 <Button type="submit" className="bg-orange-600 hover:bg-orange-700" disabled={migrationRequired}>
                   Save general settings

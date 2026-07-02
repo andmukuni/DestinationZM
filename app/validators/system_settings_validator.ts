@@ -7,15 +7,20 @@ export const generalSettingsValidator = vine.compile(
     supportPhone: vine.string().trim().maxLength(40).optional(),
     defaultCurrency: vine.string().trim().fixedLength(3),
     defaultTimezone: vine.string().trim().minLength(1).maxLength(64),
+  })
+)
+
+export const portalSettingsValidator = vine.compile(
+  vine.object({
     portalWelcomeMessage: vine.string().trim().maxLength(2000).optional(),
+    maintenanceMode: vine.boolean().optional(),
+    allowPortalRegistration: vine.boolean().optional(),
+    enableClientNotifications: vine.boolean().optional(),
   })
 )
 
 export const otherSettingsValidator = vine.compile(
   vine.object({
-    maintenanceMode: vine.boolean().optional(),
-    allowPortalRegistration: vine.boolean().optional(),
-    enableClientNotifications: vine.boolean().optional(),
     defaultInvoiceDueDays: vine.number().min(1).max(365),
     auditRetentionDays: vine.number().min(30).max(3650),
   })

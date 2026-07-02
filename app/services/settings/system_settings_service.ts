@@ -7,13 +7,16 @@ export type GeneralSettingsView = {
   supportPhone: string
   defaultCurrency: string
   defaultTimezone: string
-  portalWelcomeMessage: string
 }
 
-export type OtherSettingsView = {
+export type PortalSettingsView = {
+  portalWelcomeMessage: string
   maintenanceMode: boolean
   allowPortalRegistration: boolean
   enableClientNotifications: boolean
+}
+
+export type OtherSettingsView = {
   defaultInvoiceDueDays: number
   auditRetentionDays: number
 }
@@ -24,13 +27,16 @@ const GENERAL_DEFAULTS: GeneralSettingsView = {
   supportPhone: '',
   defaultCurrency: 'ZMW',
   defaultTimezone: 'Africa/Lusaka',
-  portalWelcomeMessage: '',
 }
 
-const OTHER_DEFAULTS: OtherSettingsView = {
+const PORTAL_DEFAULTS: PortalSettingsView = {
+  portalWelcomeMessage: '',
   maintenanceMode: false,
   allowPortalRegistration: false,
   enableClientNotifications: true,
+}
+
+const OTHER_DEFAULTS: OtherSettingsView = {
   defaultInvoiceDueDays: 30,
   auditRetentionDays: 365,
 }
@@ -73,37 +79,52 @@ export default class SystemSettingsService {
       supportPhone: map.get('support_phone') ?? GENERAL_DEFAULTS.supportPhone,
       defaultCurrency: map.get('default_currency') ?? GENERAL_DEFAULTS.defaultCurrency,
       defaultTimezone: map.get('default_timezone') ?? GENERAL_DEFAULTS.defaultTimezone,
+    }
+  }
+
+  static async portalToView(): Promise<PortalSettingsView> {
+    const [generalMap, otherMap] = await Promise.all([
+      this.getGroupMap('general'),
+      this.getGroupMap('other'),
+    ])
+
+    return {
       portalWelcomeMessage:
-        map.get('portal_welcome_message') ?? GENERAL_DEFAULTS.portalWelcomeMessage,
+        generalMap.get('portal_welcome_message') ?? PORTAL_DEFAULTS.portalWelcomeMessage,
+      maintenanceMode: parseBoolean(otherMap.get('maintenance_mode'), PORTAL_DEFAULTS.maintenanceMode),
+      allowPortalRegistration: parseBoolean(
+        otherMap.get('allow_portal_registration'),
+        PORTAL_DEFAULTS.allowPortalRegistration
+      ),
+      enableClientNotifications: parseBoolean(
+        otherMap.get('enable_client_notifications'),
+        PORTAL_DEFAULTS.enableClientNotifications
+      ),
     }
   }
 
   static async isMaintenanceMode() {
     const map = await this.getGroupMap('other')
-    return parseBoolean(map.get('maintenance_mode'), OTHER_DEFAULTS.maintenanceMode)
+    return parseBoolean(map.get('maintenance_mode'), PORTAL_DEFAULTS.maintenanceMode)
   }
 
   static async isPortalRegistrationAllowed() {
     const map = await this.getGroupMap('other')
     return parseBoolean(
       map.get('allow_portal_registration'),
-      OTHER_DEFAULTS.allowPortalRegistration
+      PORTAL_DEFAULTS.allowPortalRegistration
     )
+  }
+
+  static async getPortalWelcomeMessage() {
+    const map = await this.getGroupMap('general')
+    return map.get('portal_welcome_message') ?? PORTAL_DEFAULTS.portalWelcomeMessage
   }
 
   static async otherToView(): Promise<OtherSettingsView> {
     const map = await this.getGroupMap('other')
 
     return {
-      maintenanceMode: parseBoolean(map.get('maintenance_mode'), OTHER_DEFAULTS.maintenanceMode),
-      allowPortalRegistration: parseBoolean(
-        map.get('allow_portal_registration'),
-        OTHER_DEFAULTS.allowPortalRegistration
-      ),
-      enableClientNotifications: parseBoolean(
-        map.get('enable_client_notifications'),
-        OTHER_DEFAULTS.enableClientNotifications
-      ),
       defaultInvoiceDueDays: parseNumber(
         map.get('default_invoice_due_days'),
         OTHER_DEFAULTS.defaultInvoiceDueDays
@@ -158,7 +179,26 @@ export default class SystemSettingsService {
         support_phone: { value: input.supportPhone },
         default_currency: { value: input.defaultCurrency },
         default_timezone: { value: input.defaultTimezone },
+      },
+      userId
+    )
+  }
+
+  static async savePortal(input: PortalSettingsView, userId: number) {
+    await this.saveGroup(
+      'general',
+      {
         portal_welcome_message: { value: input.portalWelcomeMessage },
+      },
+      userId
+    )
+
+    await this.saveGroup(
+      'other',
+      {
+        maintenance_mode: { value: input.maintenanceMode },
+        allow_portal_registration: { value: input.allowPortalRegistration },
+        enable_client_notifications: { value: input.enableClientNotifications },
       },
       userId
     )
@@ -168,9 +208,6 @@ export default class SystemSettingsService {
     await this.saveGroup(
       'other',
       {
-        maintenance_mode: { value: input.maintenanceMode },
-        allow_portal_registration: { value: input.allowPortalRegistration },
-        enable_client_notifications: { value: input.enableClientNotifications },
         default_invoice_due_days: { value: input.defaultInvoiceDueDays },
         audit_retention_days: { value: input.auditRetentionDays },
       },

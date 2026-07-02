@@ -352,6 +352,10 @@ router
     router
       .patch('settings/general', [controllers.SystemSettings, 'updateGeneral'])
       .as('settings.general.update')
+    router.get('settings/portal', [controllers.SystemSettings, 'portal']).as('settings.portal')
+    router
+      .patch('settings/portal', [controllers.SystemSettings, 'updatePortal'])
+      .as('settings.portal.update')
     router.get('settings/smtp', [controllers.SystemSettings, 'smtp']).as('settings.smtp')
     router
       .patch('settings/smtp', [controllers.SystemSettings, 'updateSmtp'])

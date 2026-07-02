@@ -5,6 +5,7 @@ import { brandTabActiveClass } from '~/lib/brand_theme'
 
 export type SettingsSectionId =
   | 'general'
+  | 'portal'
   | 'smtp'
   | 'quickbooks'
   | 'sms'
@@ -20,6 +21,7 @@ type SettingsSectionLink = {
 
 const SECTION_HREFS: Record<SettingsSectionId, string> = {
   general: '/settings/general',
+  portal: '/settings/portal',
   smtp: '/settings/smtp',
   quickbooks: '/settings/quickbooks',
   sms: '/settings/sms',
@@ -30,6 +32,7 @@ const SECTION_HREFS: Record<SettingsSectionId, string> = {
 
 const ALL_SECTIONS: SettingsSectionLink[] = [
   { id: 'general', label: 'General', href: SECTION_HREFS.general },
+  { id: 'portal', label: 'Client portal', href: SECTION_HREFS.portal },
   { id: 'smtp', label: 'Email (SMTP)', href: SECTION_HREFS.smtp },
   { id: 'quickbooks', label: 'QuickBooks', href: SECTION_HREFS.quickbooks },
   { id: 'sms', label: 'SMS', href: SECTION_HREFS.sms },

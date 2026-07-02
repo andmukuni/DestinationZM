@@ -29,23 +29,26 @@ const fieldClass =
 
 export default function PortalLogin({
   allowPortalRegistration = false,
+  portalWelcomeMessage = '',
   turnstile,
 }: {
   allowPortalRegistration?: boolean
+  portalWelcomeMessage?: string
   turnstile?: {
     enabled: boolean
     siteKey: string
   }
 }) {
+  const defaultMessage =
+    'Sign in to review quotations, confirm reports, and pay invoices.'
+  const subtitle = portalWelcomeMessage.trim() || defaultMessage
   const [showPassword, setShowPassword] = useState(false)
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-slate-900">Client portal</h1>
-        <p className="mt-2 text-sm text-slate-500">
-          Sign in to review quotations, confirm reports, and pay invoices.
-        </p>
+        <p className="mt-2 whitespace-pre-line text-sm text-slate-500">{subtitle}</p>
       </div>
 
       <Form route="portal.login.store" className="space-y-5">

@@ -16,6 +16,7 @@ import WhatsappSettingsService from '#services/settings/whatsapp_settings_servic
 import {
   generalSettingsValidator,
   otherSettingsValidator,
+  portalSettingsValidator,
   smsSettingsValidator,
   smtpSettingsValidator,
   smtpTestValidator,
@@ -45,12 +46,14 @@ function migrationRequiredProps(
       supportPhone: '',
       defaultCurrency: 'ZMW',
       defaultTimezone: 'Africa/Lusaka',
-      portalWelcomeMessage: '',
     },
-    other: {
+    portal: {
+      portalWelcomeMessage: '',
       maintenanceMode: false,
       allowPortalRegistration: false,
       enableClientNotifications: true,
+    },
+    other: {
       defaultInvoiceDueDays: 30,
       auditRetentionDays: 365,
     },
@@ -108,6 +111,7 @@ export default class SystemSettingsController {
     const first = sections[0]!.id
     const paths: Record<SettingsSection, string> = {
       general: '/settings/general',
+      portal: '/settings/portal',
       smtp: '/settings/smtp',
       quickbooks: '/settings/quickbooks',
       sms: '/settings/sms',
@@ -155,13 +159,52 @@ export default class SystemSettingsController {
         supportPhone: payload.supportPhone ?? '',
         defaultCurrency: payload.defaultCurrency.toUpperCase(),
         defaultTimezone: payload.defaultTimezone,
-        portalWelcomeMessage: payload.portalWelcomeMessage ?? '',
       },
       user.id
     )
 
     session.flash('success', 'General settings saved.')
     return response.redirect().toRoute('settings.general')
+  }
+
+  async portal({ auth, inertia, response }: HttpContext) {
+    const user = auth.use('web').getUserOrFail()
+    if (!canAccessSettingsSection(user, 'portal')) {
+      return response.forbidden()
+    }
+
+    try {
+      const portal = await SystemSettingsService.portalToView()
+      return inertia.render('settings/portal', buildSettingsPageProps(user, 'portal', { portal }))
+    } catch (error) {
+      if (!isMissingSettingsTable(error)) {
+        throw error
+      }
+
+      return inertia.render('settings/portal', migrationRequiredProps(user, 'portal'))
+    }
+  }
+
+  async updatePortal({ auth, request, response, session }: HttpContext) {
+    const user = auth.use('web').getUserOrFail()
+    if (!AuthorizationService.isAdmin(user)) {
+      return response.forbidden()
+    }
+
+    const payload = await request.validateUsing(portalSettingsValidator)
+
+    await SystemSettingsService.savePortal(
+      {
+        portalWelcomeMessage: payload.portalWelcomeMessage ?? '',
+        maintenanceMode: parseCheckbox(request.input('maintenanceMode')),
+        allowPortalRegistration: parseCheckbox(request.input('allowPortalRegistration')),
+        enableClientNotifications: parseCheckbox(request.input('enableClientNotifications')),
+      },
+      user.id
+    )
+
+    session.flash('success', 'Client portal settings saved.')
+    return response.redirect().toRoute('settings.portal')
   }
 
   async smtp({ auth, inertia, response }: HttpContext) {
@@ -379,9 +422,6 @@ export default class SystemSettingsController {
 
     await SystemSettingsService.saveOther(
       {
-        maintenanceMode: parseCheckbox(request.input('maintenanceMode')),
-        allowPortalRegistration: parseCheckbox(request.input('allowPortalRegistration')),
-        enableClientNotifications: parseCheckbox(request.input('enableClientNotifications')),
         defaultInvoiceDueDays: payload.defaultInvoiceDueDays,
         auditRetentionDays: payload.auditRetentionDays,
       },

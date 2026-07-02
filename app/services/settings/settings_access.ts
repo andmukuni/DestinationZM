@@ -3,6 +3,7 @@ import AuthorizationService from '#services/authorization_service'
 
 export type SettingsSection =
   | 'general'
+  | 'portal'
   | 'smtp'
   | 'quickbooks'
   | 'sms'
@@ -24,6 +25,13 @@ export const SETTINGS_SECTIONS: SettingsSectionMeta[] = [
     label: 'General',
     description: 'Organization profile and defaults',
     route: 'settings.general',
+    adminOnly: true,
+  },
+  {
+    id: 'portal',
+    label: 'Client portal',
+    description: 'Client portal access and messaging',
+    route: 'settings.portal',
     adminOnly: true,
   },
   {

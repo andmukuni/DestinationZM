@@ -9,11 +9,15 @@ import { DateTime } from 'luxon'
 
 export default class PortalSessionController {
   async create({ inertia }: HttpContext) {
-    const allowPortalRegistration = await SystemSettingsService.isPortalRegistrationAllowed()
-    const turnstile = await SecuritySettingsService.turnstilePublicConfig()
+    const [allowPortalRegistration, portalWelcomeMessage, turnstile] = await Promise.all([
+      SystemSettingsService.isPortalRegistrationAllowed(),
+      SystemSettingsService.getPortalWelcomeMessage(),
+      SecuritySettingsService.turnstilePublicConfig(),
+    ])
 
     return inertia.render('portal/login', {
       allowPortalRegistration,
+      portalWelcomeMessage,
       turnstile,
     })
   }
