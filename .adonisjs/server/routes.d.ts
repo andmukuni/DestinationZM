@@ -134,6 +134,11 @@ export type ScannedRoutes = {
     'settings.whatsapp.update': { paramsTuple?: []; params?: {} }
     'settings.other': { paramsTuple?: []; params?: {} }
     'settings.other.update': { paramsTuple?: []; params?: {} }
+    'settings.security': { paramsTuple?: []; params?: {} }
+    'settings.security.update': { paramsTuple?: []; params?: {} }
+    'settings.security.mfa.start': { paramsTuple?: []; params?: {} }
+    'settings.security.mfa.confirm': { paramsTuple?: []; params?: {} }
+    'settings.security.mfa.disable': { paramsTuple?: []; params?: {} }
     'settings.quickbooks': { paramsTuple?: []; params?: {} }
     'settings.quickbooks.connect': { paramsTuple?: []; params?: {} }
     'settings.quickbooks.callback': { paramsTuple?: []; params?: {} }
@@ -227,6 +232,7 @@ export type ScannedRoutes = {
     'settings.sms': { paramsTuple?: []; params?: {} }
     'settings.whatsapp': { paramsTuple?: []; params?: {} }
     'settings.other': { paramsTuple?: []; params?: {} }
+    'settings.security': { paramsTuple?: []; params?: {} }
     'settings.quickbooks': { paramsTuple?: []; params?: {} }
     'settings.quickbooks.connect': { paramsTuple?: []; params?: {} }
     'settings.quickbooks.callback': { paramsTuple?: []; params?: {} }
@@ -313,6 +319,7 @@ export type ScannedRoutes = {
     'settings.sms': { paramsTuple?: []; params?: {} }
     'settings.whatsapp': { paramsTuple?: []; params?: {} }
     'settings.other': { paramsTuple?: []; params?: {} }
+    'settings.security': { paramsTuple?: []; params?: {} }
     'settings.quickbooks': { paramsTuple?: []; params?: {} }
     'settings.quickbooks.connect': { paramsTuple?: []; params?: {} }
     'settings.quickbooks.callback': { paramsTuple?: []; params?: {} }
@@ -364,6 +371,9 @@ export type ScannedRoutes = {
     'reports.run': { paramsTuple?: []; params?: {} }
     'users.store': { paramsTuple?: []; params?: {} }
     'settings.smtp.test': { paramsTuple?: []; params?: {} }
+    'settings.security.mfa.start': { paramsTuple?: []; params?: {} }
+    'settings.security.mfa.confirm': { paramsTuple?: []; params?: {} }
+    'settings.security.mfa.disable': { paramsTuple?: []; params?: {} }
     'settings.quickbooks.disconnect': { paramsTuple?: []; params?: {} }
     'settings.quickbooks.test': { paramsTuple?: []; params?: {} }
     'invoices.quickbooks.retry': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -379,6 +389,7 @@ export type ScannedRoutes = {
     'settings.sms.update': { paramsTuple?: []; params?: {} }
     'settings.whatsapp.update': { paramsTuple?: []; params?: {} }
     'settings.other.update': { paramsTuple?: []; params?: {} }
+    'settings.security.update': { paramsTuple?: []; params?: {} }
     'settings.quickbooks.credentials': { paramsTuple?: []; params?: {} }
     'settings.quickbooks.update': { paramsTuple?: []; params?: {} }
     'user_settings.password': { paramsTuple?: []; params?: {} }

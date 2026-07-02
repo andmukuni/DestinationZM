@@ -1,7 +1,6 @@
 import { Link } from '@adonisjs/inertia/react'
 import { usePage } from '@inertiajs/react'
 import type { ReactNode } from 'react'
-import { urlFor } from '~/client'
 import { brandTabActiveClass } from '~/lib/brand_theme'
 
 export type SettingsSectionId =
@@ -20,13 +19,13 @@ type SettingsSectionLink = {
 }
 
 const SECTION_HREFS: Record<SettingsSectionId, string> = {
-  general: urlFor('settings.general'),
-  smtp: urlFor('settings.smtp'),
-  quickbooks: urlFor('settings.quickbooks'),
-  sms: urlFor('settings.sms'),
-  whatsapp: urlFor('settings.whatsapp'),
-  security: urlFor('settings.security'),
-  other: urlFor('settings.other'),
+  general: '/settings/general',
+  smtp: '/settings/smtp',
+  quickbooks: '/settings/quickbooks',
+  sms: '/settings/sms',
+  whatsapp: '/settings/whatsapp',
+  security: '/settings/security',
+  other: '/settings/other',
 }
 
 const ALL_SECTIONS: SettingsSectionLink[] = [

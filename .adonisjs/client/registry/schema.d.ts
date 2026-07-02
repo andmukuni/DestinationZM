@@ -1567,6 +1567,66 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/system_settings_controller').default['updateOther']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'settings.security': {
+    methods: ["GET","HEAD"]
+    pattern: '/settings/security'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/system_settings_controller').default['security']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/system_settings_controller').default['security']>>>
+    }
+  }
+  'settings.security.update': {
+    methods: ["PATCH"]
+    pattern: '/settings/security'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/security_validator').securitySettingsValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/security_validator').securitySettingsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/system_settings_controller').default['updateSecurity']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/system_settings_controller').default['updateSecurity']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'settings.security.mfa.start': {
+    methods: ["POST"]
+    pattern: '/settings/security/mfa/start'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/system_settings_controller').default['startMfaSetup']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/system_settings_controller').default['startMfaSetup']>>>
+    }
+  }
+  'settings.security.mfa.confirm': {
+    methods: ["POST"]
+    pattern: '/settings/security/mfa/confirm'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/security_validator').mfaVerifyValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/security_validator').mfaVerifyValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/system_settings_controller').default['confirmMfaSetup']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/system_settings_controller').default['confirmMfaSetup']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'settings.security.mfa.disable': {
+    methods: ["POST"]
+    pattern: '/settings/security/mfa/disable'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/security_validator').mfaDisableValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/security_validator').mfaDisableValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/system_settings_controller').default['disableMfa']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/system_settings_controller').default['disableMfa']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'settings.quickbooks': {
     methods: ["GET","HEAD"]
     pattern: '/settings/quickbooks'

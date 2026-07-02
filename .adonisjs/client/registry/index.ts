@@ -786,6 +786,36 @@ const routes = {
     tokens: [{"old":"/settings/other","type":0,"val":"settings","end":""},{"old":"/settings/other","type":0,"val":"other","end":""}],
     types: placeholder as Registry['settings.other.update']['types'],
   },
+  'settings.security': {
+    methods: ["GET","HEAD"],
+    pattern: '/settings/security',
+    tokens: [{"old":"/settings/security","type":0,"val":"settings","end":""},{"old":"/settings/security","type":0,"val":"security","end":""}],
+    types: placeholder as Registry['settings.security']['types'],
+  },
+  'settings.security.update': {
+    methods: ["PATCH"],
+    pattern: '/settings/security',
+    tokens: [{"old":"/settings/security","type":0,"val":"settings","end":""},{"old":"/settings/security","type":0,"val":"security","end":""}],
+    types: placeholder as Registry['settings.security.update']['types'],
+  },
+  'settings.security.mfa.start': {
+    methods: ["POST"],
+    pattern: '/settings/security/mfa/start',
+    tokens: [{"old":"/settings/security/mfa/start","type":0,"val":"settings","end":""},{"old":"/settings/security/mfa/start","type":0,"val":"security","end":""},{"old":"/settings/security/mfa/start","type":0,"val":"mfa","end":""},{"old":"/settings/security/mfa/start","type":0,"val":"start","end":""}],
+    types: placeholder as Registry['settings.security.mfa.start']['types'],
+  },
+  'settings.security.mfa.confirm': {
+    methods: ["POST"],
+    pattern: '/settings/security/mfa/confirm',
+    tokens: [{"old":"/settings/security/mfa/confirm","type":0,"val":"settings","end":""},{"old":"/settings/security/mfa/confirm","type":0,"val":"security","end":""},{"old":"/settings/security/mfa/confirm","type":0,"val":"mfa","end":""},{"old":"/settings/security/mfa/confirm","type":0,"val":"confirm","end":""}],
+    types: placeholder as Registry['settings.security.mfa.confirm']['types'],
+  },
+  'settings.security.mfa.disable': {
+    methods: ["POST"],
+    pattern: '/settings/security/mfa/disable',
+    tokens: [{"old":"/settings/security/mfa/disable","type":0,"val":"settings","end":""},{"old":"/settings/security/mfa/disable","type":0,"val":"security","end":""},{"old":"/settings/security/mfa/disable","type":0,"val":"mfa","end":""},{"old":"/settings/security/mfa/disable","type":0,"val":"disable","end":""}],
+    types: placeholder as Registry['settings.security.mfa.disable']['types'],
+  },
   'settings.quickbooks': {
     methods: ["GET","HEAD"],
     pattern: '/settings/quickbooks',

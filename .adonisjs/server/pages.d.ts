@@ -92,6 +92,7 @@ declare module '@adonisjs/inertia/types' {
     'roles/index': ExtractProps<(typeof import('../../inertia/pages/roles/index.tsx'))['default']>
     'settings/general': ExtractProps<(typeof import('../../inertia/pages/settings/general.tsx'))['default']>
     'settings/other': ExtractProps<(typeof import('../../inertia/pages/settings/other.tsx'))['default']>
+    'settings/security': ExtractProps<(typeof import('../../inertia/pages/settings/security.tsx'))['default']>
     'settings/quickbooks': ExtractProps<(typeof import('../../inertia/pages/settings/quickbooks.tsx'))['default']>
     'settings/sms': ExtractProps<(typeof import('../../inertia/pages/settings/sms.tsx'))['default']>
     'settings/smtp': ExtractProps<(typeof import('../../inertia/pages/settings/smtp.tsx'))['default']>
