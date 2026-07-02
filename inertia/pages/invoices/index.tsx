@@ -1,11 +1,21 @@
+import { Form } from '@adonisjs/inertia/react'
 import { useState } from 'react'
 import { ArrowPathIcon, FunnelIcon } from '~/components/icons'
 import ResourceTable from '~/components/resource_table'
 import { Badge } from '~/components/ui/badge'
 import { useRouterLoading } from '~/hooks/use_router_loading'
 import { Button } from '~/components/ui/button'
+import { ConfirmSubmitButton } from '~/components/ui/confirm_submit_button'
 import { Input } from '~/components/ui/input'
 import { formatCurrency, formatStatusLabel } from '~/lib/format'
+import {
+  invoicePaymentLabel,
+  invoicePaymentTone,
+  quickbooksInvoiceLabel,
+  quickbooksInvoiceTone,
+  quickbooksPaymentLabel,
+  quickbooksPaymentTone,
+} from '~/lib/quickbooks'
 import { statusTone } from '~/lib/status_tone'
 
 type InvoiceRow = {
@@ -19,12 +29,19 @@ type InvoiceRow = {
   issueDate: string
   dueDate: string
   branch: string
+  quickbooksStatus: 'pending' | 'synced' | 'failed' | 'skipped' | null
+  quickbooksInvoiceId: string | null
+  quickbooksPaymentStatus: 'pending' | 'synced' | 'failed' | null
+  canPostToQuickbooks: boolean
+  canRetryQuickbooks: boolean
 }
 
 type InvoicesIndexProps = {
   filters: { search: string; status: string | null; branchId: number | null }
   branches: Array<{ id: number; name: string }>
   invoices: InvoiceRow[]
+  canManage: boolean
+  quickbooksConnected: boolean
 }
 
 const STATUS_OPTIONS = [
@@ -44,7 +61,13 @@ function buildQuery(filters: InvoicesIndexProps['filters']) {
   return params.toString()
 }
 
-export default function InvoicesIndex({ filters, branches, invoices }: InvoicesIndexProps) {
+export default function InvoicesIndex({
+  filters,
+  branches,
+  invoices,
+  canManage,
+  quickbooksConnected,
+}: InvoicesIndexProps) {
   const [search, setSearch] = useState(filters.search)
   const [status, setStatus] = useState<string | null>(filters.status)
   const [branchId, setBranchId] = useState<number | null>(filters.branchId)
@@ -86,6 +109,8 @@ export default function InvoicesIndex({ filters, branches, invoices }: InvoicesI
     setBranchId(null)
     applyFilters({ search: '', status: null, branchId: null })
   }
+
+  const showQuickbooksColumns = canManage
 
   return (
     <div className="space-y-6">
@@ -161,7 +186,7 @@ export default function InvoicesIndex({ filters, branches, invoices }: InvoicesI
       <ResourceTable
         title="Invoices"
         description={`${invoices.length} invoice${invoices.length === 1 ? '' : 's'} · ${filterSummary}`}
-        createHref="/invoices/create"
+        createHref={canManage ? '/invoices/create' : undefined}
         createLabel="Create invoice"
         columns={[
           { key: 'invoiceNumber', label: 'Number', className: 'font-medium text-slate-900' },
@@ -173,6 +198,40 @@ export default function InvoicesIndex({ filters, branches, invoices }: InvoicesI
               <Badge tone={statusTone(String(value))}>{formatStatusLabel(String(value))}</Badge>
             ),
           },
+          {
+            key: 'payment',
+            label: 'Payment',
+            render: (_, row) => {
+              const paymentLabel = invoicePaymentLabel(row.status, row.amountPaid, row.totalAmount)
+              const qboPaymentLabel = quickbooksPaymentLabel(row.quickbooksPaymentStatus)
+
+              return (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <Badge tone={invoicePaymentTone(row.status, row.amountPaid, row.totalAmount)}>
+                    {paymentLabel}
+                  </Badge>
+                  {qboPaymentLabel ? (
+                    <Badge tone={quickbooksPaymentTone(row.quickbooksPaymentStatus)}>
+                      {qboPaymentLabel}
+                    </Badge>
+                  ) : null}
+                </div>
+              )
+            },
+          },
+          ...(showQuickbooksColumns
+            ? [
+                {
+                  key: 'quickbooksStatus',
+                  label: 'QBO',
+                  render: (_: unknown, row: InvoiceRow) => (
+                    <Badge tone={quickbooksInvoiceTone(row.quickbooksStatus)}>
+                      {quickbooksInvoiceLabel(row.quickbooksStatus, quickbooksConnected)}
+                    </Badge>
+                  ),
+                } as const,
+              ]
+            : []),
           {
             key: 'totalAmount',
             label: 'Total',
@@ -187,6 +246,42 @@ export default function InvoicesIndex({ filters, branches, invoices }: InvoicesI
           },
           { key: 'issueDate', label: 'Issued', className: 'text-slate-600' },
           { key: 'dueDate', label: 'Due', className: 'text-slate-600' },
+          ...(showQuickbooksColumns && quickbooksConnected
+            ? [
+                {
+                  key: 'actions',
+                  label: '',
+                  stopRowClick: true,
+                  render: (_: unknown, row: InvoiceRow) => {
+                    if (!row.canPostToQuickbooks && !row.canRetryQuickbooks) {
+                      return null
+                    }
+
+                    return (
+                      <Form route="invoices.quickbooks.retry" routeParams={{ id: row.id }}>
+                        <ConfirmSubmitButton
+                          variant="secondary"
+                          size="sm"
+                          title={
+                            row.canRetryQuickbooks
+                              ? 'Retry QuickBooks sync?'
+                              : 'Post to QuickBooks?'
+                          }
+                          description={
+                            row.canRetryQuickbooks
+                              ? 'Retry syncing this invoice to QuickBooks Online?'
+                              : 'Post this invoice to QuickBooks Online?'
+                          }
+                          confirmLabel={row.canRetryQuickbooks ? 'Retry sync' : 'Post to QBO'}
+                        >
+                          {row.canRetryQuickbooks ? 'Retry' : 'Post to QBO'}
+                        </ConfirmSubmitButton>
+                      </Form>
+                    )
+                  },
+                } as const,
+              ]
+            : []),
         ]}
         rows={invoices}
         rowHref={(row) => `/invoices/${row.id}`}

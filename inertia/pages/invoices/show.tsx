@@ -7,6 +7,10 @@ import { Card, CardBody, CardHeader } from '~/components/ui/card'
 import { ConfirmSubmitButton } from '~/components/ui/confirm_submit_button'
 import { Table, TBody, TD, THead, TH, TR } from '~/components/ui/table'
 import { formatCurrency, formatStatusLabel } from '~/lib/format'
+import {
+  quickbooksInvoiceLabel,
+  quickbooksInvoiceTone,
+} from '~/lib/quickbooks'
 import { statusTone } from '~/lib/status_tone'
 
 type InvoicesShowProps = {
@@ -49,22 +53,6 @@ type InvoicesShowProps = {
   }
 }
 
-function quickbooksTone(status: string | null): 'success' | 'warning' | 'danger' | 'default' {
-  if (status === 'synced') return 'success'
-  if (status === 'pending') return 'warning'
-  if (status === 'failed') return 'danger'
-  return 'default'
-}
-
-function quickbooksLabel(status: string | null, connected: boolean) {
-  if (!connected) return 'Not connected'
-  if (!status) return 'Not synced'
-  if (status === 'synced') return 'Synced'
-  if (status === 'pending') return 'Pending'
-  if (status === 'failed') return 'Failed'
-  return status
-}
-
 export default function InvoicesShow({
   invoiceId,
   document,
@@ -82,6 +70,18 @@ export default function InvoicesShow({
 }: InvoicesShowProps) {
   const downloadUrl = `/invoices/${invoiceId}/download`
   const hasPaymentHistory = receipts.length > 0 || payments.length > 0
+  const quickbooksStatus = quickbooks.status as
+    | 'pending'
+    | 'synced'
+    | 'failed'
+    | 'skipped'
+    | null
+  const canPostToQuickbooks =
+    canManage &&
+    quickbooks.connected &&
+    (quickbooksStatus === null || quickbooksStatus === 'skipped')
+  const canRetryQuickbooks =
+    canManage && quickbooks.connected && quickbooksStatus === 'failed'
 
   return (
     <div className="space-y-6">
@@ -118,8 +118,8 @@ export default function InvoicesShow({
           <CardHeader title="QuickBooks sync" />
           <CardBody className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge tone={quickbooksTone(quickbooks.status)}>
-                {quickbooksLabel(quickbooks.status, quickbooks.connected)}
+              <Badge tone={quickbooksInvoiceTone(quickbooksStatus)}>
+                {quickbooksInvoiceLabel(quickbooksStatus, quickbooks.connected)}
               </Badge>
               {quickbooks.quickbooksInvoiceId ? (
                 <span className="text-sm text-slate-600">
@@ -137,15 +137,21 @@ export default function InvoicesShow({
                 {quickbooks.lastError}
               </p>
             ) : null}
-            {canManage && quickbooks.connected && quickbooks.status === 'failed' ? (
+            {canPostToQuickbooks || canRetryQuickbooks ? (
               <Form route="invoices.quickbooks.retry" routeParams={{ id: invoiceId }}>
                 <ConfirmSubmitButton
                   variant="secondary"
-                  title="Retry QuickBooks sync?"
-                  description="Retry syncing this invoice to QuickBooks Online?"
-                  confirmLabel="Retry sync"
+                  title={
+                    canRetryQuickbooks ? 'Retry QuickBooks sync?' : 'Post to QuickBooks?'
+                  }
+                  description={
+                    canRetryQuickbooks
+                      ? 'Retry syncing this invoice to QuickBooks Online?'
+                      : 'Post this invoice to QuickBooks Online?'
+                  }
+                  confirmLabel={canRetryQuickbooks ? 'Retry sync' : 'Post to QBO'}
                 >
-                  Retry QuickBooks sync
+                  {canRetryQuickbooks ? 'Retry QuickBooks sync' : 'Post to QuickBooks'}
                 </ConfirmSubmitButton>
               </Form>
             ) : null}

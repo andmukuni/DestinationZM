@@ -1,4 +1,3 @@
-import { DateTime } from 'luxon'
 import quickbooksConfig from '#config/quickbooks'
 import Invoice from '#models/invoice'
 import QuickbooksSyncRecord from '#models/quickbooks_sync_record'
@@ -56,7 +55,104 @@ async function markSyncFailure(
   }
 }
 
+export type InvoiceListSyncSummary = {
+  quickbooksStatus: 'pending' | 'synced' | 'failed' | 'skipped' | null
+  quickbooksInvoiceId: string | null
+  quickbooksPaymentStatus: 'pending' | 'synced' | 'failed' | null
+}
+
+type InvoicePostEligibility = Pick<Invoice, 'status' | 'quickbooksSyncStatus'>
+
 export default class QuickbooksSyncService {
+  static canPostInvoiceToQuickbooks(invoice: InvoicePostEligibility, connected: boolean) {
+    if (!connected) {
+      return false
+    }
+
+    if (invoice.status === 'draft' || invoice.status === 'void') {
+      return false
+    }
+
+    if (invoice.quickbooksSyncStatus === 'synced' || invoice.quickbooksSyncStatus === 'pending') {
+      return false
+    }
+
+    return invoice.quickbooksSyncStatus === null || invoice.quickbooksSyncStatus === 'skipped'
+  }
+
+  static canRetryInvoiceQuickbooksSync(invoice: InvoicePostEligibility, connected: boolean) {
+    if (!connected) {
+      return false
+    }
+
+    if (invoice.status === 'draft' || invoice.status === 'void') {
+      return false
+    }
+
+    return invoice.quickbooksSyncStatus === 'failed'
+  }
+
+  static async getInvoiceListSyncSummaries(
+    invoices: Array<
+      Pick<Invoice, 'id' | 'quickbooksSyncStatus' | 'quickbooksInvoiceId' | 'status'>
+    >
+  ): Promise<Map<number, InvoiceListSyncSummary>> {
+    const result = new Map<number, InvoiceListSyncSummary>()
+    if (invoices.length === 0) {
+      return result
+    }
+
+    const invoiceIds = invoices.map((invoice) => invoice.id)
+    const records = await QuickbooksSyncRecord.query().whereIn('local_id', invoiceIds)
+
+    const invoiceRecords = new Map<number, QuickbooksSyncRecord>()
+    const paymentRecords = new Map<number, QuickbooksSyncRecord>()
+
+    for (const record of records) {
+      if (record.entityType === 'invoice') {
+        invoiceRecords.set(record.localId, record)
+      } else if (record.entityType === 'payment') {
+        paymentRecords.set(record.localId, record)
+      }
+    }
+
+    for (const invoice of invoices) {
+      const invoiceRecord = invoiceRecords.get(invoice.id)
+      const paymentRecord = paymentRecords.get(invoice.id)
+      const paymentSyncStatus = paymentRecord?.syncStatus
+      const quickbooksPaymentStatus =
+        invoice.status === 'paid' &&
+        paymentSyncStatus &&
+        paymentSyncStatus !== 'skipped'
+          ? paymentSyncStatus
+          : null
+
+      result.set(invoice.id, {
+        quickbooksStatus: invoice.quickbooksSyncStatus ?? invoiceRecord?.syncStatus ?? null,
+        quickbooksInvoiceId: invoice.quickbooksInvoiceId ?? invoiceRecord?.quickbooksId ?? null,
+        quickbooksPaymentStatus,
+      })
+    }
+
+    return result
+  }
+
+  static async retryInvoiceSync(invoiceId: number, options: { manual?: boolean } = {}) {
+    if (options.manual) {
+      const record = await QuickbooksSyncRecord.query()
+        .where('entity_type', 'invoice')
+        .where('local_id', invoiceId)
+        .first()
+
+      if (record) {
+        record.attemptCount = 0
+        await record.save()
+      }
+    }
+
+    return this.processInvoice(invoiceId, options)
+  }
+
   static enqueueInvoice(invoiceId: number) {
     void (async () => {
       if (!(await QuickbooksOauthService.isConfigured())) {
@@ -81,7 +177,7 @@ export default class QuickbooksSyncService {
     })
   }
 
-  static async processInvoice(invoiceId: number) {
+  static async processInvoice(invoiceId: number, options: { manual?: boolean } = {}) {
     const connection = await QuickbooksOauthService.getActiveConnection()
     if (!connection?.syncEnabled) {
       return null
@@ -93,7 +189,11 @@ export default class QuickbooksSyncService {
       return record.quickbooksId
     }
 
-    if (record.attemptCount >= quickbooksConfig.maxSyncAttempts && record.syncStatus === 'failed') {
+    if (
+      !options.manual &&
+      record.attemptCount >= quickbooksConfig.maxSyncAttempts &&
+      record.syncStatus === 'failed'
+    ) {
       return null
     }
 

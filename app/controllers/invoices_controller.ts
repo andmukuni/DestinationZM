@@ -11,6 +11,7 @@ import InvoiceDocumentHtmlService from '#services/invoice_document_html_service'
 import InvoiceDocumentService from '#services/invoice_document_service'
 import InvoiceService from '#services/invoice_service'
 import QuickbooksSyncService from '#services/quickbooks/quickbooks_sync_service'
+import QuickbooksOauthService from '#services/quickbooks/quickbooks_oauth_service'
 import RecoveryReportingService from '#services/recovery_reporting_service'
 import WorkflowService from '#services/workflow_service'
 import { invoiceStoreValidator } from '#validators/invoice_validator'
@@ -109,21 +110,42 @@ export default class InvoicesController {
       ? []
       : await Branch.query().orderBy('name', 'asc').select('id', 'name')
 
+    const canManage = AuthorizationService.can(user, 'invoices.manage')
+    const quickbooksConnected = Boolean(await QuickbooksOauthService.getActiveConnection())
+    const syncSummaries = await QuickbooksSyncService.getInvoiceListSyncSummaries(invoices)
+
     return inertia.render('invoices/index', {
       filters: { search, status: statusFilter, branchId: branchId ?? null },
       branches: branches.map((b) => ({ id: b.id, name: b.name })),
-      invoices: invoices.map((inv) => ({
-        id: inv.id,
-        invoiceNumber: inv.invoiceNumber,
-        customer: inv.customer?.fullName ?? 'Unknown',
-        status: inv.status,
-        totalAmount: inv.totalAmount,
-        amountPaid: inv.amountPaid,
-        currency: inv.currency,
-        issueDate: inv.issueDate.toFormat('dd LLL yyyy'),
-        dueDate: inv.dueDate.toFormat('dd LLL yyyy'),
-        branch: inv.branch?.name ?? '—',
-      })),
+      canManage,
+      quickbooksConnected,
+      invoices: invoices.map((inv) => {
+        const sync = syncSummaries.get(inv.id)
+        const canPost =
+          canManage &&
+          QuickbooksSyncService.canPostInvoiceToQuickbooks(inv, quickbooksConnected)
+        const canRetry =
+          canManage &&
+          QuickbooksSyncService.canRetryInvoiceQuickbooksSync(inv, quickbooksConnected)
+
+        return {
+          id: inv.id,
+          invoiceNumber: inv.invoiceNumber,
+          customer: inv.customer?.fullName ?? 'Unknown',
+          status: inv.status,
+          totalAmount: inv.totalAmount,
+          amountPaid: inv.amountPaid,
+          currency: inv.currency,
+          issueDate: inv.issueDate.toFormat('dd LLL yyyy'),
+          dueDate: inv.dueDate.toFormat('dd LLL yyyy'),
+          branch: inv.branch?.name ?? '—',
+          quickbooksStatus: sync?.quickbooksStatus ?? inv.quickbooksSyncStatus ?? null,
+          quickbooksInvoiceId: sync?.quickbooksInvoiceId ?? inv.quickbooksInvoiceId ?? null,
+          quickbooksPaymentStatus: sync?.quickbooksPaymentStatus ?? null,
+          canPostToQuickbooks: canPost,
+          canRetryQuickbooks: canRetry,
+        }
+      }),
     })
   }
 
@@ -197,15 +219,57 @@ export default class InvoicesController {
       return response.forbidden()
     }
 
+    const quickbooksConnected = Boolean(await QuickbooksOauthService.getActiveConnection())
+    if (!quickbooksConnected) {
+      session.flash('error', 'QuickBooks is not connected.')
+      return response.redirect().back()
+    }
+
+    if (invoice.status === 'draft' || invoice.status === 'void') {
+      session.flash('error', 'Draft and void invoices cannot be synced to QuickBooks.')
+      return response.redirect().back()
+    }
+
+    if (invoice.quickbooksSyncStatus === 'synced') {
+      session.flash('error', 'This invoice is already synced to QuickBooks.')
+      return response.redirect().back()
+    }
+
+    const canPost = QuickbooksSyncService.canPostInvoiceToQuickbooks(invoice, quickbooksConnected)
+    const canRetry = QuickbooksSyncService.canRetryInvoiceQuickbooksSync(invoice, quickbooksConnected)
+    if (!canPost && !canRetry && invoice.quickbooksSyncStatus !== 'pending') {
+      session.flash('error', 'This invoice cannot be synced to QuickBooks right now.')
+      return response.redirect().back()
+    }
+
     try {
-      await QuickbooksSyncService.processInvoice(invoice.id)
+      await QuickbooksSyncService.retryInvoiceSync(invoice.id, { manual: true })
+      await invoice.refresh()
+
+      if (invoice.status === 'paid') {
+        try {
+          await QuickbooksSyncService.processPayment(invoice.id)
+        } catch (paymentError) {
+          const message =
+            paymentError instanceof Error
+              ? paymentError.message
+              : 'QuickBooks payment sync failed.'
+          session.flash(
+            'success',
+            'QuickBooks invoice sync completed, but payment sync failed.'
+          )
+          session.flash('error', message)
+          return response.redirect().back()
+        }
+      }
+
       session.flash('success', 'QuickBooks invoice sync completed.')
     } catch (error) {
       const message = error instanceof Error ? error.message : 'QuickBooks sync failed.'
       session.flash('error', message)
     }
 
-    return response.redirect().toRoute('invoices.show', { id: invoice.id })
+    return response.redirect().back()
   }
 
   async download({ auth, params, response }: HttpContext) {
