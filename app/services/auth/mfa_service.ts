@@ -1,4 +1,4 @@
-import { authenticator } from 'otplib'
+import { generateSecret, generateURI, verifySync } from 'otplib'
 import QRCode from 'qrcode'
 import type User from '#models/user'
 import SecretCipher from '#services/settings/secret_cipher'
@@ -8,9 +8,12 @@ const ISSUER = 'DestinationZM'
 
 export default class MfaService {
   static generateSetup(user: User) {
-    const secret = authenticator.generateSecret()
-    const label = user.email
-    const otpauthUrl = authenticator.keyuri(label, ISSUER, secret)
+    const secret = generateSecret()
+    const otpauthUrl = generateURI({
+      issuer: ISSUER,
+      label: user.email,
+      secret,
+    })
 
     return { secret, otpauthUrl }
   }
@@ -20,7 +23,7 @@ export default class MfaService {
   }
 
   static verifySecret(secret: string, token: string) {
-    return authenticator.verify({ token: token.trim(), secret })
+    return verifySync({ secret, token: token.trim() }).valid === true
   }
 
   static async enable(user: User, secret: string, token: string) {
