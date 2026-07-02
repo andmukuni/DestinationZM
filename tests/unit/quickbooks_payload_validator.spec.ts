@@ -28,9 +28,35 @@ function validPayload(): QuickbooksInvoicePayload {
   }
 }
 
+function outOfScopePayload(): QuickbooksInvoicePayload {
+  return {
+    CustomerRef: { value: '1' },
+    DocNumber: 'INV-202607-0001',
+    TxnDate: '2026-07-01',
+    DueDate: '2026-07-31',
+    GlobalTaxCalculation: 'NotApplicable',
+    TxnTaxDetail: { TotalTax: 0 },
+    Line: [
+      {
+        DetailType: 'SalesItemLineDetail',
+        Amount: 89432.99,
+        SalesItemLineDetail: {
+          ItemRef: { value: '19' },
+          Qty: 1,
+          UnitPrice: 89432.99,
+        },
+      },
+    ],
+  }
+}
+
 test.group('Quickbooks payload validator', () => {
   test('accepts a valid invoice payload', ({ assert }) => {
     assert.doesNotThrow(() => validateQuickbooksInvoicePayload(validPayload()))
+  })
+
+  test('accepts out-of-scope tax payloads without TaxCodeRef', ({ assert }) => {
+    assert.doesNotThrow(() => validateQuickbooksInvoicePayload(outOfScopePayload()))
   })
 
   test('rejects raw-string CustomerMemo', ({ assert }) => {

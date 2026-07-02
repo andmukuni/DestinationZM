@@ -83,6 +83,21 @@ test.group('Quickbooks payload builder', () => {
     assert.equal(payload.DueDate, '2026-07-31')
   })
 
+  test('uses out-of-scope tax when no tax code is available', ({ assert }) => {
+    const payload = buildQuickbooksInvoicePayload(
+      {
+        ...baseInput,
+        notes: null,
+        lineItems: [],
+      },
+      { taxCodeId: null }
+    )
+
+    assert.equal(payload.GlobalTaxCalculation, 'NotApplicable')
+    assert.deepEqual(payload.TxnTaxDetail, { TotalTax: 0 })
+    assert.isUndefined(payload.Line[0]?.SalesItemLineDetail.TaxCodeRef)
+  })
+
   test('builds invoice payload from line items with TaxCodeRef', ({ assert }) => {
     const payload = buildQuickbooksInvoicePayload(
       {

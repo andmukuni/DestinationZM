@@ -42,12 +42,24 @@ export function validateQuickbooksInvoicePayload(payload: QuickbooksInvoicePaylo
     throw new QuickbooksPayloadValidationError('At least one invoice line is required.')
   }
 
+  if (payload.GlobalTaxCalculation === 'NotApplicable') {
+    if (payload.TxnTaxDetail?.TotalTax !== 0) {
+      throw new QuickbooksPayloadValidationError(
+        'TxnTaxDetail.TotalTax must be 0 when GlobalTaxCalculation is NotApplicable.'
+      )
+    }
+  }
+
   for (const [index, line] of payload.Line.entries()) {
-    validateInvoiceLine(line, index)
+    validateInvoiceLine(line, index, payload.GlobalTaxCalculation === 'NotApplicable')
   }
 }
 
-function validateInvoiceLine(line: QuickbooksInvoicePayload['Line'][number], index: number) {
+function validateInvoiceLine(
+  line: QuickbooksInvoicePayload['Line'][number],
+  index: number,
+  outOfScopeTax: boolean
+) {
   const prefix = `Line[${index}]`
 
   if (line.DetailType !== 'SalesItemLineDetail') {
@@ -63,8 +75,14 @@ function validateInvoiceLine(line: QuickbooksInvoicePayload['Line'][number], ind
     throw new QuickbooksPayloadValidationError(`${prefix}.SalesItemLineDetail.ItemRef.value is required.`)
   }
 
-  if (!detail?.TaxCodeRef?.value?.trim()) {
+  if (!outOfScopeTax && !detail?.TaxCodeRef?.value?.trim()) {
     throw new QuickbooksPayloadValidationError(`${prefix}.SalesItemLineDetail.TaxCodeRef.value is required.`)
+  }
+
+  if (outOfScopeTax && detail?.TaxCodeRef) {
+    throw new QuickbooksPayloadValidationError(
+      `${prefix}.SalesItemLineDetail.TaxCodeRef must be omitted when GlobalTaxCalculation is NotApplicable.`
+    )
   }
 
   if (!Number.isFinite(detail.Qty) || detail.Qty <= 0) {

@@ -30,7 +30,8 @@ export type QuickbooksInvoicePayloadInput = {
 export type QuickbooksInvoicePayloadOptions = {
   /** Only set when QBO multi-currency is enabled and the invoice uses a foreign currency. */
   currencyRef?: string | null
-  taxCodeId: string
+  /** When null, invoice uses GlobalTaxCalculation NotApplicable (no TaxCodeRef on lines). */
+  taxCodeId?: string | null
 }
 
 export type QuickbooksInvoiceLinePayload = {
@@ -41,7 +42,7 @@ export type QuickbooksInvoiceLinePayload = {
     ItemRef: { value: string }
     Qty: number
     UnitPrice: number
-    TaxCodeRef: { value: string }
+    TaxCodeRef?: { value: string }
   }
 }
 
@@ -53,6 +54,8 @@ export type QuickbooksInvoicePayload = {
   CurrencyRef?: { value: string }
   CustomerMemo?: { value: string }
   PrivateNote?: string
+  GlobalTaxCalculation?: 'NotApplicable'
+  TxnTaxDetail?: { TotalTax: number }
   Line: QuickbooksInvoiceLinePayload[]
 }
 
@@ -89,13 +92,10 @@ export function sumQuickbooksLineAmounts(lines: QuickbooksInvoiceLinePayload[]) 
 
 export function buildQuickbooksInvoicePayload(
   input: QuickbooksInvoicePayloadInput,
-  options: QuickbooksInvoicePayloadOptions
+  options: QuickbooksInvoicePayloadOptions = {}
 ): QuickbooksInvoicePayload {
-  if (!options.taxCodeId?.trim()) {
-    throw new Error('QuickBooks tax code is required to build an invoice payload.')
-  }
-
-  const lines = buildInvoiceLines(input, options.taxCodeId)
+  const taxCodeId = options.taxCodeId?.trim() || null
+  const lines = buildInvoiceLines(input, taxCodeId)
 
   const payload: QuickbooksInvoicePayload = {
     CustomerRef: { value: input.customerQuickbooksId },
@@ -103,6 +103,11 @@ export function buildQuickbooksInvoicePayload(
     TxnDate: normalizeQuickbooksDate(input.issueDate),
     DueDate: normalizeQuickbooksDate(input.dueDate),
     Line: lines,
+  }
+
+  if (!taxCodeId) {
+    payload.GlobalTaxCalculation = 'NotApplicable'
+    payload.TxnTaxDetail = { TotalTax: 0 }
   }
 
   if (options.currencyRef) {
@@ -120,7 +125,7 @@ export function buildQuickbooksInvoicePayload(
   return payload
 }
 
-function buildInvoiceLines(input: QuickbooksInvoicePayloadInput, taxCodeId: string) {
+function buildInvoiceLines(input: QuickbooksInvoicePayloadInput, taxCodeId: string | null) {
   if (input.lineItems.length === 0) {
     return [
       buildSalesLine({
@@ -159,7 +164,7 @@ function buildInvoiceLines(input: QuickbooksInvoicePayloadInput, taxCodeId: stri
 
 function buildSalesLine(input: {
   serviceItemId: string
-  taxCodeId: string
+  taxCodeId: string | null
   amount: number
   qty: number
   description?: string
@@ -178,9 +183,7 @@ function buildSalesLine(input: {
       },
       Qty: qty,
       UnitPrice: unitPrice,
-      TaxCodeRef: {
-        value: input.taxCodeId,
-      },
+      ...(input.taxCodeId ? { TaxCodeRef: { value: input.taxCodeId } } : {}),
     },
   }
 }
@@ -188,7 +191,7 @@ function buildSalesLine(input: {
 function lineFromItem(
   item: QuotationLineItem | QuickbooksInvoiceLineInput,
   serviceItemId: string,
-  taxCodeId: string
+  taxCodeId: string | null
 ) {
   const qty = item.quantity > 0 ? item.quantity : 1
   const description = [item.title, item.description].filter(Boolean).join(' — ').trim()

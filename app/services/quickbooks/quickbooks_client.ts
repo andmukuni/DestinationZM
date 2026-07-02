@@ -145,7 +145,61 @@ export default class QuickbooksClient {
     )
   }
 
-  static async getDefaultTaxCodeId(connection: QuickbooksConnection) {
+  static async getInvoiceSyncPreferences(connection: QuickbooksConnection) {
+    const prefs = await this.getPreferences(connection)
+    const taxCodeId = prefs.usingSalesTax ? await this.findDefaultTaxCodeId(connection) : null
+
+    return {
+      currency: prefs.currency,
+      taxCodeId,
+    }
+  }
+
+  static async getCurrencyPreferences(connection: QuickbooksConnection) {
+    const prefs = await this.getPreferences(connection)
+    return prefs.currency
+  }
+
+  static async resolveInvoiceTaxCodeId(connection: QuickbooksConnection) {
+    const prefs = await this.getPreferences(connection)
+
+    if (!prefs.usingSalesTax) {
+      return null
+    }
+
+    return this.findDefaultTaxCodeId(connection)
+  }
+
+  private static async getPreferences(connection: QuickbooksConnection) {
+    const result = await this.request<{
+      Preferences?: {
+        CurrencyPrefs?: {
+          MultiCurrencyEnabled?: boolean
+          HomeCurrency?: { value?: string }
+        }
+        TaxPrefs?: {
+          UsingSalesTax?: boolean
+        }
+      }
+    }>({
+      connection,
+      method: 'GET',
+      path: 'preferences',
+    })
+
+    const currencyPrefs = result.data.Preferences?.CurrencyPrefs
+    const taxPrefs = result.data.Preferences?.TaxPrefs
+
+    return {
+      currency: {
+        multiCurrencyEnabled: Boolean(currencyPrefs?.MultiCurrencyEnabled),
+        homeCurrency: currencyPrefs?.HomeCurrency?.value?.toUpperCase() ?? 'USD',
+      },
+      usingSalesTax: Boolean(taxPrefs?.UsingSalesTax),
+    }
+  }
+
+  static async findDefaultTaxCodeId(connection: QuickbooksConnection) {
     const response = await this.query<{ TaxCode?: Array<{ Id: string; Name?: string }> }>(
       connection,
       'select Id, Name from TaxCode maxresults 20'
@@ -153,9 +207,7 @@ export default class QuickbooksClient {
 
     const taxCodes = response.QueryResponse?.TaxCode ?? []
     if (taxCodes.length === 0) {
-      throw new Error(
-        'QuickBooks has no tax codes configured. Add a tax code in QuickBooks before syncing invoices.'
-      )
+      return null
     }
 
     const preferredNames = ['non', 'no vat', 'exempt', 'zero rated', 'zero-rated', 'out of scope']
@@ -167,26 +219,8 @@ export default class QuickbooksClient {
     return preferred?.Id ?? taxCodes[0]!.Id
   }
 
-  static async getCurrencyPreferences(connection: QuickbooksConnection) {
-    const result = await this.request<{
-      Preferences?: {
-        CurrencyPrefs?: {
-          MultiCurrencyEnabled?: boolean
-          HomeCurrency?: { value?: string }
-        }
-      }
-    }>({
-      connection,
-      method: 'GET',
-      path: 'preferences',
-    })
-
-    const prefs = result.data.Preferences?.CurrencyPrefs
-
-    return {
-      multiCurrencyEnabled: Boolean(prefs?.MultiCurrencyEnabled),
-      homeCurrency: prefs?.HomeCurrency?.value?.toUpperCase() ?? 'USD',
-    }
+  static async getDefaultTaxCodeId(connection: QuickbooksConnection) {
+    return this.resolveInvoiceTaxCodeId(connection)
   }
 
   static async getCompanyInfo(connection: QuickbooksConnection) {

@@ -38,8 +38,7 @@ export default class QuickbooksInvoiceSync {
 
     const quotation = await InvoiceDocumentService.quotationForBooking(invoice.bookingId)
     const lineItems = quotation?.lineItems?.items ?? []
-    const currencyPrefs = await QuickbooksClient.getCurrencyPreferences(connection)
-    const taxCodeId = await QuickbooksClient.getDefaultTaxCodeId(connection)
+    const syncPrefs = await QuickbooksClient.getInvoiceSyncPreferences(connection)
 
     const payload = buildQuickbooksInvoicePayload(
       {
@@ -57,8 +56,8 @@ export default class QuickbooksInvoiceSync {
         customerQuickbooksId,
       },
       {
-        currencyRef: resolveQuickbooksCurrencyRef(invoice.currency, currencyPrefs),
-        taxCodeId,
+        currencyRef: resolveQuickbooksCurrencyRef(invoice.currency, syncPrefs.currency),
+        taxCodeId: syncPrefs.taxCodeId,
       }
     )
 
