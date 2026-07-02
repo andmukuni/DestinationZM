@@ -18,7 +18,7 @@ import {
   quickbooksSettingsValidator,
 } from '#validators/quickbooks_validator'
 import type { HttpContext } from '@adonisjs/core/http'
-import type User from '#models/user'
+import User from '#models/user'
 
 export default class QuickbooksSettingsController {
   private async authorizeQuickbooks(
@@ -204,13 +204,28 @@ export default class QuickbooksSettingsController {
 
     const state = randomBytes(16).toString('hex')
     session.put('quickbooks_oauth_state', state)
+    session.put('quickbooks_oauth_user_id', user.id)
 
     const authorizeUrl = await QuickbooksOauthService.buildAuthorizeUrl(state)
     return response.redirect(authorizeUrl)
   }
 
   async callback({ auth, request, response, session }: HttpContext) {
-    const user = auth.use('web').getUserOrFail()
+    const pendingUserId = session.get('quickbooks_oauth_user_id') as number | undefined
+    let user = auth.use('web').user
+
+    if (!user && pendingUserId) {
+      user = await User.find(pendingUserId)
+    }
+
+    if (!user) {
+      session.flash(
+        'error',
+        'Your session expired during QuickBooks authorization. Log in and click Connect QuickBooks again.'
+      )
+      return response.redirect().toRoute('session.create')
+    }
+
     const denied = await this.authorizeQuickbooks(user, session, response)
     if (denied) {
       return denied
@@ -223,6 +238,7 @@ export default class QuickbooksSettingsController {
     const error = request.input('error')
 
     session.forget('quickbooks_oauth_state')
+    session.forget('quickbooks_oauth_user_id')
 
     if (error) {
       session.flash(

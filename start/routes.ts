@@ -143,6 +143,12 @@ router
   })
   .use(middleware.guest())
 
+// OAuth callback must stay outside auth middleware so Intuit redirects still complete
+// if the staff session cookie is not sent on the cross-site return trip.
+router
+  .get('settings/quickbooks/callback', [controllers.QuickbooksSettings, 'callback'])
+  .as('settings.quickbooks.callback')
+
 router
   .group(() => {
     router.get('dashboard', [controllers.Dashboard, 'index']).as('dashboard')
@@ -375,9 +381,6 @@ router
     router
       .get('settings/quickbooks/connect', [controllers.QuickbooksSettings, 'connect'])
       .as('settings.quickbooks.connect')
-    router
-      .get('settings/quickbooks/callback', [controllers.QuickbooksSettings, 'callback'])
-      .as('settings.quickbooks.callback')
     router
       .post('settings/quickbooks/disconnect', [controllers.QuickbooksSettings, 'disconnect'])
       .as('settings.quickbooks.disconnect')

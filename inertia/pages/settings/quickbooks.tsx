@@ -173,7 +173,8 @@ export default function QuickbooksSettings({
                       >
                         Intuit developer app
                       </a>
-                      . Reconnect QuickBooks after changing credentials or environment.
+                      . Use <strong>Sandbox</strong> when copying keys from the Development tab,
+                      and <strong>Production</strong> when copying keys from the Production tab.
                     </p>
 
                     <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-4">
