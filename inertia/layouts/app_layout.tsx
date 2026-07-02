@@ -203,11 +203,13 @@ function SidebarNav({
   url,
   sidebarNav,
   canAccessPortalSettings = false,
+  canAccessAnySettings = false,
   onNavigate,
 }: {
   url: string
   sidebarNav: NonNullable<Data.SharedProps['sidebarNav']>
   canAccessPortalSettings?: boolean
+  canAccessAnySettings?: boolean
   onNavigate?: () => void
 }) {
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
@@ -273,13 +275,15 @@ function SidebarNav({
             onClick={onNavigate}
           >
             <SidebarNavIcon icon={UserGroupIcon} active={portalSettingsActive} />
-            <span>Client portal</span>
+            <span>Client portal settings</span>
           </Link>
         ) : null}
-        <Link route="settings" className={navLinkClass(settingsActive)} onClick={onNavigate}>
-          <SidebarNavIcon icon={SettingsIcon} active={settingsActive} />
-          <span>Settings</span>
-        </Link>
+        {canAccessAnySettings ? (
+          <Link href="/settings" className={navLinkClass(settingsActive)} onClick={onNavigate}>
+            <SidebarNavIcon icon={SettingsIcon} active={settingsActive} />
+            <span>System settings</span>
+          </Link>
+        ) : null}
       </div>
     </nav>
   )
@@ -289,12 +293,14 @@ function SidebarPanel({
   url,
   sidebarNav,
   canAccessPortalSettings = false,
+  canAccessAnySettings = false,
   className,
   onNavigate,
 }: {
   url: string
   sidebarNav: NonNullable<Data.SharedProps['sidebarNav']>
   canAccessPortalSettings?: boolean
+  canAccessAnySettings?: boolean
   className?: string
   onNavigate?: () => void
 }) {
@@ -307,6 +313,7 @@ function SidebarPanel({
         url={url}
         sidebarNav={sidebarNav}
         canAccessPortalSettings={canAccessPortalSettings}
+        canAccessAnySettings={canAccessAnySettings}
         onNavigate={onNavigate}
       />
     </aside>
@@ -320,6 +327,7 @@ export default function AppLayout({ children }: { children: ReactElement<Data.Sh
     ? (props.sidebarNav ?? { topLevel: [], groups: [] })
     : resolveSidebarNavigation(props.permissions, user?.role)
   const canAccessPortalSettings = props.canAccessPortalSettings ?? false
+  const canAccessAnySettings = props.canAccessAnySettings ?? false
   const notifications = props.notifications ?? { unreadCount: 0, recent: [] }
   const pageTitle = props.pageTitle ?? 'DestinationZM'
   const pageDescription = props.pageDescription ?? 'Tour & travel management'
@@ -357,6 +365,7 @@ export default function AppLayout({ children }: { children: ReactElement<Data.Sh
             url={url}
             sidebarNav={sidebarNav}
             canAccessPortalSettings={canAccessPortalSettings}
+            canAccessAnySettings={canAccessAnySettings}
           />
         </div>
 
@@ -373,6 +382,7 @@ export default function AppLayout({ children }: { children: ReactElement<Data.Sh
                 url={url}
                 sidebarNav={sidebarNav}
                 canAccessPortalSettings={canAccessPortalSettings}
+                canAccessAnySettings={canAccessAnySettings}
                 className="h-dvh"
                 onNavigate={() => setMobileNavOpen(false)}
               />

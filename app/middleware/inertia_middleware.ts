@@ -8,7 +8,10 @@ import PermissionService from '#services/permission_service'
 import SidebarNavigationService, {
   buildSidebarNavigationFromPermissions,
 } from '#services/sidebar_navigation_service'
-import { canAccessSettingsSection } from '#services/settings/settings_access'
+import {
+  canAccessAnySettings as userCanAccessAnySettings,
+  canAccessSettingsSection,
+} from '#services/settings/settings_access'
 import type { PermissionSlug } from '#types/permissions'
 import UserTransformer from '#transformers/user_transformer'
 import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware'
@@ -57,6 +60,7 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
       | null = null
     let permissions: PermissionSlug[] = []
     let canAccessPortalSettings = false
+    let canAccessAnySettings = false
     let sidebarNav = { topLevel: [], groups: [] } as Awaited<
       ReturnType<typeof SidebarNavigationService.getNavigation>
     >
@@ -80,6 +84,7 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
         await PermissionService.bootstrap()
         permissions = PermissionService.permissionsForUser(webUser)
         canAccessPortalSettings = canAccessSettingsSection(webUser, 'portal')
+        canAccessAnySettings = userCanAccessAnySettings(webUser)
         sidebarNav = await SidebarNavigationService.getNavigation(webUser)
         if (sidebarNav.topLevel.length === 0 && sidebarNav.groups.length === 0) {
           const badges = await SidebarNavigationService.badgeCounts(webUser)
@@ -135,6 +140,7 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
       portalClient: ctx.inertia.always(portalClient ?? undefined),
       permissions: ctx.inertia.always(permissions),
       canAccessPortalSettings: ctx.inertia.always(canAccessPortalSettings),
+      canAccessAnySettings: ctx.inertia.always(canAccessAnySettings),
       sidebarNav: ctx.inertia.always(sidebarNav),
       notifications: ctx.inertia.always(notifications),
     }

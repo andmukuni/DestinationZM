@@ -14,6 +14,7 @@ import {
   DashboardIcon,
   MenuIcon,
   PlusIcon,
+  SettingsIcon,
   TicketsIcon,
   WalletIcon,
   UsersIcon,
@@ -127,6 +128,8 @@ function SidebarNav({
   url,
   onNavigate,
   privileges,
+  canAccessPortalSettings = false,
+  canAccessAnySettings = false,
   pendingEnquiriesCount = 0,
   pendingQuotationsCount = 0,
   pendingInvoicesCount = 0,
@@ -134,15 +137,22 @@ function SidebarNav({
   url: string
   onNavigate?: () => void
   privileges?: string[]
+  canAccessPortalSettings?: boolean
+  canAccessAnySettings?: boolean
   pendingEnquiriesCount?: number
   pendingQuotationsCount?: number
   pendingInvoicesCount?: number
 }) {
   const items = PORTAL_NAV_ITEMS.filter((item) => canShowPortalNavItem(item.id, privileges))
+  const portalSettingsActive =
+    url === '/settings/portal' || url.startsWith('/settings/portal/')
+  const settingsActive =
+    !portalSettingsActive && (url === '/settings' || url.startsWith('/settings/'))
+  const showStaffSettings = canAccessPortalSettings || canAccessAnySettings
 
   return (
-    <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 py-4">
-      <div className="space-y-1">
+    <nav className="flex min-h-0 flex-1 flex-col px-3 py-4">
+      <div className="min-h-0 flex-1 space-y-1 overflow-y-auto">
         {items.map((item, index) => {
           const showDividerAfterDashboard =
             item.id === 'dashboard' && index < items.length - 1
@@ -171,11 +181,35 @@ function SidebarNav({
         })}
       </div>
 
-      <div className="mt-auto border-t border-slate-200 pt-4">
-        <p className="px-2.5 text-[11px] font-medium uppercase tracking-wider text-slate-400">Need help?</p>
-        <p className="mt-1 px-2.5 text-xs leading-relaxed text-slate-500">
-          Contact your travel agent for changes to confirmed enquiries.
-        </p>
+      <div className="mt-4 shrink-0 space-y-3 border-t border-slate-200 pt-3">
+        {showStaffSettings ? (
+          <div className="space-y-1">
+            {canAccessPortalSettings ? (
+              <Link
+                href="/settings/portal"
+                className={navLinkClass(portalSettingsActive)}
+                onClick={onNavigate}
+              >
+                <SidebarNavIcon icon={UsersIcon} active={portalSettingsActive} />
+                <span>Client portal settings</span>
+              </Link>
+            ) : null}
+            {canAccessAnySettings ? (
+              <Link href="/settings" className={navLinkClass(settingsActive)} onClick={onNavigate}>
+                <SidebarNavIcon icon={SettingsIcon} active={settingsActive} />
+                <span>System settings</span>
+              </Link>
+            ) : null}
+          </div>
+        ) : null}
+        <div>
+          <p className="px-2.5 text-[11px] font-medium uppercase tracking-wider text-slate-400">
+            Need help?
+          </p>
+          <p className="mt-1 px-2.5 text-xs leading-relaxed text-slate-500">
+            Contact your travel agent for changes to confirmed enquiries.
+          </p>
+        </div>
       </div>
     </nav>
   )
@@ -187,6 +221,8 @@ function SidebarPanel({
   onNavigate,
   organizationName,
   privileges,
+  canAccessPortalSettings = false,
+  canAccessAnySettings = false,
   pendingEnquiriesCount,
   pendingQuotationsCount,
   pendingInvoicesCount,
@@ -196,6 +232,8 @@ function SidebarPanel({
   onNavigate?: () => void
   organizationName?: string
   privileges?: string[]
+  canAccessPortalSettings?: boolean
+  canAccessAnySettings?: boolean
   pendingEnquiriesCount?: number
   pendingQuotationsCount?: number
   pendingInvoicesCount?: number
@@ -210,6 +248,8 @@ function SidebarPanel({
         url={url}
         onNavigate={onNavigate}
         privileges={privileges}
+        canAccessPortalSettings={canAccessPortalSettings}
+        canAccessAnySettings={canAccessAnySettings}
         pendingEnquiriesCount={pendingEnquiriesCount}
         pendingQuotationsCount={pendingQuotationsCount}
         pendingInvoicesCount={pendingInvoicesCount}
@@ -255,6 +295,8 @@ export default function PortalLayout({ children }: { children: ReactElement<Data
   const pendingEnquiriesCount = portalClient?.pendingEnquiriesCount ?? 0
   const pendingQuotationsCount = portalClient?.pendingQuotationsCount ?? 0
   const pendingInvoicesCount = portalClient?.pendingInvoicesCount ?? 0
+  const canAccessPortalSettings = props.canAccessPortalSettings ?? false
+  const canAccessAnySettings = props.canAccessAnySettings ?? false
 
   return (
     <div className="h-dvh overflow-hidden bg-slate-100 text-slate-900">
@@ -264,6 +306,8 @@ export default function PortalLayout({ children }: { children: ReactElement<Data
             url={url}
             organizationName={organizationName}
             privileges={privileges}
+            canAccessPortalSettings={canAccessPortalSettings}
+            canAccessAnySettings={canAccessAnySettings}
             pendingEnquiriesCount={pendingEnquiriesCount}
             pendingQuotationsCount={pendingQuotationsCount}
             pendingInvoicesCount={pendingInvoicesCount}
@@ -284,6 +328,8 @@ export default function PortalLayout({ children }: { children: ReactElement<Data
                 className="h-dvh"
                 organizationName={organizationName}
                 privileges={privileges}
+                canAccessPortalSettings={canAccessPortalSettings}
+                canAccessAnySettings={canAccessAnySettings}
                 pendingEnquiriesCount={pendingEnquiriesCount}
                 pendingQuotationsCount={pendingQuotationsCount}
                 pendingInvoicesCount={pendingInvoicesCount}
