@@ -1,5 +1,5 @@
 import { Form, Link } from '@adonisjs/inertia/react'
-import { ArrowLeftIcon } from '~/components/icons'
+import { ArrowLeftIcon, ArrowPathIcon, QuickbooksIcon } from '~/components/icons'
 import InvoiceDocument, { type InvoiceDocumentData } from '~/components/portal/invoice_document'
 import InvoiceDocumentActions from '~/components/portal/invoice_document_actions'
 import { Badge } from '~/components/ui/badge'
@@ -141,6 +141,7 @@ export default function InvoicesShow({
               <Form route="invoices.quickbooks.retry" routeParams={{ id: invoiceId }}>
                 <ConfirmSubmitButton
                   variant="secondary"
+                  className="gap-1.5"
                   title={
                     canRetryQuickbooks ? 'Retry QuickBooks sync?' : 'Post to QuickBooks?'
                   }
@@ -151,7 +152,15 @@ export default function InvoicesShow({
                   }
                   confirmLabel={canRetryQuickbooks ? 'Retry sync' : 'Post to QBO'}
                 >
-                  {canRetryQuickbooks ? 'Retry QuickBooks sync' : 'Post to QuickBooks'}
+                  <QuickbooksIcon className="h-4 w-4 shrink-0" />
+                  {canRetryQuickbooks ? (
+                    <>
+                      <ArrowPathIcon className="h-3.5 w-3.5 shrink-0" />
+                      Retry QuickBooks sync
+                    </>
+                  ) : (
+                    'Post to QuickBooks'
+                  )}
                 </ConfirmSubmitButton>
               </Form>
             ) : null}

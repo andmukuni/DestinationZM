@@ -6,7 +6,7 @@ import { Table, TBody, TD, THead, TH, TR } from '~/components/ui/table'
 
 export type ResourceTableColumn<T extends { id: number }> = {
   key: string
-  label: string
+  label: ReactNode
   render?: (value: unknown, row: T) => ReactNode
   className?: string
   /** Prevent row navigation when clicking this cell (e.g. action buttons). */

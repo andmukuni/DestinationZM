@@ -660,3 +660,21 @@ export function ArrowsRightLeftIcon({ className = 'h-4 w-4' }: IconProps) {
     </OutlineIcon>
   )
 }
+
+/** QuickBooks Online mark (green circle + qb). */
+export function QuickbooksIcon({ className = 'h-4 w-4' }: IconProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      className={className}
+      aria-hidden
+    >
+      <circle cx="12" cy="12" r="12" fill="#2CA01C" />
+      <path
+        fill="#fff"
+        d="M8.1 16.2V7.8h1.95c1.65 0 2.55.9 2.55 2.25 0 .9-.3 1.5-.9 1.85.75.4 1.05 1.05 1.05 2.05 0 1.65-.9 2.45-2.7 2.45H8.1Zm1.65-5.55h.3c.75 0 1.05-.3 1.05-.9 0-.6-.3-.9-1.05-.9h-.3v1.8Zm0 4.05h.45c.9 0 1.35-.35 1.35-1.05 0-.75-.45-1.05-1.35-1.05h-.45v2.1ZM13.65 16.2V7.8h3.45v1.5h-1.8v1.95h1.65v1.5h-1.65v2.55h-1.65Z"
+      />
+    </svg>
+  )
+}

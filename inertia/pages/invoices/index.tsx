@@ -1,6 +1,6 @@
 import { Form, Link } from '@adonisjs/inertia/react'
 import { useState } from 'react'
-import { ArrowPathIcon, FunnelIcon, PlusIcon } from '~/components/icons'
+import { ArrowPathIcon, FunnelIcon, PlusIcon, QuickbooksIcon } from '~/components/icons'
 import ResourceTable from '~/components/resource_table'
 import { Badge } from '~/components/ui/badge'
 import { useRouterLoading } from '~/hooks/use_router_loading'
@@ -268,7 +268,12 @@ export default function InvoicesIndex({
             ? [
                 {
                   key: 'actions',
-                  label: '',
+                  label: (
+                    <span className="inline-flex items-center gap-1.5">
+                      <QuickbooksIcon className="h-3.5 w-3.5" />
+                      <span className="sr-only">QuickBooks actions</span>
+                    </span>
+                  ),
                   stopRowClick: true,
                   render: (_: unknown, row: InvoiceRow) => {
                     if (!row.canPostToQuickbooks && !row.canRetryQuickbooks) {
@@ -280,6 +285,7 @@ export default function InvoicesIndex({
                         <ConfirmSubmitButton
                           variant="secondary"
                           size="sm"
+                          className="gap-1.5"
                           title={
                             row.canRetryQuickbooks
                               ? 'Retry QuickBooks sync?'
@@ -292,7 +298,15 @@ export default function InvoicesIndex({
                           }
                           confirmLabel={row.canRetryQuickbooks ? 'Retry sync' : 'Post to QBO'}
                         >
-                          {row.canRetryQuickbooks ? 'Retry' : 'Post to QBO'}
+                          <QuickbooksIcon className="h-4 w-4 shrink-0" />
+                          {row.canRetryQuickbooks ? (
+                            <>
+                              <ArrowPathIcon className="h-3.5 w-3.5 shrink-0" />
+                              Retry
+                            </>
+                          ) : (
+                            'Post to QBO'
+                          )}
                         </ConfirmSubmitButton>
                       </Form>
                     )
