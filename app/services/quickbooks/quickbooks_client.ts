@@ -21,7 +21,7 @@ export type QuickbooksQueryResponse<T> = {
   Customer?: { Id: string; DisplayName?: string }
   Payment?: { Id: string }
   Fault?: {
-    Error?: Array<{ Message?: string; Detail?: string; code?: string }>
+    Error?: Array<{ Message?: string; Detail?: string; code?: string; element?: string }>
   }
 }
 
@@ -77,7 +77,7 @@ export default class QuickbooksClient {
       const fault = (payload as QuickbooksQueryResponse<unknown> | null)?.Fault
       const message =
         fault?.Error?.map((error) =>
-          [error.Message, error.Detail, error.code ? `(${error.code})` : null]
+          [error.element, error.Message, error.Detail, error.code ? `(${error.code})` : null]
             .filter(Boolean)
             .join(': ')
         )
@@ -143,6 +143,28 @@ export default class QuickbooksClient {
       connection,
       "select Id, Name, Type from Item where Type = 'Service' maxresults 100"
     )
+  }
+
+  static async getDefaultTaxCodeId(connection: QuickbooksConnection) {
+    const response = await this.query<{ TaxCode?: Array<{ Id: string; Name?: string }> }>(
+      connection,
+      'select Id, Name from TaxCode maxresults 20'
+    )
+
+    const taxCodes = response.QueryResponse?.TaxCode ?? []
+    if (taxCodes.length === 0) {
+      throw new Error(
+        'QuickBooks has no tax codes configured. Add a tax code in QuickBooks before syncing invoices.'
+      )
+    }
+
+    const preferredNames = ['non', 'no vat', 'exempt', 'zero rated', 'zero-rated', 'out of scope']
+    const preferred = taxCodes.find((taxCode) => {
+      const name = (taxCode.Name ?? '').trim().toLowerCase()
+      return preferredNames.some((candidate) => name.includes(candidate))
+    })
+
+    return preferred?.Id ?? taxCodes[0]!.Id
   }
 
   static async getCurrencyPreferences(connection: QuickbooksConnection) {

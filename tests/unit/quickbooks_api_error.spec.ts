@@ -16,4 +16,15 @@ test.group('QuickbooksApiError', () => {
     assert.equal(error.intuitTid, 'tid-999')
     assert.equal(error.status, 400)
   })
+
+  test('QuickbooksApiError stores fault payload', ({ assert }) => {
+    const error = new QuickbooksApiError('CustomerMemo: invalid property (2010)', {
+      status: 400,
+      fault: {
+        Error: [{ element: 'CustomerMemo', Message: 'invalid property', code: '2010' }],
+      },
+    })
+
+    assert.equal(error.fault?.Error?.[0]?.element, 'CustomerMemo')
+  })
 })

@@ -30,6 +30,19 @@ export type QuickbooksInvoicePayloadInput = {
 export type QuickbooksInvoicePayloadOptions = {
   /** Only set when QBO multi-currency is enabled and the invoice uses a foreign currency. */
   currencyRef?: string | null
+  taxCodeId: string
+}
+
+export type QuickbooksInvoiceLinePayload = {
+  DetailType: 'SalesItemLineDetail'
+  Amount: number
+  Description?: string
+  SalesItemLineDetail: {
+    ItemRef: { value: string }
+    Qty: number
+    UnitPrice: number
+    TaxCodeRef: { value: string }
+  }
 }
 
 export type QuickbooksInvoicePayload = {
@@ -38,18 +51,20 @@ export type QuickbooksInvoicePayload = {
   TxnDate: string
   DueDate: string
   CurrencyRef?: { value: string }
-  CustomerMemo?: string
+  CustomerMemo?: { value: string }
   PrivateNote?: string
-  Line: Array<{
-    DetailType: 'SalesItemLineDetail'
-    Amount: number
-    Description?: string
-    SalesItemLineDetail: {
-      ItemRef: { value: string; name?: string }
-      Qty: number
-      UnitPrice: number
-    }
-  }>
+  Line: QuickbooksInvoiceLinePayload[]
+}
+
+const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+
+export function normalizeQuickbooksDate(value: string) {
+  const match = value.match(/^(\d{4}-\d{2}-\d{2})/)
+  if (!match) {
+    throw new Error(`Invalid QuickBooks date: ${value}`)
+  }
+
+  return match[1]
 }
 
 export function resolveQuickbooksCurrencyRef(
@@ -68,33 +83,25 @@ export function resolveQuickbooksCurrencyRef(
   return normalized
 }
 
+export function sumQuickbooksLineAmounts(lines: QuickbooksInvoiceLinePayload[]) {
+  return roundMoney(lines.reduce((total, line) => total + line.Amount, 0))
+}
+
 export function buildQuickbooksInvoicePayload(
   input: QuickbooksInvoicePayloadInput,
-  options: QuickbooksInvoicePayloadOptions = {}
+  options: QuickbooksInvoicePayloadOptions
 ): QuickbooksInvoicePayload {
-  const lines =
-    input.lineItems.length > 0
-      ? input.lineItems.map((item) => lineFromItem(item, input.serviceItemId))
-      : [
-          {
-            DetailType: 'SalesItemLineDetail' as const,
-            Amount: roundMoney(input.totalAmount),
-            Description: input.invoiceNumber,
-            SalesItemLineDetail: {
-              ItemRef: {
-                value: input.serviceItemId,
-              },
-              Qty: 1,
-              UnitPrice: roundMoney(input.totalAmount),
-            },
-          },
-        ]
+  if (!options.taxCodeId?.trim()) {
+    throw new Error('QuickBooks tax code is required to build an invoice payload.')
+  }
+
+  const lines = buildInvoiceLines(input, options.taxCodeId)
 
   const payload: QuickbooksInvoicePayload = {
     CustomerRef: { value: input.customerQuickbooksId },
-    DocNumber: input.invoiceNumber,
-    TxnDate: input.issueDate,
-    DueDate: input.dueDate,
+    DocNumber: input.invoiceNumber.trim(),
+    TxnDate: normalizeQuickbooksDate(input.issueDate),
+    DueDate: normalizeQuickbooksDate(input.dueDate),
     Line: lines,
   }
 
@@ -103,41 +110,108 @@ export function buildQuickbooksInvoicePayload(
   }
 
   if (input.notes?.trim()) {
-    payload.CustomerMemo = input.notes.trim().slice(0, 1000)
+    payload.CustomerMemo = { value: input.notes.trim().slice(0, 1000) }
   }
 
   if (input.taxAmount > 0) {
-    payload.PrivateNote = `Tax amount: ${input.taxAmount}`
+    payload.PrivateNote = `Tax amount: ${roundMoney(input.taxAmount)}`
   }
 
   return payload
 }
 
-function lineFromItem(
-  item: QuotationLineItem | QuickbooksInvoiceLineInput,
+function buildInvoiceLines(input: QuickbooksInvoicePayloadInput, taxCodeId: string) {
+  if (input.lineItems.length === 0) {
+    return [
+      buildSalesLine({
+        serviceItemId: input.serviceItemId,
+        taxCodeId,
+        amount: input.totalAmount,
+        qty: 1,
+        description: input.invoiceNumber,
+      }),
+    ]
+  }
+
+  const lines = input.lineItems.map((item) =>
+    lineFromItem(item, input.serviceItemId, taxCodeId)
+  )
+
+  const lineSum = sumQuickbooksLineAmounts(lines)
+  const targetTotal = roundMoney(input.totalAmount)
+  const difference = roundMoney(targetTotal - lineSum)
+
+  if (Math.abs(difference) >= 0.01) {
+    lines.push(
+      buildSalesLine({
+        serviceItemId: input.serviceItemId,
+        taxCodeId,
+        amount: difference,
+        qty: 1,
+        description:
+          difference > 0 ? 'Tax and adjustments' : 'Discount and adjustments',
+      })
+    )
+  }
+
+  return lines
+}
+
+function buildSalesLine(input: {
   serviceItemId: string
-) {
-  const qty = item.quantity > 0 ? item.quantity : 1
-  const unitPrice = roundMoney(item.amount / qty)
+  taxCodeId: string
+  amount: number
+  qty: number
+  description?: string
+}): QuickbooksInvoiceLinePayload {
+  const qty = input.qty > 0 ? input.qty : 1
+  const unitPrice = roundMoney(input.amount / qty)
   const amount = roundMoney(unitPrice * qty)
-  const description = [item.title, item.description].filter(Boolean).join(' — ').trim()
 
   return {
-    DetailType: 'SalesItemLineDetail' as const,
+    DetailType: 'SalesItemLineDetail',
     Amount: amount,
-    ...(description ? { Description: description.slice(0, 4000) } : {}),
+    ...(input.description ? { Description: input.description.slice(0, 4000) } : {}),
     SalesItemLineDetail: {
       ItemRef: {
-        value: serviceItemId,
+        value: input.serviceItemId,
       },
       Qty: qty,
       UnitPrice: unitPrice,
+      TaxCodeRef: {
+        value: input.taxCodeId,
+      },
     },
   }
 }
 
-function roundMoney(value: number) {
+function lineFromItem(
+  item: QuotationLineItem | QuickbooksInvoiceLineInput,
+  serviceItemId: string,
+  taxCodeId: string
+) {
+  const qty = item.quantity > 0 ? item.quantity : 1
+  const description = [item.title, item.description].filter(Boolean).join(' — ').trim()
+
+  return buildSalesLine({
+    serviceItemId,
+    taxCodeId,
+    amount: item.amount,
+    qty,
+    description: description || undefined,
+  })
+}
+
+export function roundMoney(value: number) {
+  if (!Number.isFinite(value)) {
+    throw new Error('QuickBooks money values must be finite numbers.')
+  }
+
   return Math.round(value * 100) / 100
+}
+
+export function isValidQuickbooksDate(value: string) {
+  return ISO_DATE_PATTERN.test(value)
 }
 
 export type QuickbooksPaymentPayloadInput = {
@@ -175,7 +249,7 @@ export function buildQuickbooksPaymentPayload(
   const payload: QuickbooksPaymentPayload = {
     CustomerRef: { value: input.customerQuickbooksId },
     TotalAmt: roundMoney(input.totalAmount),
-    TxnDate: input.paymentDate,
+    TxnDate: normalizeQuickbooksDate(input.paymentDate),
     Line: [
       {
         Amount: roundMoney(input.totalAmount),

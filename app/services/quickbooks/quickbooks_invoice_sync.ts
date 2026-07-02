@@ -9,6 +9,7 @@ import {
   buildQuickbooksInvoicePayload,
   resolveQuickbooksCurrencyRef,
 } from '#services/quickbooks/quickbooks_payload_builder'
+import { validateQuickbooksInvoicePayload } from '#services/quickbooks/quickbooks_payload_validator'
 
 export default class QuickbooksInvoiceSync {
   static async syncInvoice(connection: QuickbooksConnection, invoiceId: number) {
@@ -38,6 +39,7 @@ export default class QuickbooksInvoiceSync {
     const quotation = await InvoiceDocumentService.quotationForBooking(invoice.bookingId)
     const lineItems = quotation?.lineItems?.items ?? []
     const currencyPrefs = await QuickbooksClient.getCurrencyPreferences(connection)
+    const taxCodeId = await QuickbooksClient.getDefaultTaxCodeId(connection)
 
     const payload = buildQuickbooksInvoicePayload(
       {
@@ -56,8 +58,11 @@ export default class QuickbooksInvoiceSync {
       },
       {
         currencyRef: resolveQuickbooksCurrencyRef(invoice.currency, currencyPrefs),
+        taxCodeId,
       }
     )
+
+    validateQuickbooksInvoicePayload(payload)
 
     try {
       const response = await QuickbooksClient.createInvoice(connection, payload)
