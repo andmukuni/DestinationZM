@@ -5,6 +5,7 @@ import type { RecoveryItemDocumentsContext } from '#services/recovery_reporting_
 import PortalContextService from '#services/portal_context_service'
 import PortalPrivilegeService from '#services/portal_privilege_service'
 import RecoveryReportingService from '#services/recovery_reporting_service'
+import { resolveTravelerNameFromBooking } from '#types/portal_enquiry_data'
 import {
   recoveryClientQueryValidator,
   recoveryClientRejectValidator,
@@ -24,7 +25,9 @@ function serializePortalItem(item: RecoveryReportItem) {
     bookingId: item.bookingId,
     bookingReference: item.booking?.reference ?? '—',
     productType: item.productType,
-    travelerName: item.travelerName,
+    travelerName: item.booking
+      ? (resolveTravelerNameFromBooking(item.booking) ?? '—')
+      : (item.travelerName ?? '—'),
     pnr: item.pnr ?? '—',
     itineraryService: item.itineraryService ?? '—',
     invoiceReceiptNumber: item.invoiceReceiptNumber ?? '—',

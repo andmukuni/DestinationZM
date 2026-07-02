@@ -27,6 +27,9 @@ export default class QuickbooksSyncRecord extends BaseModel {
   declare lastError: string | null
 
   @column()
+  declare lastIntuitTid: string | null
+
+  @column()
   declare attemptCount: number
 
   @column.dateTime()

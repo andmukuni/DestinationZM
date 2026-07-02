@@ -1,11 +1,16 @@
 import QuickbooksAppSettingsService from '#services/quickbooks/quickbooks_app_settings_service'
 import QuickbooksClient from '#services/quickbooks/quickbooks_client'
+import {
+  QuickbooksReconnectRequiredError,
+  QUICKBOOKS_RECONNECT_MESSAGE,
+} from '#services/quickbooks/quickbooks_oauth_errors'
 import QuickbooksOauthService from '#services/quickbooks/quickbooks_oauth_service'
 
 export type QuickbooksConnectionTestResult = {
   ok: boolean
   stage: 'credentials' | 'oauth' | 'api'
   message: string
+  reconnectRequired?: boolean
   details?: {
     environment?: string
     companyName?: string | null
@@ -79,6 +84,20 @@ export default class QuickbooksConnectionTestService {
         },
       }
     } catch (error) {
+      if (error instanceof QuickbooksReconnectRequiredError) {
+        return {
+          ok: false,
+          stage: 'oauth',
+          reconnectRequired: true,
+          message: QUICKBOOKS_RECONNECT_MESSAGE,
+          details: {
+            environment: connection.environment,
+            realmId: connection.realmId,
+            apiBaseUrl: appConfig.apiBaseUrl,
+          },
+        }
+      }
+
       return {
         ok: false,
         stage: 'api',

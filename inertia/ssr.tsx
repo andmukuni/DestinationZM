@@ -9,7 +9,7 @@ import { createInertiaApp } from '@inertiajs/react'
 import { TuyauProvider } from '@adonisjs/inertia/react'
 import { resolvePageComponent } from '@adonisjs/inertia/helpers'
 
-const authPages = new Set(['auth/login', 'portal/login', 'portal/maintenance', 'portal/register'])
+const authPages = new Set(['auth/login', 'auth/mfa_verify', 'portal/login', 'portal/maintenance', 'portal/register'])
 const legalPages = new Set(['legal/eula', 'legal/privacy'])
 
 function resolveLayout(name: string, page: ReactElement<Data.SharedProps>) {

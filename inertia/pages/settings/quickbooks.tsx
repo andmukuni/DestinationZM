@@ -41,6 +41,7 @@ type QuickbooksSettingsProps = {
     entityType: string
     localId: number
     lastError: string | null
+    lastIntuitTid: string | null
     attemptCount: number
     updatedAt: string | null
   }>
@@ -389,6 +390,11 @@ export default function QuickbooksSettings({
                   {record.entityType} #{record.localId} · {record.attemptCount} attempt(s)
                 </p>
                 <p className="mt-1 text-red-800">{record.lastError ?? 'Unknown error'}</p>
+                {record.lastIntuitTid ? (
+                  <p className="mt-1 font-mono text-xs text-red-700">
+                    intuit_tid: {record.lastIntuitTid}
+                  </p>
+                ) : null}
               </div>
             ))}
           </CardBody>

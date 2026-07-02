@@ -1,8 +1,45 @@
 import OAuthClient from 'intuit-oauth'
 import QuickbooksConnection from '#models/quickbooks_connection'
 import QuickbooksAppSettingsService from '#services/quickbooks/quickbooks_app_settings_service'
+import QuickbooksDiscoveryService from '#services/quickbooks/quickbooks_discovery_service'
+import {
+  isQuickbooksReconnectRequired,
+  QuickbooksReconnectRequiredError,
+  QUICKBOOKS_RECONNECT_MESSAGE,
+} from '#services/quickbooks/quickbooks_oauth_errors'
 import QuickbooksTokenCipher from '#services/quickbooks/quickbooks_token_cipher'
 import { DateTime } from 'luxon'
+
+type OAuthTokenResponse = {
+  access_token?: string
+  refresh_token?: string
+  expires_in?: number
+}
+
+const OAUTH_RETRY_ATTEMPTS = 2
+const OAUTH_RETRY_DELAY_MS = 400
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+async function withOAuthRetry<T>(operation: () => Promise<T>) {
+  let lastError: unknown
+
+  for (let attempt = 1; attempt <= OAUTH_RETRY_ATTEMPTS; attempt++) {
+    try {
+      return await operation()
+    } catch (error) {
+      lastError = error
+      if (isQuickbooksReconnectRequired(error) || attempt === OAUTH_RETRY_ATTEMPTS) {
+        throw error
+      }
+      await sleep(OAUTH_RETRY_DELAY_MS)
+    }
+  }
+
+  throw lastError
+}
 
 export default class QuickbooksOauthService {
   static async isConfigured() {
@@ -18,12 +55,15 @@ export default class QuickbooksOauthService {
       )
     }
 
-    return new OAuthClient({
+    const client = new OAuthClient({
       clientId: config.clientId,
       clientSecret: config.clientSecret,
       environment: config.environment,
       redirectUri: config.redirectUri,
     })
+
+    await QuickbooksDiscoveryService.applyToClient(client, config.environment)
+    return client
   }
 
   static async buildAuthorizeUrl(state: string) {
@@ -35,11 +75,37 @@ export default class QuickbooksOauthService {
     })
   }
 
+  static async invalidateConnection() {
+    const connections = await QuickbooksConnection.all()
+    for (const connection of connections) {
+      await connection.delete()
+    }
+  }
+
+  static async handleOAuthFailure(error: unknown) {
+    if (!isQuickbooksReconnectRequired(error)) {
+      return false
+    }
+
+    await this.invalidateConnection()
+    return true
+  }
+
   static async handleCallback(callbackUrl: string, realmId: string, userId: number) {
     const config = await QuickbooksAppSettingsService.resolve()
     const client = await this.createOAuthClient()
-    const authResponse = await client.createToken(callbackUrl)
-    const token = authResponse.getJson()
+
+    let authResponse
+    try {
+      authResponse = await withOAuthRetry(() => client.createToken(callbackUrl))
+    } catch (error) {
+      if (await this.handleOAuthFailure(error)) {
+        throw new QuickbooksReconnectRequiredError(undefined, { cause: error })
+      }
+      throw error
+    }
+
+    const token = authResponse.getJson() as OAuthTokenResponse
 
     if (!token.access_token || !token.refresh_token) {
       throw new Error('QuickBooks OAuth did not return tokens.')
@@ -49,11 +115,10 @@ export default class QuickbooksOauthService {
 
     const existing = await QuickbooksConnection.query().where('realm_id', realmId).first()
 
-    const connection =
-      existing ??
-      new QuickbooksConnection({
-        realmId,
-      })
+    const connection = existing ?? new QuickbooksConnection()
+    if (!existing) {
+      connection.realmId = realmId
+    }
 
     connection.accessTokenEncrypted = QuickbooksTokenCipher.encrypt(token.access_token)
     connection.refreshTokenEncrypted = QuickbooksTokenCipher.encrypt(token.refresh_token)
@@ -67,10 +132,7 @@ export default class QuickbooksOauthService {
   }
 
   static async disconnect() {
-    const connections = await QuickbooksConnection.all()
-    for (const connection of connections) {
-      await connection.delete()
-    }
+    await this.invalidateConnection()
   }
 
   static async getConnection() {
@@ -100,18 +162,29 @@ export default class QuickbooksOauthService {
       x_refresh_token_expires_in: 8726400,
     })
 
-    const authResponse = await client.refresh()
-    const token = authResponse.getJson()
+    try {
+      const authResponse = await withOAuthRetry(() => client.refresh())
+      const token = authResponse.getJson() as OAuthTokenResponse
 
-    if (!token.access_token || !token.refresh_token) {
-      throw new Error('QuickBooks token refresh failed.')
+      if (!token.access_token || !token.refresh_token) {
+        throw new QuickbooksReconnectRequiredError()
+      }
+
+      connection.accessTokenEncrypted = QuickbooksTokenCipher.encrypt(token.access_token)
+      connection.refreshTokenEncrypted = QuickbooksTokenCipher.encrypt(token.refresh_token)
+      connection.accessTokenExpiresAt = DateTime.now().plus({ seconds: token.expires_in ?? 3600 })
+      await connection.save()
+
+      return token.access_token
+    } catch (error) {
+      if (await this.handleOAuthFailure(error)) {
+        throw new QuickbooksReconnectRequiredError(undefined, { cause: error })
+      }
+      throw error
     }
+  }
 
-    connection.accessTokenEncrypted = QuickbooksTokenCipher.encrypt(token.access_token)
-    connection.refreshTokenEncrypted = QuickbooksTokenCipher.encrypt(token.refresh_token)
-    connection.accessTokenExpiresAt = DateTime.now().plus({ seconds: token.expires_in ?? 3600 })
-    await connection.save()
-
-    return token.access_token
+  static reconnectMessage() {
+    return QUICKBOOKS_RECONNECT_MESSAGE
   }
 }

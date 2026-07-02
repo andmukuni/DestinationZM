@@ -2,8 +2,16 @@ import { Form } from '@adonisjs/inertia/react'
 import { useState } from 'react'
 import { EyeIcon } from '~/components/icons'
 import { AuthLegalLinks } from '~/components/auth_legal_links'
+import { AuthTurnstile } from '~/components/auth_turnstile'
 import { brandButtonPrimaryClass, brandInputFocusClass } from '~/lib/brand_theme'
 import { Button } from '~/components/ui/button'
+
+type LoginProps = {
+  turnstile?: {
+    enabled: boolean
+    siteKey: string
+  }
+}
 
 function EyeSlashIcon({ className = 'h-5 w-5' }: { className?: string }) {
   return (
@@ -26,7 +34,7 @@ function EyeSlashIcon({ className = 'h-5 w-5' }: { className?: string }) {
 
 const fieldClass = `h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 ${brandInputFocusClass}`
 
-export default function Login() {
+export default function Login({ turnstile }: LoginProps) {
   const [showPassword, setShowPassword] = useState(false)
 
   return (
@@ -81,6 +89,10 @@ export default function Login() {
               </div>
               {errors.password ? <p className="text-sm text-red-600">{errors.password}</p> : null}
             </div>
+
+            {turnstile?.enabled && turnstile.siteKey ? (
+              <AuthTurnstile siteKey={turnstile.siteKey} />
+            ) : null}
 
             <Button
               type="submit"

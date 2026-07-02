@@ -43,6 +43,8 @@ declare module '@adonisjs/inertia/types' {
     'invoices/index.d': ExtractProps<(typeof import('../../inertia/pages/invoices/index.d.ts'))['default']>
     'invoices/index': ExtractProps<(typeof import('../../inertia/pages/invoices/index.tsx'))['default']>
     'invoices/show': ExtractProps<(typeof import('../../inertia/pages/invoices/show.tsx'))['default']>
+    'legal/eula': ExtractProps<(typeof import('../../inertia/pages/legal/eula.tsx'))['default']>
+    'legal/privacy': ExtractProps<(typeof import('../../inertia/pages/legal/privacy.tsx'))['default']>
     'payments/create.d': ExtractProps<(typeof import('../../inertia/pages/payments/create.d.ts'))['default']>
     'payments/create': ExtractProps<(typeof import('../../inertia/pages/payments/create.tsx'))['default']>
     'payments/index.d': ExtractProps<(typeof import('../../inertia/pages/payments/index.d.ts'))['default']>
@@ -60,10 +62,12 @@ declare module '@adonisjs/inertia/types' {
     'portal/invoices/show': ExtractProps<(typeof import('../../inertia/pages/portal/invoices/show.tsx'))['default']>
     'portal/login.d': ExtractProps<(typeof import('../../inertia/pages/portal/login.d.ts'))['default']>
     'portal/login': ExtractProps<(typeof import('../../inertia/pages/portal/login.tsx'))['default']>
+    'portal/maintenance': ExtractProps<(typeof import('../../inertia/pages/portal/maintenance.tsx'))['default']>
     'portal/quotations/index': ExtractProps<(typeof import('../../inertia/pages/portal/quotations/index.tsx'))['default']>
     'portal/quotations/show': ExtractProps<(typeof import('../../inertia/pages/portal/quotations/show.tsx'))['default']>
     'portal/recovery_reports/index': ExtractProps<(typeof import('../../inertia/pages/portal/recovery_reports/index.tsx'))['default']>
     'portal/recovery_reports/show': ExtractProps<(typeof import('../../inertia/pages/portal/recovery_reports/show.tsx'))['default']>
+    'portal/register': ExtractProps<(typeof import('../../inertia/pages/portal/register.tsx'))['default']>
     'portal/users/create': ExtractProps<(typeof import('../../inertia/pages/portal/users/create.tsx'))['default']>
     'portal/users/edit': ExtractProps<(typeof import('../../inertia/pages/portal/users/edit.tsx'))['default']>
     'portal/users/index': ExtractProps<(typeof import('../../inertia/pages/portal/users/index.tsx'))['default']>
@@ -86,6 +90,12 @@ declare module '@adonisjs/inertia/types' {
     'reports/templates': ExtractProps<(typeof import('../../inertia/pages/reports/templates.tsx'))['default']>
     'roles/index.d': ExtractProps<(typeof import('../../inertia/pages/roles/index.d.ts'))['default']>
     'roles/index': ExtractProps<(typeof import('../../inertia/pages/roles/index.tsx'))['default']>
+    'settings/general': ExtractProps<(typeof import('../../inertia/pages/settings/general.tsx'))['default']>
+    'settings/other': ExtractProps<(typeof import('../../inertia/pages/settings/other.tsx'))['default']>
+    'settings/quickbooks': ExtractProps<(typeof import('../../inertia/pages/settings/quickbooks.tsx'))['default']>
+    'settings/sms': ExtractProps<(typeof import('../../inertia/pages/settings/sms.tsx'))['default']>
+    'settings/smtp': ExtractProps<(typeof import('../../inertia/pages/settings/smtp.tsx'))['default']>
+    'settings/whatsapp': ExtractProps<(typeof import('../../inertia/pages/settings/whatsapp.tsx'))['default']>
     'suppliers/create.d': ExtractProps<(typeof import('../../inertia/pages/suppliers/create.d.ts'))['default']>
     'suppliers/create': ExtractProps<(typeof import('../../inertia/pages/suppliers/create.tsx'))['default']>
     'suppliers/index.d': ExtractProps<(typeof import('../../inertia/pages/suppliers/index.d.ts'))['default']>
@@ -101,15 +111,5 @@ declare module '@adonisjs/inertia/types' {
     'workflow_cycles/index.d': ExtractProps<(typeof import('../../inertia/pages/workflow_cycles/index.d.ts'))['default']>
     'workflow_cycles/index': ExtractProps<(typeof import('../../inertia/pages/workflow_cycles/index.tsx'))['default']>
     'workflow_cycles/show': ExtractProps<(typeof import('../../inertia/pages/workflow_cycles/show.tsx'))['default']>
-    'settings/quickbooks': ExtractProps<(typeof import('../../inertia/pages/settings/quickbooks.tsx'))['default']>
-    'settings/general': ExtractProps<(typeof import('../../inertia/pages/settings/general.tsx'))['default']>
-    'settings/smtp': ExtractProps<(typeof import('../../inertia/pages/settings/smtp.tsx'))['default']>
-    'settings/sms': ExtractProps<(typeof import('../../inertia/pages/settings/sms.tsx'))['default']>
-    'settings/whatsapp': ExtractProps<(typeof import('../../inertia/pages/settings/whatsapp.tsx'))['default']>
-    'settings/other': ExtractProps<(typeof import('../../inertia/pages/settings/other.tsx'))['default']>
-    'portal/maintenance': ExtractProps<(typeof import('../../inertia/pages/portal/maintenance.tsx'))['default']>
-    'portal/register': ExtractProps<(typeof import('../../inertia/pages/portal/register.tsx'))['default']>
-    'legal/eula': ExtractProps<(typeof import('../../inertia/pages/legal/eula.tsx'))['default']>
-    'legal/privacy': ExtractProps<(typeof import('../../inertia/pages/legal/privacy.tsx'))['default']>
   }
 }

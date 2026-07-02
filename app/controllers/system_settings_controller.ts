@@ -1,4 +1,5 @@
 import AuthorizationService from '#services/authorization_service'
+import User from '#models/user'
 import SmsSettingsService from '#services/settings/sms_settings_service'
 import SmtpSettingsService from '#services/settings/smtp_settings_service'
 import {
@@ -9,6 +10,8 @@ import {
   type SettingsSection,
 } from '#services/settings/settings_access'
 import SystemSettingsService from '#services/settings/system_settings_service'
+import SecuritySettingsService from '#services/settings/security_settings_service'
+import MfaService from '#services/auth/mfa_service'
 import WhatsappSettingsService from '#services/settings/whatsapp_settings_service'
 import {
   generalSettingsValidator,
@@ -18,6 +21,11 @@ import {
   smtpTestValidator,
   whatsappSettingsValidator,
 } from '#validators/system_settings_validator'
+import {
+  mfaDisableValidator,
+  mfaVerifyValidator,
+  securitySettingsValidator,
+} from '#validators/security_validator'
 import type { HttpContext } from '@adonisjs/core/http'
 import nodemailer from 'nodemailer'
 
@@ -25,7 +33,10 @@ function parseCheckbox(value: unknown) {
   return value === '1' || value === true || value === 'on'
 }
 
-function migrationRequiredProps(user: Parameters<typeof buildSettingsPageProps>[0], section: SettingsSection) {
+function migrationRequiredProps(
+  user: Parameters<typeof buildSettingsPageProps>[0],
+  section: SettingsSection
+) {
   return buildSettingsPageProps(user, section, {
     migrationRequired: true,
     general: {
@@ -42,6 +53,14 @@ function migrationRequiredProps(user: Parameters<typeof buildSettingsPageProps>[
       enableClientNotifications: true,
       defaultInvoiceDueDays: 30,
       auditRetentionDays: 365,
+    },
+    security: {
+      turnstileEnabled: false,
+      turnstileSiteKey: '',
+      hasTurnstileSecret: false,
+      requireMfaForStaff: false,
+      loginMaxAttempts: 5,
+      loginWindowMinutes: 15,
     },
     smtp: {
       host: '',
@@ -93,6 +112,7 @@ export default class SystemSettingsController {
       quickbooks: '/settings/quickbooks',
       sms: '/settings/sms',
       whatsapp: '/settings/whatsapp',
+      security: '/settings/security',
       other: '/settings/other',
     }
 
@@ -107,7 +127,10 @@ export default class SystemSettingsController {
 
     try {
       const general = await SystemSettingsService.generalToView()
-      return inertia.render('settings/general', buildSettingsPageProps(user, 'general', { general }))
+      return inertia.render(
+        'settings/general',
+        buildSettingsPageProps(user, 'general', { general })
+      )
     } catch (error) {
       if (!isMissingSettingsTable(error)) {
         throw error
@@ -210,9 +233,7 @@ export default class SystemSettingsController {
         host: config.host,
         port: config.port,
         secure: config.secure,
-        auth: config.username
-          ? { user: config.username, pass: config.password ?? '' }
-          : undefined,
+        auth: config.username ? { user: config.username, pass: config.password ?? '' } : undefined,
       })
 
       await transporter.sendMail({
@@ -287,7 +308,10 @@ export default class SystemSettingsController {
 
     try {
       const whatsapp = await WhatsappSettingsService.toView()
-      return inertia.render('settings/whatsapp', buildSettingsPageProps(user, 'whatsapp', { whatsapp }))
+      return inertia.render(
+        'settings/whatsapp',
+        buildSettingsPageProps(user, 'whatsapp', { whatsapp })
+      )
     } catch (error) {
       if (!isMissingSettingsTable(error)) {
         throw error
@@ -366,5 +390,136 @@ export default class SystemSettingsController {
 
     session.flash('success', 'Other settings saved.')
     return response.redirect().toRoute('settings.other')
+  }
+
+  async security({ auth, inertia, response, session }: HttpContext) {
+    const user = auth.use('web').getUserOrFail()
+    if (!canAccessSettingsSection(user, 'security')) {
+      return response.forbidden()
+    }
+
+    try {
+      const security = await SecuritySettingsService.toView()
+      const mfaSetup = session.get('mfa_setup') as
+        | { qrDataUrl: string; manualKey: string }
+        | undefined
+
+      return inertia.render(
+        'settings/security',
+        buildSettingsPageProps(user, 'security', {
+          security,
+          mfa: {
+            enabled: user.mfaEnabled,
+            confirmedAt: user.mfaConfirmedAt?.toISO() ?? null,
+            setup: mfaSetup ?? null,
+          },
+        })
+      )
+    } catch (error) {
+      if (!isMissingSettingsTable(error)) {
+        throw error
+      }
+
+      return inertia.render('settings/security', migrationRequiredProps(user, 'security'))
+    }
+  }
+
+  async updateSecurity({ auth, request, response, session }: HttpContext) {
+    const user = auth.use('web').getUserOrFail()
+    if (!AuthorizationService.isAdmin(user)) {
+      return response.forbidden()
+    }
+
+    const payload = await request.validateUsing(securitySettingsValidator)
+    const current = await SecuritySettingsService.toView()
+
+    await SecuritySettingsService.save(
+      {
+        turnstileEnabled: parseCheckbox(request.input('turnstileEnabled')),
+        turnstileSiteKey: payload.turnstileSiteKey ?? current.turnstileSiteKey,
+        hasTurnstileSecret: current.hasTurnstileSecret,
+        requireMfaForStaff: parseCheckbox(request.input('requireMfaForStaff')),
+        loginMaxAttempts: payload.loginMaxAttempts,
+        loginWindowMinutes: payload.loginWindowMinutes,
+        turnstileSecret: payload.turnstileSecret ?? null,
+      },
+      user.id
+    )
+
+    session.flash('success', 'Security settings saved.')
+    return response.redirect().toRoute('settings.security')
+  }
+
+  async startMfaSetup({ auth, response, session }: HttpContext) {
+    const user = auth.use('web').getUserOrFail()
+    if (!AuthorizationService.isAdmin(user)) {
+      return response.forbidden()
+    }
+
+    const { secret, otpauthUrl } = MfaService.generateSetup(user)
+    const qrDataUrl = await MfaService.qrDataUrl(otpauthUrl)
+
+    session.put('mfa_setup', {
+      secret,
+      qrDataUrl,
+      manualKey: secret,
+    })
+
+    session.flash(
+      'success',
+      'Scan the QR code with your authenticator app, then enter a code to confirm.'
+    )
+    return response.redirect().toRoute('settings.security')
+  }
+
+  async confirmMfaSetup({ auth, request, response, session }: HttpContext) {
+    const user = auth.use('web').getUserOrFail()
+    if (!AuthorizationService.isAdmin(user)) {
+      return response.forbidden()
+    }
+
+    const setup = session.get('mfa_setup') as { secret: string } | undefined
+    if (!setup?.secret) {
+      session.flash('error', 'Start MFA setup again before confirming.')
+      return response.redirect().toRoute('settings.security')
+    }
+
+    const { code } = await request.validateUsing(mfaVerifyValidator)
+    const ok = await MfaService.enable(user, setup.secret, code)
+
+    session.forget('mfa_setup')
+
+    if (!ok) {
+      session.flash('error', 'Invalid authentication code. MFA was not enabled.')
+      return response.redirect().toRoute('settings.security')
+    }
+
+    session.flash('success', 'Two-factor authentication is now enabled for your account.')
+    return response.redirect().toRoute('settings.security')
+  }
+
+  async disableMfa({ auth, request, response, session }: HttpContext) {
+    const user = auth.use('web').getUserOrFail()
+    if (!AuthorizationService.isAdmin(user)) {
+      return response.forbidden()
+    }
+
+    const payload = await request.validateUsing(mfaDisableValidator)
+
+    try {
+      await User.verifyCredentials(user.email, payload.password)
+    } catch {
+      session.flash('error', 'Password is incorrect.')
+      return response.redirect().toRoute('settings.security')
+    }
+
+    const ok = await MfaService.disable(user, payload.code)
+    if (!ok) {
+      session.flash('error', 'Invalid authentication code. MFA was not disabled.')
+      return response.redirect().toRoute('settings.security')
+    }
+
+    session.flash('success', 'Two-factor authentication has been disabled.')
+    return response.redirect().toRoute('settings.security')
   }
 }

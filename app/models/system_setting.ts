@@ -3,7 +3,7 @@ import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import User from '#models/user'
 
-export type SystemSettingGroup = 'general' | 'other'
+export type SystemSettingGroup = 'general' | 'other' | 'security'
 
 export default class SystemSetting extends BaseModel {
   @column({ isPrimary: true })

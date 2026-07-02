@@ -64,6 +64,9 @@ test.group('RecoveryReportingService', () => {
     const { default: ExcelJS } = await import('exceljs')
     const item = new RecoveryReportItem()
     item.merge({
+      id: 1,
+      bookingId: 99,
+      recoveryReference: 'RRI-TEST-0001',
       productType: 'flight',
       currency: 'ZMW',
       price: 1500,
@@ -80,6 +83,7 @@ test.group('RecoveryReportingService', () => {
       approvedBy: 'Manager',
       generalLedgerAccount: 'GL-6100',
     })
+    item.$setRelated('booking', new Booking())
 
     const { buffer, fileName } = await RecoveryReportingService.exportItemsToExcel([item], {
       startDate: DateTime.fromISO('2026-01-01'),
@@ -95,7 +99,7 @@ test.group('RecoveryReportingService', () => {
     await workbook.xlsx.load(buffer)
     const sheet = workbook.getWorksheet('Sheet1')
     assert.isNotNull(sheet)
-    assert.equal(sheet!.getCell('E1').value, { formula: 'SUM(E3:E3)', result: 1500 })
+    assert.deepEqual(sheet!.getCell('E1').value, { formula: 'SUM(E3:E3)' })
     assert.equal(sheet!.getRow(2).getCell(1).value, 'Enquiry item')
     assert.equal(sheet!.getRow(2).getCell(3).value, 'Product Type')
     assert.equal(sheet!.getRow(3).getCell(5).value, 1500)
@@ -105,6 +109,8 @@ test.group('RecoveryReportingService', () => {
   test('exportItemsToPdf returns a valid PDF buffer', async ({ assert }) => {
     const item = new RecoveryReportItem()
     item.merge({
+      id: 2,
+      bookingId: 100,
       recoveryReference: 'RRI-202607-0002',
       productType: 'accommodation',
       currency: 'ZMW',
@@ -122,6 +128,7 @@ test.group('RecoveryReportingService', () => {
       approvedBy: 'Manager',
       generalLedgerAccount: 'GL-6100',
     })
+    item.$setRelated('booking', new Booking())
 
     const { buffer, fileName, mimeType } = await RecoveryReportingService.exportItemsToPdf([item], {
       startDate: DateTime.fromISO('2026-01-01'),
@@ -161,7 +168,7 @@ test.group('RecoveryReportingService', () => {
               { label: 'Trip type', value: 'Round-trip' },
               { label: 'Class', value: 'Economy' },
             ],
-            fields: { pnr: 'ABC123' },
+            fields: { pnr: 'ABC123', traveler_names: 'Jane Banda, John Banda' },
           },
           {
             bookingTypeId: 2,
@@ -226,8 +233,10 @@ test.group('RecoveryReportingService', () => {
     assert.include(table.rows[0].itineraryService, 'Flight — Lusaka to Dubai')
     assert.include(table.rows[0].itineraryService, 'Trip type: Round-trip')
     assert.equal(table.rows[0].dateRequested, '2026-02-20')
+    assert.equal(table.rows[0].travelerName, 'Jane Banda, John Banda')
     assert.equal(table.rows[1].productType, 'hotel')
     assert.equal(table.rows[1].price, 400)
+    assert.equal(table.rows[1].travelerName, '')
     assert.include(table.rows[1].itineraryService, 'Dubai Marina')
   })
 
@@ -258,6 +267,7 @@ test.group('RecoveryReportingService', () => {
 
     const item = new RecoveryReportItem()
     item.merge({ id: 7, currency: 'ZMW', price: 800, travelerName: 'Jane Doe' })
+    item.$setRelated('booking', booking)
 
     const table = RecoveryReportingService.buildTravelItemsTableForRecoveryItems(
       [item],

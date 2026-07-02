@@ -23,7 +23,10 @@ router
     router
       .group(() => {
         router.get('login', [controllers.PortalSession, 'create']).as('portal.login')
-        router.post('login', [controllers.PortalSession, 'store']).as('portal.login.store')
+        router
+          .post('login', [controllers.PortalSession, 'store'])
+          .as('portal.login.store')
+          .use(middleware.loginRateLimit({ route: 'portal_login' }))
         router
           .get('register', [controllers.PortalRegistration, 'create'])
           .as('portal.register')
@@ -32,6 +35,7 @@ router
           .post('register', [controllers.PortalRegistration, 'store'])
           .as('portal.register.store')
           .use(middleware.portalRegistration())
+          .use(middleware.loginRateLimit({ route: 'portal_register' }))
       })
       .use(middleware.clientGuest())
 
@@ -130,7 +134,12 @@ router
 router
   .group(() => {
     router.get('login', [controllers.Session, 'create']).as('session.create')
-    router.post('login', [controllers.Session, 'store']).as('session.store')
+    router
+      .post('login', [controllers.Session, 'store'])
+      .as('session.store')
+      .use(middleware.loginRateLimit({ route: 'staff_login' }))
+    router.get('login/mfa', [controllers.Session, 'createMfa']).as('session.mfa')
+    router.post('login/mfa', [controllers.Session, 'storeMfa']).as('session.mfa.store')
   })
   .use(middleware.guest())
 
@@ -347,6 +356,19 @@ router
     router
       .patch('settings/other', [controllers.SystemSettings, 'updateOther'])
       .as('settings.other.update')
+    router.get('settings/security', [controllers.SystemSettings, 'security']).as('settings.security')
+    router
+      .patch('settings/security', [controllers.SystemSettings, 'updateSecurity'])
+      .as('settings.security.update')
+    router
+      .post('settings/security/mfa/start', [controllers.SystemSettings, 'startMfaSetup'])
+      .as('settings.security.mfa.start')
+    router
+      .post('settings/security/mfa/confirm', [controllers.SystemSettings, 'confirmMfaSetup'])
+      .as('settings.security.mfa.confirm')
+    router
+      .post('settings/security/mfa/disable', [controllers.SystemSettings, 'disableMfa'])
+      .as('settings.security.mfa.disable')
     router
       .get('settings/quickbooks', [controllers.QuickbooksSettings, 'index'])
       .as('settings.quickbooks')

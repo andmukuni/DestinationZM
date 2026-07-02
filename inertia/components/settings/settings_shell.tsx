@@ -10,6 +10,7 @@ export type SettingsSectionId =
   | 'quickbooks'
   | 'sms'
   | 'whatsapp'
+  | 'security'
   | 'other'
 
 type SettingsSectionLink = {
@@ -24,6 +25,7 @@ const SECTION_HREFS: Record<SettingsSectionId, string> = {
   quickbooks: urlFor('settings.quickbooks'),
   sms: urlFor('settings.sms'),
   whatsapp: urlFor('settings.whatsapp'),
+  security: urlFor('settings.security'),
   other: urlFor('settings.other'),
 }
 
@@ -33,6 +35,7 @@ const ALL_SECTIONS: SettingsSectionLink[] = [
   { id: 'quickbooks', label: 'QuickBooks', href: SECTION_HREFS.quickbooks },
   { id: 'sms', label: 'SMS', href: SECTION_HREFS.sms },
   { id: 'whatsapp', label: 'WhatsApp', href: SECTION_HREFS.whatsapp },
+  { id: 'security', label: 'Security', href: SECTION_HREFS.security },
   { id: 'other', label: 'Other', href: SECTION_HREFS.other },
 ]
 

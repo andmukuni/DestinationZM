@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import type { HttpContext } from '@adonisjs/core/http'
 import type { PortalBookingTypeDefinition } from '#types/portal_booking_type'
 import PortalBookingTypeService, { type MappedPortalEnquiry } from '#services/portal_booking_type_service'
+import { travelerNamesFromEnquiryFields } from '#types/portal_enquiry_data'
 
 type SessionStore = HttpContext['session']
 
@@ -40,19 +41,9 @@ export default class PortalEnquiryCartService {
       returnDate: item.returnDate,
       pax: item.pax,
       estimatedBudget: item.estimatedBudget,
-      travelerNames: this.travelerNamesFromEnquiryData(item.enquiryData),
+      travelerNames: travelerNamesFromEnquiryFields(item.enquiryData) || null,
       summaryLines: item.summaryLines,
     }))
-  }
-
-  private static travelerNamesFromEnquiryData(
-    enquiryData: Record<string, string | number | null>
-  ): string | null {
-    const raw = enquiryData.traveler_names
-    if (raw === null || raw === undefined || String(raw).trim() === '') {
-      return null
-    }
-    return String(raw).trim()
   }
 
   static addFromSubmission(

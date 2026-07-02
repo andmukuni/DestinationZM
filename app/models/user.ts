@@ -2,13 +2,22 @@ import { UserSchema } from '#database/schema'
 import hash from '@adonisjs/core/services/hash'
 import { compose } from '@adonisjs/core/helpers'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
-import { beforeSave, belongsTo } from '@adonisjs/lucid/orm'
+import { beforeSave, belongsTo, column } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import { DateTime } from 'luxon'
 import Branch from '#models/branch'
 import { requiresBranch } from '#types/user_roles'
 import type { UserRole } from '#types/user_roles'
 
 export default class User extends compose(UserSchema, withAuthFinder(hash)) {
+  @column()
+  declare mfaEnabled: boolean
+
+  @column({ serializeAs: null })
+  declare mfaSecretEncrypted: string | null
+
+  @column.dateTime()
+  declare mfaConfirmedAt: DateTime | null
   @beforeSave()
   static enforceBranchForScopedRoles(user: User) {
     if (requiresBranch(user.role as UserRole) && !user.branchId) {

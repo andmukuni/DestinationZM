@@ -3,24 +3,51 @@ import QuickbooksSyncRecord from '#models/quickbooks_sync_record'
 import QuickbooksAppSettingsService from '#services/quickbooks/quickbooks_app_settings_service'
 import QuickbooksClient from '#services/quickbooks/quickbooks_client'
 import QuickbooksConnectionTestService from '#services/quickbooks/quickbooks_connection_test_service'
+import { QuickbooksReconnectRequiredError } from '#services/quickbooks/quickbooks_oauth_errors'
 import QuickbooksOauthService from '#services/quickbooks/quickbooks_oauth_service'
 import {
   buildSettingsPageProps,
   canConfigureQuickbooksCredentials,
-  canManageQuickbooks,
+  type canManageQuickbooks,
   isMissingSettingsTable,
 } from '#services/settings/settings_access'
+import QuickbooksAccessService from '#services/quickbooks/quickbooks_access_service'
+import SecuritySettingsService from '#services/settings/security_settings_service'
 import {
   quickbooksCredentialsValidator,
   quickbooksSettingsValidator,
 } from '#validators/quickbooks_validator'
 import type { HttpContext } from '@adonisjs/core/http'
+import type User from '#models/user'
 
 export default class QuickbooksSettingsController {
-  async index({ auth, inertia, response }: HttpContext) {
-    const user = auth.use('web').getUserOrFail()
-    if (!canManageQuickbooks(user)) {
+  private async authorizeQuickbooks(
+    user: User,
+    session: HttpContext['session'],
+    response: HttpContext['response']
+  ) {
+    try {
+      QuickbooksAccessService.assertStaffQuickbooksAccess(user)
+    } catch {
       return response.forbidden()
+    }
+
+    if ((await SecuritySettingsService.isMfaRequiredForStaff()) && !user.mfaEnabled) {
+      session.flash(
+        'error',
+        'Enable two-factor authentication in Security settings before using QuickBooks.'
+      )
+      return response.redirect().toRoute('settings.security')
+    }
+
+    return null
+  }
+
+  async index({ auth, inertia, response, session }: HttpContext) {
+    const user = auth.use('web').getUserOrFail()
+    const denied = await this.authorizeQuickbooks(user, session, response)
+    if (denied) {
+      return denied
     }
 
     try {
@@ -105,6 +132,7 @@ export default class QuickbooksSettingsController {
           entityType: record.entityType,
           localId: record.localId,
           lastError: record.lastError,
+          lastIntuitTid: record.lastIntuitTid,
           attemptCount: record.attemptCount,
           updatedAt: record.updatedAt?.toISO() ?? null,
         })),
@@ -116,6 +144,10 @@ export default class QuickbooksSettingsController {
     const user = auth.use('web').getUserOrFail()
     if (!canConfigureQuickbooksCredentials(user)) {
       return response.forbidden()
+    }
+    const denied = await this.authorizeQuickbooks(user, session, response)
+    if (denied) {
+      return denied
     }
 
     const payload = await request.validateUsing(quickbooksCredentialsValidator)
@@ -133,7 +165,8 @@ export default class QuickbooksSettingsController {
 
       session.flash('success', 'QuickBooks API credentials saved.')
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to save QuickBooks credentials.'
+      const message =
+        error instanceof Error ? error.message : 'Failed to save QuickBooks credentials.'
       session.flash('error', message)
     }
 
@@ -142,8 +175,9 @@ export default class QuickbooksSettingsController {
 
   async testConnection({ auth, request, response, session }: HttpContext) {
     const user = auth.use('web').getUserOrFail()
-    if (!canManageQuickbooks(user)) {
-      return response.forbidden()
+    const denied = await this.authorizeQuickbooks(user, session, response)
+    if (denied) {
+      return denied
     }
 
     const result = await QuickbooksConnectionTestService.run()
@@ -158,8 +192,9 @@ export default class QuickbooksSettingsController {
 
   async connect({ auth, response, session }: HttpContext) {
     const user = auth.use('web').getUserOrFail()
-    if (!canManageQuickbooks(user)) {
-      return response.forbidden()
+    const denied = await this.authorizeQuickbooks(user, session, response)
+    if (denied) {
+      return denied
     }
 
     if (!(await QuickbooksOauthService.isConfigured())) {
@@ -176,8 +211,9 @@ export default class QuickbooksSettingsController {
 
   async callback({ auth, request, response, session }: HttpContext) {
     const user = auth.use('web').getUserOrFail()
-    if (!canManageQuickbooks(user)) {
-      return response.forbidden()
+    const denied = await this.authorizeQuickbooks(user, session, response)
+    if (denied) {
+      return denied
     }
 
     const expectedState = session.get('quickbooks_oauth_state')
@@ -189,17 +225,26 @@ export default class QuickbooksSettingsController {
     session.forget('quickbooks_oauth_state')
 
     if (error) {
-      session.flash('error', `QuickBooks connection was cancelled: ${error}`)
+      session.flash(
+        'error',
+        `QuickBooks connection was cancelled: ${error}. Click Connect QuickBooks to try again.`
+      )
       return response.redirect().toRoute('settings.quickbooks')
     }
 
     if (!expectedState || !state || expectedState !== state) {
-      session.flash('error', 'QuickBooks OAuth state mismatch. Please try again.')
+      session.flash(
+        'error',
+        'QuickBooks OAuth state mismatch (CSRF protection). Please click Connect QuickBooks and try again.'
+      )
       return response.redirect().toRoute('settings.quickbooks')
     }
 
     if (!code || !realmId) {
-      session.flash('error', 'QuickBooks did not return an authorization code.')
+      session.flash(
+        'error',
+        'QuickBooks did not return an authorization code. Click Connect QuickBooks to try again.'
+      )
       return response.redirect().toRoute('settings.quickbooks')
     }
 
@@ -215,7 +260,11 @@ export default class QuickbooksSettingsController {
       session.flash('success', 'QuickBooks connected successfully.')
     } catch (callbackError) {
       const message =
-        callbackError instanceof Error ? callbackError.message : 'QuickBooks connection failed.'
+        callbackError instanceof QuickbooksReconnectRequiredError
+          ? callbackError.message
+          : callbackError instanceof Error
+            ? callbackError.message
+            : 'QuickBooks connection failed.'
       session.flash('error', message)
     }
 
@@ -224,8 +273,9 @@ export default class QuickbooksSettingsController {
 
   async disconnect({ auth, response, session }: HttpContext) {
     const user = auth.use('web').getUserOrFail()
-    if (!canManageQuickbooks(user)) {
-      return response.forbidden()
+    const denied = await this.authorizeQuickbooks(user, session, response)
+    if (denied) {
+      return denied
     }
 
     await QuickbooksOauthService.disconnect()
@@ -235,8 +285,9 @@ export default class QuickbooksSettingsController {
 
   async update({ auth, request, response, session }: HttpContext) {
     const user = auth.use('web').getUserOrFail()
-    if (!canManageQuickbooks(user)) {
-      return response.forbidden()
+    const denied = await this.authorizeQuickbooks(user, session, response)
+    if (denied) {
+      return denied
     }
 
     const connection = await QuickbooksOauthService.getConnection()

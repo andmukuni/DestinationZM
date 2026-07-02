@@ -19,6 +19,10 @@ import type { QuotationLineItem } from '#types/quotation_line_item'
 import { isStructuredEnquiryData } from '#types/portal_enquiry_data'
 import type { EnquiryCartItemPayload } from '#types/portal_enquiry_data'
 import {
+  resolveTravelerNameFromBooking,
+  travelerNameFromCartItem,
+} from '#types/portal_enquiry_data'
+import {
   CLIENT_ACTIONABLE_STATUSES,
   RECOVERY_EXCEL_COLUMNS,
   RECOVERY_INDEX_TABLE_COLUMNS,
@@ -76,8 +80,10 @@ export default class RecoveryReportingService {
       return 'PENDING_INVOICE'
     }
 
+    const travelerName = resolveTravelerNameFromBooking(booking)
+
     if (
-      !booking.travelerName ||
+      !travelerName ||
       !booking.productType ||
       !booking.totalAmount ||
       Number(booking.totalAmount) <= 0 ||
@@ -106,7 +112,7 @@ export default class RecoveryReportingService {
       currency: booking.currency ?? 'ZMW',
       price: Number(booking.totalAmount),
       pnr: booking.pnr,
-      travelerName: booking.travelerName ?? booking.customer?.fullName ?? 'Unknown traveler',
+      travelerName: resolveTravelerNameFromBooking(booking) ?? '',
       travelStart: booking.departDate,
       travelEnd: booking.returnDate,
       itineraryService: itinerary,
@@ -230,7 +236,7 @@ export default class RecoveryReportingService {
       currency: booking.currency ?? item.currency,
       price: Number(booking.totalAmount),
       pnr: booking.pnr,
-      travelerName: booking.travelerName ?? item.travelerName,
+      travelerName: resolveTravelerNameFromBooking(booking) ?? item.travelerName,
       travelStart: booking.departDate,
       travelEnd: booking.returnDate,
       itineraryService: booking.itineraryService ?? booking.destination,
@@ -644,7 +650,7 @@ export default class RecoveryReportingService {
       currency: item.currency,
       price: Number(item.price),
       pnr: this.generateLinePnr(item.recoveryReference, item.id, 0),
-      travelerName: item.travelerName,
+      travelerName: this.resolveTravelerNameForTable(item, booking),
       travelStart: this.formatDate(item.travelStart),
       travelEnd: this.formatDate(item.travelEnd),
       itineraryService: item.itineraryService ?? booking?.destination ?? '',
@@ -778,6 +784,14 @@ export default class RecoveryReportingService {
     return line.title || line.description || ''
   }
 
+  private static resolveTravelerNameForTable(item: RecoveryReportItem, booking?: Booking) {
+    if (booking) {
+      return resolveTravelerNameFromBooking(booking) ?? ''
+    }
+
+    return item.travelerName ?? ''
+  }
+
   private static buildTravelRow(
     item: RecoveryReportItem,
     index: number,
@@ -793,6 +807,7 @@ export default class RecoveryReportingService {
       | 'travelEnd'
       | 'itineraryService'
       | 'dateRequested'
+      | 'travelerName'
     >,
     fields: {
       enquiryItemLabel: string
@@ -804,6 +819,7 @@ export default class RecoveryReportingService {
       travelEnd: string
       itineraryService: string
       dateRequested: string
+      travelerName: string
     }
   ): RecoveryTravelItemRow {
     return {
@@ -820,6 +836,7 @@ export default class RecoveryReportingService {
       travelEnd: fields.travelEnd,
       itineraryService: fields.itineraryService,
       dateRequested: fields.dateRequested,
+      travelerName: fields.travelerName,
       ...shared,
     }
   }
@@ -859,7 +876,6 @@ export default class RecoveryReportingService {
     const invoiceLineItems = documents.lineItems
     const shared = {
       currency: item.currency,
-      travelerName: item.travelerName || booking.travelerName || '',
       invoiceReceiptNumber: item.invoiceReceiptNumber ?? documents.invoice?.invoiceNumber ?? '',
       tripName: item.tripName ?? '',
       tripReason: item.tripReason ?? '',
@@ -895,6 +911,7 @@ export default class RecoveryReportingService {
             : this.formatDate(item.travelEnd ?? booking.returnDate),
           itineraryService: this.buildItineraryDetail(cartItem, invoiceLine, booking, item),
           dateRequested: this.resolveDateRequested(cartItem, item, booking),
+          travelerName: travelerNameFromCartItem(cartItem),
         })
       })
     } else if (invoiceLineItems.length > 0) {
@@ -909,6 +926,7 @@ export default class RecoveryReportingService {
           travelEnd: this.formatDate(item.travelEnd ?? booking.returnDate),
           itineraryService: this.buildItineraryDetail(undefined, line, booking, item),
           dateRequested: this.resolveDateRequested(undefined, item, booking),
+          travelerName: '',
         })
       )
     } else {
@@ -1037,7 +1055,14 @@ export default class RecoveryReportingService {
 
     sheet.columns = RECOVERY_TABLE_COLUMN_WIDTHS.map((width) => ({ width }))
 
-    await Promise.all(items.map((item) => item.booking ? Promise.resolve() : item.load('booking')))
+    await Promise.all(
+      items.map((item) => {
+        if (item.booking || !item.$isPersisted) {
+          return Promise.resolve()
+        }
+        return item.load('booking')
+      })
+    )
     const documentsByItemId = await this.documentsContextByItemId(items)
     const travelTable = this.buildTravelItemsTableForRecoveryItems(items, documentsByItemId)
     const columns =
@@ -1103,7 +1128,14 @@ export default class RecoveryReportingService {
   ) {
     const { default: PDFDocument } = await import('pdfkit')
 
-    await Promise.all(items.map((item) => (item.booking ? Promise.resolve() : item.load('booking'))))
+    await Promise.all(
+      items.map((item) => {
+        if (item.booking || !item.$isPersisted) {
+          return Promise.resolve()
+        }
+        return item.load('booking')
+      })
+    )
     const documentsByItemId = await this.documentsContextByItemId(items)
     const travelTable = this.buildTravelItemsTableForRecoveryItems(items, documentsByItemId)
 

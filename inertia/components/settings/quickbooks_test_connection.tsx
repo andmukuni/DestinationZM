@@ -6,6 +6,7 @@ type TestResult = {
   ok: boolean
   stage: 'credentials' | 'oauth' | 'api'
   message: string
+  reconnectRequired?: boolean
   details?: {
     environment?: string
     companyName?: string | null
@@ -89,6 +90,11 @@ export function QuickbooksTestConnection({
           }`}
         >
           <p className="font-medium">{result.message}</p>
+          {result.reconnectRequired ? (
+            <p className="mt-2 text-xs">
+              Use <strong>Connect QuickBooks</strong> in the Actions panel to reconnect your company.
+            </p>
+          ) : null}
           {result.details ? (
             <dl className="mt-2 space-y-1 text-xs">
               {result.details.companyName ? (

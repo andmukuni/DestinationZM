@@ -1,11 +1,19 @@
 import { Form, Link } from '@adonisjs/inertia/react'
 import { AuthLegalLinks } from '~/components/auth_legal_links'
+import { AuthTurnstile } from '~/components/auth_turnstile'
 import { Button } from '~/components/ui/button'
 
 const fieldClass =
   'h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-600 focus:ring-2 focus:ring-orange-100'
 
-export default function PortalRegister() {
+export default function PortalRegister({
+  turnstile,
+}: {
+  turnstile?: {
+    enabled: boolean
+    siteKey: string
+  }
+}) {
   return (
     <div className="space-y-8">
       <div>
@@ -91,6 +99,10 @@ export default function PortalRegister() {
               />
               {errors.message ? <p className="text-sm text-red-600">{errors.message}</p> : null}
             </div>
+
+            {turnstile?.enabled && turnstile.siteKey ? (
+              <AuthTurnstile siteKey={turnstile.siteKey} />
+            ) : null}
 
             <Button
               type="submit"

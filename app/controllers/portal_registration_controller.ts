@@ -1,15 +1,29 @@
 import ClientAccount from '#models/client_account'
 import PortalRegistrationRequest from '#models/portal_registration_request'
+import AuthSecurityService from '#services/auth/auth_security_service'
+import SecuritySettingsService from '#services/settings/security_settings_service'
 import { portalRegistrationValidator } from '#validators/portal_validator'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class PortalRegistrationController {
   async create({ inertia }: HttpContext) {
-    return inertia.render('portal/register', {})
+    const turnstile = await SecuritySettingsService.turnstilePublicConfig()
+
+    return inertia.render('portal/register', { turnstile })
   }
 
   async store({ request, response, session }: HttpContext) {
     const payload = await request.validateUsing(portalRegistrationValidator)
+    const ip = request.ip()
+
+    const blocked = await AuthSecurityService.enforceLoginAttempt(
+      { request, response, session },
+      'portal_register',
+      { email: payload.email }
+    )
+    if (blocked) {
+      return blocked
+    }
 
     const existingAccount = await ClientAccount.findBy('email', payload.email)
     if (existingAccount) {

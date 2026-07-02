@@ -1,6 +1,10 @@
 import quickbooksConfig from '#config/quickbooks'
 import type QuickbooksConnection from '#models/quickbooks_connection'
 import QuickbooksAppSettingsService from '#services/quickbooks/quickbooks_app_settings_service'
+import {
+  QuickbooksApiError,
+  readIntuitTid,
+} from '#services/quickbooks/quickbooks_api_error'
 import QuickbooksOauthService from '#services/quickbooks/quickbooks_oauth_service'
 
 type QuickbooksRequestOptions = {
@@ -21,8 +25,15 @@ export type QuickbooksQueryResponse<T> = {
   }
 }
 
+export type QuickbooksRequestResult<T> = {
+  data: T
+  intuitTid: string | null
+}
+
 export default class QuickbooksClient {
-  static async request<T = QuickbooksQueryResponse<unknown>>(options: QuickbooksRequestOptions) {
+  static async request<T = QuickbooksQueryResponse<unknown>>(
+    options: QuickbooksRequestOptions
+  ): Promise<QuickbooksRequestResult<T>> {
     const accessToken = await QuickbooksOauthService.ensureFreshAccessToken(options.connection)
     const appConfig = await QuickbooksAppSettingsService.resolve()
     const url = new URL(
@@ -47,6 +58,7 @@ export default class QuickbooksClient {
       body: options.body ? JSON.stringify(options.body) : undefined,
     })
 
+    const intuitTid = readIntuitTid(response.headers)
     const text = await response.text()
     let payload: T | null = null
 
@@ -54,7 +66,10 @@ export default class QuickbooksClient {
       try {
         payload = JSON.parse(text) as T
       } catch {
-        throw new Error(`QuickBooks returned invalid JSON (${response.status}).`)
+        throw new QuickbooksApiError(`QuickBooks returned invalid JSON (${response.status}).`, {
+          status: response.status,
+          intuitTid,
+        })
       }
     }
 
@@ -64,46 +79,57 @@ export default class QuickbooksClient {
         fault?.Error?.map((error) => error.Message || error.Detail).filter(Boolean).join('; ') ||
         text ||
         `QuickBooks request failed (${response.status}).`
-      throw new Error(message)
+      throw new QuickbooksApiError(message, {
+        status: response.status,
+        intuitTid,
+        fault,
+      })
     }
 
-    return payload as T
+    return {
+      data: payload as T,
+      intuitTid,
+    }
   }
 
-  static query<T>(connection: QuickbooksConnection, sql: string) {
-    return this.request<QuickbooksQueryResponse<T>>({
+  static async query<T>(connection: QuickbooksConnection, sql: string) {
+    const result = await this.request<QuickbooksQueryResponse<T>>({
       connection,
       method: 'GET',
       path: 'query',
       query: { query: sql, minorversion: quickbooksConfig.minorVersion },
     })
+    return result.data
   }
 
-  static createInvoice(connection: QuickbooksConnection, body: unknown) {
-    return this.request<QuickbooksQueryResponse<unknown>>({
+  static async createInvoice(connection: QuickbooksConnection, body: unknown) {
+    const result = await this.request<QuickbooksQueryResponse<unknown>>({
       connection,
       method: 'POST',
       path: 'invoice',
       body,
     })
+    return result.data
   }
 
-  static createCustomer(connection: QuickbooksConnection, body: unknown) {
-    return this.request<QuickbooksQueryResponse<unknown>>({
+  static async createCustomer(connection: QuickbooksConnection, body: unknown) {
+    const result = await this.request<QuickbooksQueryResponse<unknown>>({
       connection,
       method: 'POST',
       path: 'customer',
       body,
     })
+    return result.data
   }
 
-  static createPayment(connection: QuickbooksConnection, body: unknown) {
-    return this.request<QuickbooksQueryResponse<unknown>>({
+  static async createPayment(connection: QuickbooksConnection, body: unknown) {
+    const result = await this.request<QuickbooksQueryResponse<unknown>>({
       connection,
       method: 'POST',
       path: 'payment',
       body,
     })
+    return result.data
   }
 
   static listServiceItems(connection: QuickbooksConnection) {
@@ -114,7 +140,7 @@ export default class QuickbooksClient {
   }
 
   static async getCompanyInfo(connection: QuickbooksConnection) {
-    const response = await this.request<{
+    const result = await this.request<{
       CompanyInfo?: { CompanyName?: string; LegalName?: string }
     }>({
       connection,
@@ -122,6 +148,8 @@ export default class QuickbooksClient {
       path: 'companyinfo/' + connection.realmId,
     })
 
-    return response.CompanyInfo?.CompanyName ?? response.CompanyInfo?.LegalName ?? null
+    return (
+      result.data.CompanyInfo?.CompanyName ?? result.data.CompanyInfo?.LegalName ?? null
+    )
   }
 }

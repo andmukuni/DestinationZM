@@ -2,6 +2,7 @@ import { Form, Link } from '@adonisjs/inertia/react'
 import { useState } from 'react'
 import { EyeIcon } from '~/components/icons'
 import { AuthLegalLinks } from '~/components/auth_legal_links'
+import { AuthTurnstile } from '~/components/auth_turnstile'
 import { Button } from '~/components/ui/button'
 
 function EyeSlashIcon({ className = 'h-5 w-5' }: { className?: string }) {
@@ -28,8 +29,13 @@ const fieldClass =
 
 export default function PortalLogin({
   allowPortalRegistration = false,
+  turnstile,
 }: {
   allowPortalRegistration?: boolean
+  turnstile?: {
+    enabled: boolean
+    siteKey: string
+  }
 }) {
   const [showPassword, setShowPassword] = useState(false)
 
@@ -83,6 +89,10 @@ export default function PortalLogin({
               </div>
               {errors.password ? <p className="text-sm text-red-600">{errors.password}</p> : null}
             </div>
+
+            {turnstile?.enabled && turnstile.siteKey ? (
+              <AuthTurnstile siteKey={turnstile.siteKey} />
+            ) : null}
 
             <Button
               type="submit"

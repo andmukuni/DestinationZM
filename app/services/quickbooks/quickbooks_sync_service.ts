@@ -3,9 +3,58 @@ import quickbooksConfig from '#config/quickbooks'
 import Invoice from '#models/invoice'
 import QuickbooksSyncRecord from '#models/quickbooks_sync_record'
 import AuditService from '#services/audit_service'
+import { QuickbooksApiError } from '#services/quickbooks/quickbooks_api_error'
 import QuickbooksInvoiceSync from '#services/quickbooks/quickbooks_invoice_sync'
+import {
+  QuickbooksReconnectRequiredError,
+  QUICKBOOKS_RECONNECT_MESSAGE,
+} from '#services/quickbooks/quickbooks_oauth_errors'
 import QuickbooksOauthService from '#services/quickbooks/quickbooks_oauth_service'
 import QuickbooksPaymentSync from '#services/quickbooks/quickbooks_payment_sync'
+
+function syncErrorDetails(error: unknown) {
+  if (error instanceof QuickbooksReconnectRequiredError) {
+    return {
+      message: QUICKBOOKS_RECONNECT_MESSAGE,
+      intuitTid: null,
+    }
+  }
+
+  if (error instanceof QuickbooksApiError) {
+    return {
+      message: error.message,
+      intuitTid: error.intuitTid,
+    }
+  }
+
+  if (error instanceof Error) {
+    return {
+      message: error.message,
+      intuitTid: null,
+    }
+  }
+
+  return {
+    message: 'QuickBooks sync failed.',
+    intuitTid: null,
+  }
+}
+
+async function markSyncFailure(
+  record: QuickbooksSyncRecord,
+  error: unknown,
+  invoiceId?: number
+) {
+  const { message, intuitTid } = syncErrorDetails(error)
+  record.syncStatus = 'failed'
+  record.lastError = message
+  record.lastIntuitTid = intuitTid
+  await record.save()
+
+  if (invoiceId) {
+    await Invoice.query().where('id', invoiceId).update({ quickbooksSyncStatus: 'failed' })
+  }
+}
 
 export default class QuickbooksSyncService {
   static enqueueInvoice(invoiceId: number) {
@@ -52,6 +101,7 @@ export default class QuickbooksSyncService {
       record.syncStatus = 'pending'
       record.attemptCount = record.attemptCount + 1
       record.lastError = null
+      record.lastIntuitTid = null
       await record.save()
 
       await Invoice.query()
@@ -69,20 +119,14 @@ export default class QuickbooksSyncService {
 
       return quickbooksId
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'QuickBooks invoice sync failed.'
-      record.syncStatus = 'failed'
-      record.lastError = message
-      await record.save()
-
-      await Invoice.query()
-        .where('id', invoiceId)
-        .update({ quickbooksSyncStatus: 'failed' })
+      const { message, intuitTid } = syncErrorDetails(error)
+      await markSyncFailure(record, error, invoiceId)
 
       await AuditService.log({
         action: 'quickbooks.invoice_sync_failed',
         entityType: 'invoice',
         entityId: invoiceId,
-        metadata: { error: message },
+        metadata: { error: message, intuitTid },
       })
 
       throw error
@@ -110,6 +154,7 @@ export default class QuickbooksSyncService {
       record.syncStatus = 'pending'
       record.attemptCount = record.attemptCount + 1
       record.lastError = null
+      record.lastIntuitTid = null
       await record.save()
 
       const quickbooksId = await QuickbooksPaymentSync.syncPayment(connection, invoiceId)
@@ -123,16 +168,14 @@ export default class QuickbooksSyncService {
 
       return quickbooksId
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'QuickBooks payment sync failed.'
-      record.syncStatus = 'failed'
-      record.lastError = message
-      await record.save()
+      const { message, intuitTid } = syncErrorDetails(error)
+      await markSyncFailure(record, error)
 
       await AuditService.log({
         action: 'quickbooks.payment_sync_failed',
         entityType: 'invoice',
         entityId: invoiceId,
-        metadata: { error: message },
+        metadata: { error: message, intuitTid },
       })
 
       throw error
@@ -183,6 +226,7 @@ export default class QuickbooksSyncService {
       status: invoice?.quickbooksSyncStatus ?? record?.syncStatus ?? null,
       quickbooksInvoiceId: invoice?.quickbooksInvoiceId ?? record?.quickbooksId ?? null,
       lastError: record?.lastError ?? null,
+      lastIntuitTid: record?.lastIntuitTid ?? null,
       syncedAt: record?.syncedAt?.toISO() ?? null,
     }
   }

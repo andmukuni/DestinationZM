@@ -7,6 +7,7 @@ export type SettingsSection =
   | 'quickbooks'
   | 'sms'
   | 'whatsapp'
+  | 'security'
   | 'other'
 
 export type SettingsSectionMeta = {
@@ -51,6 +52,13 @@ export const SETTINGS_SECTIONS: SettingsSectionMeta[] = [
     label: 'WhatsApp',
     description: 'WhatsApp Business messaging',
     route: 'settings.whatsapp',
+    adminOnly: true,
+  },
+  {
+    id: 'security',
+    label: 'Security',
+    description: 'Captcha, MFA, and login protection',
+    route: 'settings.security',
     adminOnly: true,
   },
   {

@@ -54,4 +54,5 @@ export const middleware = router.named({
   clientGuest: () => import('#middleware/client_guest_middleware'),
   portalMaintenance: () => import('#middleware/portal_maintenance_middleware'),
   portalRegistration: () => import('#middleware/portal_registration_middleware'),
+  loginRateLimit: () => import('#middleware/login_rate_limit_middleware'),
 })

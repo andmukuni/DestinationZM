@@ -12,6 +12,7 @@ import {
   type EnquiryCartItemPayload,
   type LegacyEnquiryData,
   type StructuredEnquiryData,
+  resolveTravelerNamesFromEnquiryItems,
 } from '#types/portal_enquiry_data'
 
 type CreateBookingInput = {
@@ -28,6 +29,7 @@ type CreateBookingInput = {
   productType?: string | null
   portalBookingTypeId?: number | null
   enquiryData?: StructuredEnquiryData | Record<string, string | number | null> | null
+  travelerName?: string | null
   userId?: number | null
   ipAddress?: string | null
 }
@@ -73,6 +75,7 @@ export default class BookingService {
       productType: input.productType ?? null,
       portalBookingTypeId: input.portalBookingTypeId ?? null,
       enquiryData: input.enquiryData ?? null,
+      travelerName: input.travelerName ?? null,
       confirmedAt: null,
     })
 
@@ -177,6 +180,8 @@ export default class BookingService {
       items,
     }
 
+    const travelerName = resolveTravelerNamesFromEnquiryItems(items) || null
+
     return {
       destination,
       departDate,
@@ -187,6 +192,7 @@ export default class BookingService {
       portalBookingTypeId,
       notes,
       enquiryData,
+      travelerName,
     }
   }
 
@@ -214,6 +220,7 @@ export default class BookingService {
       ...aggregated,
       currency: options?.currency ?? primary.currency,
       portalBookingTypeId: aggregated.portalBookingTypeId,
+      travelerName: aggregated.travelerName,
     })
     await primary.save()
 
@@ -415,6 +422,7 @@ export default class BookingService {
       productType: aggregated.productType,
       portalBookingTypeId: aggregated.portalBookingTypeId,
       enquiryData: aggregated.enquiryData,
+      travelerName: aggregated.travelerName,
       userId: input.userId,
       ipAddress: input.ipAddress,
     })

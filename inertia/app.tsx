@@ -12,7 +12,7 @@ import { resolvePageComponent } from '@adonisjs/inertia/helpers'
 
 const appName = import.meta.env.VITE_APP_NAME || 'DestinationZM'
 
-const authPages = new Set(['auth/login', 'portal/login', 'portal/maintenance', 'portal/register'])
+const authPages = new Set(['auth/login', 'auth/mfa_verify', 'portal/login', 'portal/maintenance', 'portal/register'])
 const legalPages = new Set(['legal/eula', 'legal/privacy'])
 
 function resolveLayout(name: string, page: ReactElement<Data.SharedProps>) {

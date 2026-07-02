@@ -3,6 +3,7 @@ import RecoveryReportItem from '#models/recovery_report_item'
 import AuthorizationService from '#services/authorization_service'
 import type { RecoveryItemDocumentsContext } from '#services/recovery_reporting_service'
 import RecoveryReportingService from '#services/recovery_reporting_service'
+import { resolveTravelerNameFromBooking } from '#types/portal_enquiry_data'
 import {
   recoveryItemQueryValidator,
 } from '#validators/recovery_reporting_validator'
@@ -42,7 +43,9 @@ function serializeItem(item: RecoveryReportItem) {
     bookingReference: item.booking?.reference ?? '—',
     customerName: item.customer?.fullName ?? '—',
     productType: item.productType,
-    travelerName: item.travelerName,
+    travelerName: item.booking
+      ? (resolveTravelerNameFromBooking(item.booking) ?? '—')
+      : (item.travelerName ?? '—'),
     pnr: item.pnr ?? '—',
     supplierName: item.supplierName ?? item.supplier?.name ?? '—',
     invoiceReceiptNumber: item.invoiceReceiptNumber ?? '—',
