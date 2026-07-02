@@ -4,22 +4,19 @@ RUN apk add --no-cache python3 make g++
 
 WORKDIR /app
 
-# Coolify injects NODE_ENV=production at build time — force dev deps for ace/vite/tsc.
-ARG NODE_ENV=development
-ENV NODE_ENV=development
-ENV NPM_CONFIG_PRODUCTION=false
-
+# Coolify injects NODE_ENV=production at build time — inline env + --include=dev
+# so devDependencies install even when build args/env override Dockerfile ENV.
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN NODE_ENV=development NPM_CONFIG_PRODUCTION=false npm ci --include=dev --no-audit --no-fund
 
 COPY . .
 COPY docker/.env.build .env
 
-RUN node ace build --ignore-ts-errors
+RUN NODE_ENV=development node ace build --ignore-ts-errors
 
 # Install production deps inside build output (native modules e.g. better-sqlite3 need g++).
 WORKDIR /app/build
-RUN npm ci --omit=dev
+RUN NODE_ENV=production npm ci --omit=dev --no-audit --no-fund
 
 FROM node:24-alpine AS production
 
