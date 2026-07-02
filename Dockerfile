@@ -18,7 +18,8 @@ RUN NODE_ENV=development node ace build --ignore-ts-errors
 
 # Install production deps inside build output (native modules e.g. better-sqlite3 need g++).
 WORKDIR /app/build
-RUN NODE_ENV=production npm ci --omit=dev --no-audit --no-fund
+RUN NODE_ENV=production npm ci --omit=dev --no-audit --no-fund || \
+  (sleep 5 && NODE_ENV=production npm ci --omit=dev --no-audit --no-fund)
 
 FROM node:24-alpine AS production
 

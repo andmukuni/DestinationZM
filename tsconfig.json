@@ -3,7 +3,9 @@
   "compilerOptions": {
     "rootDir": "./",
     "jsx": "react",
-    "outDir": "./build"
+    "outDir": "./build",
+    "skipLibCheck": true
   },
+  "exclude": ["tests/**", "inertia/**", "node_modules/**", "build/**"],
   "references": [{ "path": "./tsconfig.inertia.json" }]
 }
