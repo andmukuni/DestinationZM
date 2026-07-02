@@ -202,10 +202,12 @@ function SidebarBrand() {
 function SidebarNav({
   url,
   sidebarNav,
+  canAccessPortalSettings = false,
   onNavigate,
 }: {
   url: string
   sidebarNav: NonNullable<Data.SharedProps['sidebarNav']>
+  canAccessPortalSettings?: boolean
   onNavigate?: () => void
 }) {
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
@@ -232,9 +234,14 @@ function SidebarNav({
     setExpandedGroups((current) => ({ ...current, [groupId]: !current[groupId] }))
   }
 
+  const portalSettingsActive =
+    url === '/settings/portal' || url.startsWith('/settings/portal/')
+  const settingsActive =
+    !portalSettingsActive && (url === '/settings' || url.startsWith('/settings/'))
+
   return (
-    <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 py-4">
-      <div className="flex-1 space-y-1">
+    <nav className="flex min-h-0 flex-1 flex-col px-3 py-4">
+      <div className="min-h-0 flex-1 space-y-1 overflow-y-auto">
         {sidebarNav.topLevel.map((item) => (
           <NavItemLink
             key={item.href}
@@ -258,16 +265,21 @@ function SidebarNav({
         ))}
       </div>
 
-      <div className="mt-4 border-t border-slate-200 pt-3">
-        {(() => {
-          const active = url === '/settings' || url.startsWith('/settings/')
-          return (
-            <Link route="settings" className={navLinkClass(active)} onClick={onNavigate}>
-              <SidebarNavIcon icon={SettingsIcon} active={active} />
-              <span>Settings</span>
-            </Link>
-          )
-        })()}
+      <div className="mt-4 shrink-0 space-y-1 border-t border-slate-200 pt-3">
+        {canAccessPortalSettings ? (
+          <Link
+            href="/settings/portal"
+            className={navLinkClass(portalSettingsActive)}
+            onClick={onNavigate}
+          >
+            <SidebarNavIcon icon={UserGroupIcon} active={portalSettingsActive} />
+            <span>Client portal</span>
+          </Link>
+        ) : null}
+        <Link route="settings" className={navLinkClass(settingsActive)} onClick={onNavigate}>
+          <SidebarNavIcon icon={SettingsIcon} active={settingsActive} />
+          <span>Settings</span>
+        </Link>
       </div>
     </nav>
   )
@@ -276,11 +288,13 @@ function SidebarNav({
 function SidebarPanel({
   url,
   sidebarNav,
+  canAccessPortalSettings = false,
   className,
   onNavigate,
 }: {
   url: string
   sidebarNav: NonNullable<Data.SharedProps['sidebarNav']>
+  canAccessPortalSettings?: boolean
   className?: string
   onNavigate?: () => void
 }) {
@@ -289,7 +303,12 @@ function SidebarPanel({
       className={`flex h-full w-64 shrink-0 flex-col border-r border-slate-200 bg-white ${className ?? ''}`}
     >
       <SidebarBrand />
-      <SidebarNav url={url} sidebarNav={sidebarNav} onNavigate={onNavigate} />
+      <SidebarNav
+        url={url}
+        sidebarNav={sidebarNav}
+        canAccessPortalSettings={canAccessPortalSettings}
+        onNavigate={onNavigate}
+      />
     </aside>
   )
 }
@@ -300,6 +319,7 @@ export default function AppLayout({ children }: { children: ReactElement<Data.Sh
   const sidebarNav = user
     ? (props.sidebarNav ?? { topLevel: [], groups: [] })
     : resolveSidebarNavigation(props.permissions, user?.role)
+  const canAccessPortalSettings = props.canAccessPortalSettings ?? false
   const notifications = props.notifications ?? { unreadCount: 0, recent: [] }
   const pageTitle = props.pageTitle ?? 'DestinationZM'
   const pageDescription = props.pageDescription ?? 'Tour & travel management'
@@ -333,7 +353,11 @@ export default function AppLayout({ children }: { children: ReactElement<Data.Sh
     <div className="h-dvh overflow-hidden bg-slate-100 text-slate-900">
       <div className="flex h-full">
         <div className="sticky top-0 hidden h-dvh shrink-0 md:flex">
-          <SidebarPanel url={url} sidebarNav={sidebarNav} />
+          <SidebarPanel
+            url={url}
+            sidebarNav={sidebarNav}
+            canAccessPortalSettings={canAccessPortalSettings}
+          />
         </div>
 
         {mobileNavOpen ? (
@@ -348,6 +372,7 @@ export default function AppLayout({ children }: { children: ReactElement<Data.Sh
               <SidebarPanel
                 url={url}
                 sidebarNav={sidebarNav}
+                canAccessPortalSettings={canAccessPortalSettings}
                 className="h-dvh"
                 onNavigate={() => setMobileNavOpen(false)}
               />
