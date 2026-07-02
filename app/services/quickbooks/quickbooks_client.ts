@@ -76,7 +76,13 @@ export default class QuickbooksClient {
     if (!response.ok) {
       const fault = (payload as QuickbooksQueryResponse<unknown> | null)?.Fault
       const message =
-        fault?.Error?.map((error) => error.Message || error.Detail).filter(Boolean).join('; ') ||
+        fault?.Error?.map((error) =>
+          [error.Message, error.Detail, error.code ? `(${error.code})` : null]
+            .filter(Boolean)
+            .join(': ')
+        )
+          .filter(Boolean)
+          .join('; ') ||
         text ||
         `QuickBooks request failed (${response.status}).`
       throw new QuickbooksApiError(message, {
@@ -137,6 +143,28 @@ export default class QuickbooksClient {
       connection,
       "select Id, Name, Type from Item where Type = 'Service' maxresults 100"
     )
+  }
+
+  static async getCurrencyPreferences(connection: QuickbooksConnection) {
+    const result = await this.request<{
+      Preferences?: {
+        CurrencyPrefs?: {
+          MultiCurrencyEnabled?: boolean
+          HomeCurrency?: { value?: string }
+        }
+      }
+    }>({
+      connection,
+      method: 'GET',
+      path: 'preferences',
+    })
+
+    const prefs = result.data.Preferences?.CurrencyPrefs
+
+    return {
+      multiCurrencyEnabled: Boolean(prefs?.MultiCurrencyEnabled),
+      homeCurrency: prefs?.HomeCurrency?.value?.toUpperCase() ?? 'USD',
+    }
   }
 
   static async getCompanyInfo(connection: QuickbooksConnection) {

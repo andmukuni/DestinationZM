@@ -7,6 +7,11 @@ export type QuickbooksInvoiceLineInput = {
   amount: number
 }
 
+export type QuickbooksCurrencyPrefs = {
+  multiCurrencyEnabled: boolean
+  homeCurrency: string
+}
+
 export type QuickbooksInvoicePayloadInput = {
   invoiceNumber: string
   issueDate: string
@@ -20,6 +25,11 @@ export type QuickbooksInvoicePayloadInput = {
   serviceItemId: string
   serviceItemName: string | null
   customerQuickbooksId: string
+}
+
+export type QuickbooksInvoicePayloadOptions = {
+  /** Only set when QBO multi-currency is enabled and the invoice uses a foreign currency. */
+  currencyRef?: string | null
 }
 
 export type QuickbooksInvoicePayload = {
@@ -42,12 +52,29 @@ export type QuickbooksInvoicePayload = {
   }>
 }
 
+export function resolveQuickbooksCurrencyRef(
+  currency: string,
+  prefs: QuickbooksCurrencyPrefs
+): string | null {
+  if (!prefs.multiCurrencyEnabled) {
+    return null
+  }
+
+  const normalized = currency.trim().toUpperCase()
+  if (!normalized || normalized === prefs.homeCurrency) {
+    return null
+  }
+
+  return normalized
+}
+
 export function buildQuickbooksInvoicePayload(
-  input: QuickbooksInvoicePayloadInput
+  input: QuickbooksInvoicePayloadInput,
+  options: QuickbooksInvoicePayloadOptions = {}
 ): QuickbooksInvoicePayload {
   const lines =
     input.lineItems.length > 0
-      ? input.lineItems.map((item) => lineFromItem(item, input.serviceItemId, input.serviceItemName))
+      ? input.lineItems.map((item) => lineFromItem(item, input.serviceItemId))
       : [
           {
             DetailType: 'SalesItemLineDetail' as const,
@@ -56,7 +83,6 @@ export function buildQuickbooksInvoicePayload(
             SalesItemLineDetail: {
               ItemRef: {
                 value: input.serviceItemId,
-                ...(input.serviceItemName ? { name: input.serviceItemName } : {}),
               },
               Qty: 1,
               UnitPrice: roundMoney(input.totalAmount),
@@ -72,8 +98,8 @@ export function buildQuickbooksInvoicePayload(
     Line: lines,
   }
 
-  if (input.currency) {
-    payload.CurrencyRef = { value: input.currency }
+  if (options.currencyRef) {
+    payload.CurrencyRef = { value: options.currencyRef }
   }
 
   if (input.notes?.trim()) {
@@ -89,12 +115,11 @@ export function buildQuickbooksInvoicePayload(
 
 function lineFromItem(
   item: QuotationLineItem | QuickbooksInvoiceLineInput,
-  serviceItemId: string,
-  serviceItemName: string | null
+  serviceItemId: string
 ) {
   const qty = item.quantity > 0 ? item.quantity : 1
-  const amount = roundMoney(item.amount)
-  const unitPrice = roundMoney(amount / qty)
+  const unitPrice = roundMoney(item.amount / qty)
+  const amount = roundMoney(unitPrice * qty)
   const description = [item.title, item.description].filter(Boolean).join(' — ').trim()
 
   return {
@@ -104,7 +129,6 @@ function lineFromItem(
     SalesItemLineDetail: {
       ItemRef: {
         value: serviceItemId,
-        ...(serviceItemName ? { name: serviceItemName } : {}),
       },
       Qty: qty,
       UnitPrice: unitPrice,
@@ -140,8 +164,13 @@ export type QuickbooksPaymentPayload = {
   }>
 }
 
+export type QuickbooksPaymentPayloadOptions = {
+  currencyRef?: string | null
+}
+
 export function buildQuickbooksPaymentPayload(
-  input: QuickbooksPaymentPayloadInput
+  input: QuickbooksPaymentPayloadInput,
+  options: QuickbooksPaymentPayloadOptions = {}
 ): QuickbooksPaymentPayload {
   const payload: QuickbooksPaymentPayload = {
     CustomerRef: { value: input.customerQuickbooksId },
@@ -160,8 +189,8 @@ export function buildQuickbooksPaymentPayload(
     ],
   }
 
-  if (input.currency) {
-    payload.CurrencyRef = { value: input.currency }
+  if (options.currencyRef) {
+    payload.CurrencyRef = { value: options.currencyRef }
   }
 
   if (input.reference?.trim()) {

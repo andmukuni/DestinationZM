@@ -5,7 +5,10 @@ import type QuickbooksConnection from '#models/quickbooks_connection'
 import QuickbooksClient from '#services/quickbooks/quickbooks_client'
 import QuickbooksCustomerSync from '#services/quickbooks/quickbooks_customer_sync'
 import QuickbooksInvoiceSync from '#services/quickbooks/quickbooks_invoice_sync'
-import { buildQuickbooksPaymentPayload } from '#services/quickbooks/quickbooks_payload_builder'
+import {
+  buildQuickbooksPaymentPayload,
+  resolveQuickbooksCurrencyRef,
+} from '#services/quickbooks/quickbooks_payload_builder'
 
 export default class QuickbooksPaymentSync {
   static async syncPayment(connection: QuickbooksConnection, invoiceId: number) {
@@ -42,14 +45,21 @@ export default class QuickbooksPaymentSync {
       invoice.customerId
     )
 
-    const payload = buildQuickbooksPaymentPayload({
-      customerQuickbooksId,
-      invoiceQuickbooksId,
-      totalAmount: Number(invoice.totalAmount),
-      currency: invoice.currency,
-      paymentDate: DateTime.now().toISODate() ?? invoice.issueDate.toISODate()!,
-      reference: invoice.invoiceNumber,
-    })
+    const currencyPrefs = await QuickbooksClient.getCurrencyPreferences(connection)
+
+    const payload = buildQuickbooksPaymentPayload(
+      {
+        customerQuickbooksId,
+        invoiceQuickbooksId,
+        totalAmount: Number(invoice.totalAmount),
+        currency: invoice.currency,
+        paymentDate: DateTime.now().toISODate() ?? invoice.issueDate.toISODate()!,
+        reference: invoice.invoiceNumber,
+      },
+      {
+        currencyRef: resolveQuickbooksCurrencyRef(invoice.currency, currencyPrefs),
+      }
+    )
 
     const response = await QuickbooksClient.createPayment(connection, payload)
     const quickbooksId = response.Payment?.Id

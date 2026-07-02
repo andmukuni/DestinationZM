@@ -5,7 +5,10 @@ import type QuickbooksConnection from '#models/quickbooks_connection'
 import InvoiceDocumentService from '#services/invoice_document_service'
 import QuickbooksClient from '#services/quickbooks/quickbooks_client'
 import QuickbooksCustomerSync from '#services/quickbooks/quickbooks_customer_sync'
-import { buildQuickbooksInvoicePayload } from '#services/quickbooks/quickbooks_payload_builder'
+import {
+  buildQuickbooksInvoicePayload,
+  resolveQuickbooksCurrencyRef,
+} from '#services/quickbooks/quickbooks_payload_builder'
 
 export default class QuickbooksInvoiceSync {
   static async syncInvoice(connection: QuickbooksConnection, invoiceId: number) {
@@ -34,21 +37,27 @@ export default class QuickbooksInvoiceSync {
 
     const quotation = await InvoiceDocumentService.quotationForBooking(invoice.bookingId)
     const lineItems = quotation?.lineItems?.items ?? []
+    const currencyPrefs = await QuickbooksClient.getCurrencyPreferences(connection)
 
-    const payload = buildQuickbooksInvoicePayload({
-      invoiceNumber: invoice.invoiceNumber,
-      issueDate: invoice.issueDate.toISODate() ?? DateTime.now().toISODate()!,
-      dueDate: invoice.dueDate.toISODate() ?? DateTime.now().toISODate()!,
-      currency: invoice.currency,
-      subtotal: Number(invoice.subtotal),
-      taxAmount: Number(invoice.taxAmount),
-      totalAmount: Number(invoice.totalAmount),
-      notes: invoice.notes,
-      lineItems,
-      serviceItemId: connection.defaultServiceItemId,
-      serviceItemName: connection.defaultServiceItemName,
-      customerQuickbooksId,
-    })
+    const payload = buildQuickbooksInvoicePayload(
+      {
+        invoiceNumber: invoice.invoiceNumber,
+        issueDate: invoice.issueDate.toISODate() ?? DateTime.now().toISODate()!,
+        dueDate: invoice.dueDate.toISODate() ?? DateTime.now().toISODate()!,
+        currency: invoice.currency,
+        subtotal: Number(invoice.subtotal),
+        taxAmount: Number(invoice.taxAmount),
+        totalAmount: Number(invoice.totalAmount),
+        notes: invoice.notes,
+        lineItems,
+        serviceItemId: connection.defaultServiceItemId,
+        serviceItemName: connection.defaultServiceItemName,
+        customerQuickbooksId,
+      },
+      {
+        currencyRef: resolveQuickbooksCurrencyRef(invoice.currency, currencyPrefs),
+      }
+    )
 
     try {
       const response = await QuickbooksClient.createInvoice(connection, payload)
