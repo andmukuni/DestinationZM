@@ -1,4 +1,4 @@
-import { Form, Link } from '@adonisjs/inertia/react'
+import { Form } from '@adonisjs/inertia/react'
 import { QuickbooksTestConnection } from '~/components/settings/quickbooks_test_connection'
 import { SettingsShell } from '~/components/settings/settings_shell'
 import { Badge } from '~/components/ui/badge'
@@ -232,12 +232,12 @@ export default function QuickbooksSettings({
               />
 
               {configured && !connection ? (
-                <Link
+                <a
                   href="/settings/quickbooks/connect"
                   className="inline-flex h-10 w-full items-center justify-center rounded-lg border border-transparent bg-orange-600 px-4 text-sm font-medium text-white transition-colors hover:bg-orange-700"
                 >
                   Connect QuickBooks
-                </Link>
+                </a>
               ) : null}
 
               {connection ? (
