@@ -225,7 +225,7 @@ export default function DateRangeCalendar({
       {children({ open, toggle: () => setOpen((current) => !current), summary, nightsLabel })}
 
       {open ? (
-        <div className="absolute left-0 right-0 top-[calc(100%+10px)] z-50 min-w-[320px] rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl md:left-auto md:right-auto md:w-[640px]">
+        <div className="absolute left-0 right-0 top-[calc(100%+10px)] z-[100] min-w-[320px] rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl md:left-auto md:right-auto md:w-[640px]">
           <div className="mb-3 flex items-center justify-between">
             <button
               type="button"

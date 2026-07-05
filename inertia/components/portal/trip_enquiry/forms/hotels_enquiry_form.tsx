@@ -36,8 +36,8 @@ export default function HotelsEnquiryForm({ fields, errors, minDate }: TripFormP
 
   return (
     <div className="space-y-2">
-      <div className="overflow-hidden rounded-xl border border-slate-300 shadow-sm">
-        <div className="flex flex-col lg:flex-row lg:items-stretch lg:border-b lg:border-slate-300">
+      <div className="overflow-visible rounded-xl border border-slate-300 shadow-sm">
+        <div className="relative z-30 flex flex-col lg:flex-row lg:items-stretch lg:border-b lg:border-slate-300">
           <TripSearchBarSection className="lg:flex-[1.1]">
             <LocationCombobox
               fieldKey="location"
@@ -90,7 +90,7 @@ export default function HotelsEnquiryForm({ fields, errors, minDate }: TripFormP
           </TripSearchBarSection>
         </div>
 
-        <div className="flex flex-col lg:flex-row lg:items-stretch">
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-stretch">
           <TripSearchBarSection className="px-0 lg:flex-[1.45] xl:flex-[1.5]">
             <DateRangePicker
               startKey="check_in"

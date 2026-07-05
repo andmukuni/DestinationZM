@@ -95,7 +95,7 @@ export default function RoomGuestPopover({
       </button>
 
       {open ? (
-        <div className="absolute left-0 top-[calc(100%+10px)] z-50 w-full min-w-[300px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl md:w-[360px]">
+        <div className="absolute left-0 top-[calc(100%+10px)] z-[100] w-full min-w-[300px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl md:w-[360px]">
           <div className="border-b border-slate-100 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
             Rooms and guests
           </div>
@@ -250,7 +250,7 @@ export function PassengerClassPopover({
       </button>
 
       {open ? (
-        <div className="absolute left-0 top-[calc(100%+10px)] z-50 w-full min-w-[300px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl md:w-[360px]">
+        <div className="absolute left-0 top-[calc(100%+10px)] z-[100] w-full min-w-[300px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl md:w-[360px]">
           <div className="border-b border-slate-100 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
             Passengers and class
           </div>
@@ -396,7 +396,7 @@ export function TripDetailsPopover({
       </button>
 
       {open ? (
-        <div className="absolute left-0 top-[calc(100%+10px)] z-50 w-full min-w-[300px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl md:w-[360px]">
+        <div className="absolute left-0 top-[calc(100%+10px)] z-[100] w-full min-w-[300px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl md:w-[360px]">
           <div className="border-b border-slate-100 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
             Trip details
           </div>
