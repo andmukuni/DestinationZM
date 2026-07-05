@@ -63,11 +63,7 @@ export default function QuotationDocumentActions({
         </DropdownMenuLink>
       ) : null}
       {canEdit ? (
-        <DropdownMenuLink
-          route="quotations.edit"
-          routeParams={{ id: quotationId }}
-          icon={<PencilIcon />}
-        >
+        <DropdownMenuLink href={`/quotations/${quotationId}/edit`} icon={<PencilIcon />}>
           Edit quotation
         </DropdownMenuLink>
       ) : null}

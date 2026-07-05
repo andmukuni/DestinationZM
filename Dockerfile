@@ -7,14 +7,14 @@ WORKDIR /app
 # Coolify injects NODE_ENV=production at build time — inline env + --include=dev
 # so devDependencies install even when build args/env override Dockerfile ENV.
 COPY package.json package-lock.json ./
-RUN NODE_ENV=development NPM_CONFIG_PRODUCTION=false npm ci --include=dev --no-audit --no-fund
+RUN --mount=type=cache,target=/root/.npm \
+    NODE_ENV=development NPM_CONFIG_PRODUCTION=false npm ci --include=dev --no-audit --no-fund
 
 COPY . .
 COPY docker/.env.build .env
 
-# Cap Node heap during vite+tsc; small Coolify build hosts can OOM without this.
-ENV NODE_OPTIONS="--max-old-space-size=2048"
-RUN NODE_ENV=development node ace build --ignore-ts-errors
+# Cap heap only for ace build; 1536MB leaves room for gcc/vite on small Coolify hosts.
+RUN NODE_ENV=development NODE_OPTIONS="--max-old-space-size=1536" node ace build --ignore-ts-errors
 
 # Install production deps inside build output (native modules e.g. better-sqlite3 need g++).
 WORKDIR /app/build

@@ -1,4 +1,3 @@
-import { Link } from '@adonisjs/inertia/react'
 import { type ReactNode, useEffect, useId, useRef, useState } from 'react'
 import { ChevronDownIcon } from '~/components/icons'
 import { Button } from '~/components/ui/button'
@@ -103,44 +102,23 @@ export function DropdownMenuItem({
   )
 }
 
-type DropdownMenuLinkProps = {
-  icon?: ReactNode
-  tone?: 'default' | 'primary' | 'danger'
-  children: ReactNode
-} & (
-  | { href: string; route?: never; routeParams?: never }
-  | { href?: never; route: string; routeParams?: Record<string, string | number> }
-)
-
 export function DropdownMenuLink({
   href,
-  route,
-  routeParams,
   icon,
   tone = 'default',
   children,
-}: DropdownMenuLinkProps) {
-  const className = menuItemClassName(tone)
-  const content = (
-    <>
+}: {
+  href: string
+  icon?: ReactNode
+  tone?: 'default' | 'primary' | 'danger'
+  children: ReactNode
+}) {
+  return (
+    <a href={href} role="menuitem" className={menuItemClassName(tone)}>
       {icon ? (
         <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center">{icon}</span>
       ) : null}
       {children}
-    </>
-  )
-
-  if (route) {
-    return (
-      <Link route={route} routeParams={routeParams} role="menuitem" className={className}>
-        {content}
-      </Link>
-    )
-  }
-
-  return (
-    <a href={href} role="menuitem" className={className}>
-      {content}
     </a>
   )
 }
