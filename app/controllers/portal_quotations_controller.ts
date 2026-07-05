@@ -4,6 +4,8 @@ import QuotationDocumentService from '#services/quotation_document_service'
 import QuotationService from '#services/quotation_service'
 import PortalPrivilegeService from '#services/portal_privilege_service'
 import { portalQuotationStatusLabel } from '#types/booking_status'
+import { quotationLineItems } from '#types/quotation_line_item'
+import { portalQuotationApproveValidator } from '#validators/quotation_validator'
 import type { HttpContext } from '@adonisjs/core/http'
 
 const PORTAL_QUOTATION_STATUSES = [
@@ -98,6 +100,7 @@ export default class PortalQuotationsController {
     const document = QuotationDocumentService.buildForQuotation(quotation, { audience: 'portal' })
     const canApprove =
       quotation.status === 'sent' && PortalPrivilegeService.has(account, 'approve_quotations')
+    const lineItemCount = quotationLineItems(quotation.lineItems).length
 
     return inertia.render('portal/quotations/show', {
       pageTitle: quotation.reference,
@@ -106,6 +109,7 @@ export default class PortalQuotationsController {
       document,
       statusTone: quotationStatusTone(quotation.status),
       canApprove,
+      lineItemCount,
       bookingId: quotation.bookingId,
     })
   }
@@ -154,10 +158,36 @@ export default class PortalQuotationsController {
       return response.redirect().back()
     }
 
-    await QuotationService.clientApprove(quotation, {
-      clientAccountId: account.id,
-      ipAddress: request.ip(),
-    })
+    const lineItems = quotationLineItems(quotation.lineItems)
+
+    if (lineItems.length === 0) {
+      await QuotationService.clientApprove(quotation, {
+        clientAccountId: account.id,
+        ipAddress: request.ip(),
+      })
+    } else {
+      const payload = await request.validateUsing(portalQuotationApproveValidator)
+      const approvedItemIndices = [...new Set(payload.approvedItemIndices)].filter(
+        (index) => index >= 0 && index < lineItems.length
+      )
+
+      if (approvedItemIndices.length === 0) {
+        session.flash('error', 'Select at least one line item to approve.')
+        return response.redirect().back()
+      }
+
+      try {
+        await QuotationService.clientApprove(quotation, {
+          clientAccountId: account.id,
+          ipAddress: request.ip(),
+          approvedItemIndices,
+        })
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unable to approve quotation.'
+        session.flash('error', message)
+        return response.redirect().back()
+      }
+    }
 
     session.flash('success', 'Quotation approved. Our team will confirm your enquiry and prepare your invoice.')
     return response.redirect().toRoute('portal.quotations.show', { id: quotation.id })

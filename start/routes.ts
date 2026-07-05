@@ -268,6 +268,8 @@ router
     router.get('quotations/create', [controllers.Quotations, 'create']).as('quotations.create')
     router.post('quotations', [controllers.Quotations, 'store']).as('quotations.store')
     router.get('quotations/:id', [controllers.Quotations, 'show']).as('quotations.show')
+    router.get('quotations/:id/edit', [controllers.Quotations, 'edit']).as('quotations.edit')
+    router.patch('quotations/:id', [controllers.Quotations, 'update']).as('quotations.update')
     router
       .get('quotations/:id/download', [controllers.Quotations, 'download'])
       .as('quotations.download')

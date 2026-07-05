@@ -1,5 +1,5 @@
 import { Form } from '@adonisjs/inertia/react'
-import { DownloadIcon, EyeIcon, CheckCircleIcon, PlusIcon, PrinterIcon } from '~/components/icons'
+import { DownloadIcon, EyeIcon, CheckCircleIcon, PlusIcon, PrinterIcon, PencilIcon } from '~/components/icons'
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -13,6 +13,7 @@ type QuotationDocumentActionsProps = {
   reference: string
   downloadUrl: string
   canSend: boolean
+  canEdit?: boolean
   canCreateInvoice?: boolean
   createInvoiceHref?: string
   enquiry: {
@@ -32,6 +33,7 @@ export default function QuotationDocumentActions({
   reference,
   downloadUrl,
   canSend,
+  canEdit = false,
   canCreateInvoice = false,
   createInvoiceHref,
   enquiry,
@@ -58,6 +60,15 @@ export default function QuotationDocumentActions({
       {canCreateInvoice && createInvoiceHref ? (
         <DropdownMenuLink href={createInvoiceHref} icon={<PlusIcon />} tone="primary">
           Create invoice
+        </DropdownMenuLink>
+      ) : null}
+      {canEdit ? (
+        <DropdownMenuLink
+          route="quotations.edit"
+          routeParams={{ id: quotationId }}
+          icon={<PencilIcon />}
+        >
+          Edit quotation
         </DropdownMenuLink>
       ) : null}
       {canSend ? (

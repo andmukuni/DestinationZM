@@ -10,7 +10,7 @@ import QuotationService from '#services/quotation_service'
 import WorkflowService from '#services/workflow_service'
 import { quotationStatusLabel } from '#types/booking_status'
 import type { HttpContext } from '@adonisjs/core/http'
-import { quotationStoreValidator } from '#validators/quotation_validator'
+import { quotationStoreValidator, quotationUpdateValidator } from '#validators/quotation_validator'
 
 function canManageQuotations(user: Parameters<typeof AuthorizationService.can>[0]) {
   return AuthorizationService.can(user, 'quotations.manage')
@@ -236,6 +236,9 @@ export default class QuotationsController {
     const document = QuotationDocumentService.buildForQuotation(quotation)
     const canSend =
       AuthorizationService.can(user, 'quotations.manage') && quotation.status === 'draft'
+    const canEdit =
+      AuthorizationService.can(user, 'quotations.manage') &&
+      QuotationService.isEditable(quotation.status)
 
     const existingInvoice = quotation.bookingId
       ? await Invoice.query().where('booking_id', quotation.bookingId).first()
@@ -256,6 +259,7 @@ export default class QuotationsController {
       document,
       statusTone: quotationStatusTone(quotation.status),
       canSend,
+      canEdit,
       canCreateInvoice,
       createInvoiceHref: `/invoices/create?quotationId=${quotation.id}`,
       enquiry: quotation.booking
@@ -276,6 +280,73 @@ export default class QuotationsController {
           }
         : null,
     })
+  }
+
+  async edit({ auth, inertia, params, response }: HttpContext) {
+    const user = auth.use('web').getUserOrFail()
+    if (!canManageQuotations(user)) {
+      return response.forbidden()
+    }
+
+    const quotation = await QuotationService.find(params.id)
+    const userBranchId = AuthorizationService.branchIdFor(user)
+    if (userBranchId && quotation.branchId !== userBranchId) {
+      return response.forbidden()
+    }
+
+    if (!QuotationService.isEditable(quotation.status)) {
+      return response.redirect().toRoute('quotations.show', { id: quotation.id })
+    }
+
+    return inertia.render('quotations/edit', {
+      pageTitle: `Edit ${quotation.reference}`,
+      pageDescription: 'Update quotation line items and totals',
+      editDraft: QuotationService.buildEditDraft(quotation),
+    })
+  }
+
+  async update({ auth, params, request, response, session }: HttpContext) {
+    const user = auth.use('web').getUserOrFail()
+    if (!canManageQuotations(user)) {
+      return response.forbidden()
+    }
+
+    const quotation = await Quotation.findOrFail(params.id)
+    const userBranchId = AuthorizationService.branchIdFor(user)
+    if (userBranchId && quotation.branchId !== userBranchId) {
+      return response.forbidden()
+    }
+
+    if (!QuotationService.isEditable(quotation.status)) {
+      session.flash('error', 'This quotation can no longer be edited.')
+      return response.redirect().toRoute('quotations.show', { id: quotation.id })
+    }
+
+    const payload = await request.validateUsing(quotationUpdateValidator)
+    const lineItems =
+      payload.lineItems?.map((item) => ({
+        quantity: item.quantity,
+        title: item.title,
+        description: item.description ?? '',
+        amount: item.amount,
+      })) ?? undefined
+
+    await QuotationService.update(
+      quotation,
+      {
+        subtotal: payload.subtotal ?? 0,
+        taxAmount: payload.taxAmount ?? 0,
+        totalAmount: payload.totalAmount ?? 0,
+        currency: payload.currency?.toUpperCase() ?? quotation.currency,
+        validUntil: payload.validUntil ?? null,
+        notes: payload.notes ?? null,
+        lineItems,
+      },
+      { userId: user.id, ipAddress: request.ip() }
+    )
+
+    session.flash('success', 'Quotation updated.')
+    return response.redirect().toRoute('quotations.show', { id: quotation.id })
   }
 
   async download({ auth, params, response }: HttpContext) {

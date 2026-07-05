@@ -8,6 +8,7 @@ import NotificationMailService from '#services/notification_mail_service'
 import RecoveryReportingService from '#services/recovery_reporting_service'
 import QuickbooksSyncService from '#services/quickbooks/quickbooks_sync_service'
 import type { QuotationLineItem } from '#types/quotation_line_item'
+import { approvedQuotationLineItems, quotationLineItems } from '#types/quotation_line_item'
 
 type CreateFromBookingOptions = {
   dueDate?: DateTime
@@ -125,7 +126,7 @@ export default class InvoiceService {
   }
 
   static buildDraftFromQuotation(quotation: Quotation): InvoiceDraftFromQuotation {
-    const lineItems = quotation.lineItems?.items ?? []
+    const lineItems = approvedQuotationLineItems(quotationLineItems(quotation.lineItems))
     const issueDate = DateTime.now()
     const dueDate = issueDate.plus({ days: 30 })
 

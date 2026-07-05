@@ -5,12 +5,17 @@ import {
   quotationStatusLabel,
 } from '#types/booking_status'
 import { isStructuredEnquiryData } from '#types/portal_enquiry_data'
+import {
+  approvedQuotationLineItems,
+  quotationLineItems,
+} from '#types/quotation_line_item'
 
 export type QuotationDocumentLineItem = {
   quantity: number
   title: string
   description: string
   amount: number
+  clientApproved?: boolean
 }
 
 export type EnquiryServiceSummary = {
@@ -147,7 +152,9 @@ export default class QuotationDocumentService {
     quotation: Quotation,
     options?: { audience?: 'admin' | 'portal' }
   ): QuotationDocumentData {
-    const lineItems = quotation.lineItems?.items ?? []
+    const allLineItems = quotationLineItems(quotation.lineItems)
+    const hasApprovalFlags = allLineItems.some((item) => item.clientApproved !== undefined)
+    const displayItems = allLineItems
     const audience = options?.audience ?? 'admin'
     const statusLabel =
       audience === 'portal'
@@ -166,12 +173,14 @@ export default class QuotationDocumentService {
         email: quotation.customer?.email ?? null,
         phone: quotation.customer?.phone ?? null,
       },
-      lineItems,
+      lineItems: displayItems,
       subtotal: Number(quotation.subtotal ?? 0),
       taxAmount: Number(quotation.taxAmount ?? 0),
       totalAmount: Number(quotation.totalAmount ?? 0),
       currency: quotation.currency,
-      itemCount: lineItems.length,
+      itemCount: hasApprovalFlags
+        ? approvedQuotationLineItems(allLineItems).length
+        : displayItems.length,
       notes: quotation.notes,
       enquirySummaries: buildEnquirySummariesForQuotation(quotation),
       footer: {

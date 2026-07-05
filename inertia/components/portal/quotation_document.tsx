@@ -4,12 +4,14 @@ import EnquiryServiceSummaries, {
   type EnquiryServiceSummary,
 } from '~/components/portal/enquiry_service_summaries'
 import { formatCurrency } from '~/lib/format'
+import { brandCheckboxClass } from '~/lib/brand_theme'
 
 export type QuotationDocumentLineItem = {
   quantity: number
   title: string
   description: string
   amount: number
+  clientApproved?: boolean
 }
 
 export type QuotationDocumentData = {
@@ -43,13 +45,20 @@ type QuotationDocumentProps = {
   document: QuotationDocumentData
   statusTone?: 'warning' | 'info' | 'success' | 'danger' | 'default'
   id?: string
+  lineItemSelection?: {
+    selectedIndices: number[]
+    onToggle: (index: number) => void
+  }
 }
 
 export default function QuotationDocument({
   document,
   statusTone = 'warning',
   id,
+  lineItemSelection,
 }: QuotationDocumentProps) {
+  const showSelection = Boolean(lineItemSelection)
+  const hasApprovalFlags = document.lineItems.some((item) => item.clientApproved !== undefined)
   return (
     <div
       id={id}
@@ -114,6 +123,11 @@ export default function QuotationDocument({
         <table className="w-full border-collapse border border-slate-400 text-sm">
           <thead>
             <tr className="bg-slate-600 text-left text-white">
+              {showSelection ? (
+                <th className="w-12 border border-slate-500 px-3 py-2 text-center font-semibold">
+                  Approve
+                </th>
+              ) : null}
               <th className="w-16 border border-slate-500 px-3 py-2 text-center font-semibold">
                 Qty
               </th>
@@ -127,31 +141,62 @@ export default function QuotationDocument({
           <tbody>
             {document.lineItems.length === 0 ? (
               <tr>
-                <td colSpan={4} className="border border-slate-200 px-4 py-6 text-center text-slate-500">
+                <td
+                  colSpan={showSelection ? 5 : 4}
+                  className="border border-slate-200 px-4 py-6 text-center text-slate-500"
+                >
                   No line items on this quotation.
                 </td>
               </tr>
             ) : (
-              document.lineItems.map((item, index) => (
-                <tr key={`${item.title}-${index}`} className="align-top">
-                  <td className="border border-slate-200 px-3 py-2 text-center text-slate-800">
-                    {item.quantity}
-                  </td>
-                  <td className="border border-slate-200 px-3 py-2">
-                    <p className="font-semibold text-slate-900">{item.title}</p>
-                  </td>
-                  <td className="border border-slate-200 px-3 py-2 text-slate-700">
-                    {item.description ? (
-                      <LineItemDescription description={item.description} />
-                    ) : (
-                      <span className="text-slate-400">—</span>
-                    )}
-                  </td>
-                  <td className="border border-slate-200 px-3 py-2 text-right font-medium text-slate-900">
-                    {item.amount > 0 ? formatCurrency(item.amount, document.currency) : '—'}
-                  </td>
-                </tr>
-              ))
+              document.lineItems.map((item, index) => {
+                const isSelected = lineItemSelection?.selectedIndices.includes(index) ?? false
+                const declined = item.clientApproved === false
+
+                return (
+                  <tr
+                    key={`${item.title}-${index}`}
+                    className={`align-top ${declined ? 'bg-slate-50 opacity-70' : ''}`}
+                  >
+                    {showSelection ? (
+                      <td className="border border-slate-200 px-3 py-2 text-center">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => lineItemSelection?.onToggle(index)}
+                          className={brandCheckboxClass}
+                          aria-label={`Approve ${item.title}`}
+                        />
+                      </td>
+                    ) : null}
+                    <td className="border border-slate-200 px-3 py-2 text-center text-slate-800">
+                      {item.quantity}
+                    </td>
+                    <td className="border border-slate-200 px-3 py-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-semibold text-slate-900">{item.title}</p>
+                        {hasApprovalFlags && !showSelection ? (
+                          item.clientApproved ? (
+                            <Badge tone="success">Approved</Badge>
+                          ) : (
+                            <Badge tone="default">Not approved</Badge>
+                          )
+                        ) : null}
+                      </div>
+                    </td>
+                    <td className="border border-slate-200 px-3 py-2 text-slate-700">
+                      {item.description ? (
+                        <LineItemDescription description={item.description} />
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
+                    </td>
+                    <td className="border border-slate-200 px-3 py-2 text-right font-medium text-slate-900">
+                      {item.amount > 0 ? formatCurrency(item.amount, document.currency) : '—'}
+                    </td>
+                  </tr>
+                )
+              })
             )}
           </tbody>
           <tfoot>

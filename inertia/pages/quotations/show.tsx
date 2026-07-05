@@ -10,6 +10,7 @@ type QuotationsShowProps = {
   document: QuotationDocumentData
   statusTone: 'warning' | 'info' | 'success' | 'danger' | 'default'
   canSend: boolean
+  canEdit: boolean
   canCreateInvoice: boolean
   createInvoiceHref: string
   enquiry: {
@@ -29,6 +30,7 @@ export default function QuotationsShow({
   document,
   statusTone,
   canSend,
+  canEdit,
   canCreateInvoice,
   createInvoiceHref,
   enquiry,
@@ -53,6 +55,7 @@ export default function QuotationsShow({
             reference={document.reference}
             downloadUrl={downloadUrl}
             canSend={canSend}
+            canEdit={canEdit}
             canCreateInvoice={canCreateInvoice}
             createInvoiceHref={createInvoiceHref}
             enquiry={enquiry}

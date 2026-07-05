@@ -8,6 +8,12 @@ import NotificationService from '#services/notification_service'
 import PortalBookingTypeService from '#services/portal_booking_type_service'
 import type { QuotationStatus } from '#types/booking_status'
 import type { QuotationLineItem, QuotationLineItemsData } from '#types/quotation_line_item'
+import {
+  approvedQuotationLineItems,
+  markClientApprovedLineItems,
+  quotationLineItems,
+  quotationTotalsFromLineItems,
+} from '#types/quotation_line_item'
 
 type CreateQuotationInput = {
   customerId: number
@@ -28,9 +34,35 @@ type CreateQuotationInput = {
 type UpdateQuotationInput = Partial<
   Pick<
     CreateQuotationInput,
-    'subtotal' | 'taxAmount' | 'totalAmount' | 'currency' | 'validUntil' | 'notes' | 'bookingId'
+    | 'subtotal'
+    | 'taxAmount'
+    | 'totalAmount'
+    | 'currency'
+    | 'validUntil'
+    | 'notes'
+    | 'bookingId'
+    | 'lineItems'
   >
 >
+
+export type QuotationEditDraft = {
+  quotationId: number
+  reference: string
+  customerId: number
+  customerName: string
+  bookingId: number | null
+  bookingReference: string | null
+  branchId: number
+  branchName: string
+  currency: string
+  notes: string | null
+  validUntil: string
+  subtotal: number
+  taxAmount: number
+  totalAmount: number
+  lineItems: QuotationLineItem[]
+  status: QuotationStatus
+}
 
 export type QuotationDraftFromEnquiry = {
   customerId: number
@@ -49,6 +81,10 @@ export type QuotationDraftFromEnquiry = {
 }
 
 export default class QuotationService {
+  static isEditable(status: QuotationStatus) {
+    return status === 'draft' || status === 'sent'
+  }
+
   private static async nextReference(branchId: number) {
     const prefix = `QT-${DateTime.now().toFormat('yyyyMMdd')}`
     const latest = await Quotation.query()
@@ -120,10 +156,63 @@ export default class QuotationService {
     return quotation
   }
 
-  static async update(quotation: Quotation, input: UpdateQuotationInput) {
-    quotation.merge(input)
+  static async update(
+    quotation: Quotation,
+    input: UpdateQuotationInput,
+    options?: { userId?: number | null; ipAddress?: string | null }
+  ) {
+    const mergeInput: Partial<Quotation> = {}
+
+    if (input.subtotal !== undefined) mergeInput.subtotal = input.subtotal
+    if (input.taxAmount !== undefined) mergeInput.taxAmount = input.taxAmount
+    if (input.totalAmount !== undefined) mergeInput.totalAmount = input.totalAmount
+    if (input.currency !== undefined) mergeInput.currency = input.currency
+    if (input.validUntil !== undefined) mergeInput.validUntil = input.validUntil
+    if (input.notes !== undefined) mergeInput.notes = input.notes
+    if (input.bookingId !== undefined) mergeInput.bookingId = input.bookingId
+
+    if (input.lineItems !== undefined) {
+      mergeInput.lineItems = input.lineItems.length
+        ? { version: 1, items: input.lineItems }
+        : null
+    }
+
+    quotation.merge(mergeInput)
     await quotation.save()
+
+    await AuditService.log({
+      action: 'quotation.updated',
+      entityType: 'quotation',
+      entityId: quotation.id,
+      userId: options?.userId ?? null,
+      ipAddress: options?.ipAddress ?? null,
+      metadata: { reference: quotation.reference },
+    })
+
     return quotation
+  }
+
+  static buildEditDraft(quotation: Quotation): QuotationEditDraft {
+    const lineItems = quotationLineItems(quotation.lineItems)
+
+    return {
+      quotationId: quotation.id,
+      reference: quotation.reference,
+      customerId: quotation.customerId,
+      customerName: quotation.customer?.fullName ?? '—',
+      bookingId: quotation.bookingId,
+      bookingReference: quotation.booking?.reference ?? null,
+      branchId: quotation.branchId,
+      branchName: quotation.branch?.name ?? '—',
+      currency: quotation.currency,
+      notes: quotation.notes,
+      validUntil: quotation.validUntil?.toISODate() ?? '',
+      subtotal: Number(quotation.subtotal ?? 0),
+      taxAmount: Number(quotation.taxAmount ?? 0),
+      totalAmount: Number(quotation.totalAmount ?? 0),
+      lineItems: lineItems.length ? lineItems : [{ quantity: 1, title: '', description: '', amount: 0 }],
+      status: quotation.status,
+    }
   }
 
   static async buildDraftFromEnquiry(booking: Booking): Promise<QuotationDraftFromEnquiry> {
@@ -315,10 +404,43 @@ export default class QuotationService {
 
   static async clientApprove(
     quotation: Quotation,
-    options?: { clientAccountId?: number | null; ipAddress?: string | null }
+    options?: {
+      clientAccountId?: number | null
+      ipAddress?: string | null
+      approvedItemIndices?: number[]
+    }
   ) {
     await quotation.load('booking', (q) => q.preload('customer'))
     await quotation.load('customer')
+
+    const allItems = quotationLineItems(quotation.lineItems)
+    const fullSubtotal = Number(quotation.subtotal ?? 0)
+    const approvedIndices =
+      options?.approvedItemIndices ??
+      allItems.map((_, index) => index)
+
+    if (allItems.length > 0) {
+      const uniqueIndices = [...new Set(approvedIndices)].filter(
+        (index) => index >= 0 && index < allItems.length
+      )
+
+      if (uniqueIndices.length === 0) {
+        throw new Error('Select at least one line item to approve.')
+      }
+
+      const markedItems = markClientApprovedLineItems(allItems, uniqueIndices)
+      const approvedItems = approvedQuotationLineItems(markedItems)
+      const totals = quotationTotalsFromLineItems(
+        approvedItems,
+        Number(quotation.taxAmount ?? 0),
+        fullSubtotal
+      )
+
+      quotation.lineItems = { version: 1, items: markedItems }
+      quotation.subtotal = totals.subtotal
+      quotation.taxAmount = totals.taxAmount
+      quotation.totalAmount = totals.totalAmount
+    }
 
     quotation.merge({
       status: 'client_approved',
@@ -355,7 +477,10 @@ export default class QuotationService {
       action: 'quotation.client_approved',
       entityType: 'quotation',
       entityId: quotation.id,
-      metadata: { clientAccountId: options?.clientAccountId ?? null },
+      metadata: {
+        clientAccountId: options?.clientAccountId ?? null,
+        approvedItemIndices: options?.approvedItemIndices ?? null,
+      },
     })
 
     return quotation

@@ -23,3 +23,11 @@ export const quotationStoreValidator = vine.compile(
       .optional(),
   })
 )
+
+export const quotationUpdateValidator = quotationStoreValidator
+
+export const portalQuotationApproveValidator = vine.compile(
+  vine.object({
+    approvedItemIndices: vine.array(vine.number().min(0)).minLength(1),
+  })
+)
