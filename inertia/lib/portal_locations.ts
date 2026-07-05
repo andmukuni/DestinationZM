@@ -1,4 +1,11 @@
-export type LocationKind = 'city' | 'airport' | 'station' | 'attraction'
+export type LocationKind =
+  | 'city'
+  | 'airport'
+  | 'station'
+  | 'attraction'
+  | 'hotel'
+  | 'lodge'
+  | 'apartment'
 
 export type LocationSuggestion = {
   value: string
@@ -6,6 +13,7 @@ export type LocationSuggestion = {
   region?: string
   code?: string
   keywords?: string[]
+  accommodationId?: number
 }
 
 export const LOCATION_SUGGESTIONS: LocationSuggestion[] = [
@@ -161,6 +169,12 @@ export function formatLocationMeta(item: LocationSuggestion): string {
     parts.push('Station')
   } else if (item.kind === 'attraction') {
     parts.push('Attraction')
+  } else if (item.kind === 'hotel') {
+    parts.push('Hotel')
+  } else if (item.kind === 'lodge') {
+    parts.push('Lodge')
+  } else if (item.kind === 'apartment') {
+    parts.push('Apartment')
   }
   if (item.region) parts.push(item.region)
   return parts.join(' · ')

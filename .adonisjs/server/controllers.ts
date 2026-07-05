@@ -17,6 +17,7 @@ export const controllers = {
   PortalDashboard: () => import('#controllers/portal_dashboard_controller'),
   PortalEnquiries: () => import('#controllers/portal_enquiries_controller'),
   PortalInvoices: () => import('#controllers/portal_invoices_controller'),
+  PortalLocations: () => import('#controllers/portal_locations_controller'),
   PortalQuotations: () => import('#controllers/portal_quotations_controller'),
   PortalRecoveryReports: () => import('#controllers/portal_recovery_reports_controller'),
   PortalRegistration: () => import('#controllers/portal_registration_controller'),

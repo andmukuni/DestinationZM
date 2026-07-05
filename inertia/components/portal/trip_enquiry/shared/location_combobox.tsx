@@ -8,6 +8,9 @@ import {
 } from '~/lib/portal_locations'
 import { fieldName } from './field_bridge'
 
+const STATIC_KINDS = new Set<LocationKind>(['city', 'airport', 'station', 'attraction'])
+const REMOTE_KINDS = new Set<LocationKind>(['hotel', 'lodge', 'apartment'])
+
 type LocationComboboxProps = {
   fieldKey: string
   value: string
@@ -36,8 +39,79 @@ export default function LocationCombobox({
   const listboxId = useId()
   const [open, setOpen] = useState(false)
   const [highlight, setHighlight] = useState(0)
+  const [remoteSuggestions, setRemoteSuggestions] = useState<LocationSuggestion[]>([])
+  const [loading, setLoading] = useState(false)
 
-  const suggestions = useMemo(() => filterLocations(value, kinds, 8), [value, kinds])
+  const localKinds = useMemo(
+    () => kinds.filter((kind) => STATIC_KINDS.has(kind)),
+    [kinds]
+  )
+  const remoteKinds = useMemo(
+    () => kinds.filter((kind) => REMOTE_KINDS.has(kind)),
+    [kinds]
+  )
+
+  const localSuggestions = useMemo(
+    () => (localKinds.length ? filterLocations(value, localKinds, 8) : []),
+    [value, localKinds]
+  )
+
+  useEffect(() => {
+    if (remoteKinds.length === 0) {
+      setRemoteSuggestions([])
+      setLoading(false)
+      return
+    }
+
+    const controller = new AbortController()
+    const timer = window.setTimeout(async () => {
+      setLoading(true)
+      try {
+        const params = new URLSearchParams({
+          q: value,
+          kinds: remoteKinds.join(','),
+          limit: '12',
+        })
+        const response = await fetch(`/portal/locations/search?${params.toString()}`, {
+          signal: controller.signal,
+          headers: { Accept: 'application/json' },
+        })
+        if (!response.ok) {
+          throw new Error('Location search failed')
+        }
+        const payload = (await response.json()) as { suggestions?: LocationSuggestion[] }
+        setRemoteSuggestions(payload.suggestions ?? [])
+      } catch (error) {
+        if (controller.signal.aborted) return
+        setRemoteSuggestions([])
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false)
+        }
+      }
+    }, 220)
+
+    return () => {
+      controller.abort()
+      window.clearTimeout(timer)
+    }
+  }, [value, remoteKinds])
+
+  const suggestions = useMemo(() => {
+    const merged = [...remoteSuggestions, ...localSuggestions]
+    const seen = new Set<string>()
+    const deduped: LocationSuggestion[] = []
+
+    for (const item of merged) {
+      const key = `${item.kind}:${item.value}:${item.region ?? ''}`
+      if (seen.has(key)) continue
+      seen.add(key)
+      deduped.push(item)
+      if (deduped.length >= 12) break
+    }
+
+    return deduped
+  }, [remoteSuggestions, localSuggestions])
 
   useEffect(() => {
     if (!open) return
@@ -103,6 +177,8 @@ export default function LocationCombobox({
     setOpen(true)
   }
 
+  const showDropdown = open && (suggestions.length > 0 || loading)
+
   return (
     <div ref={rootRef} className={`relative ${className ?? ''}`}>
       <div className={`${wrapperClass} cursor-text`} onClick={focusInput}>
@@ -138,44 +214,50 @@ export default function LocationCombobox({
         </div>
       </div>
 
-      {open && suggestions.length ? (
+      {showDropdown ? (
         <div
           className="absolute left-0 top-[calc(100%+10px)] z-50 w-full min-w-[320px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl md:w-[420px]"
         >
           <div className="border-b border-slate-100 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
-            {value.trim() ? 'Matching destinations' : 'Popular destinations'}
+            {loading
+              ? 'Searching…'
+              : value.trim()
+                ? 'Matching destinations'
+                : 'Popular destinations'}
           </div>
-          <ul
-            id={listboxId}
-            role="listbox"
-            className="max-h-72 overflow-y-auto py-1"
-          >
-            {suggestions.map((suggestion: LocationSuggestion, index: number) => {
-              const active = index === highlight
-              return (
-                <li
-                  key={`${suggestion.kind}-${suggestion.value}`}
-                  id={`${listboxId}-option-${index}`}
-                  role="option"
-                  aria-selected={active ? 'true' : 'false'}
-                  onMouseDown={(event) => {
-                    event.preventDefault()
-                    commit(suggestion.value)
-                  }}
-                  onMouseEnter={() => setHighlight(index)}
-                  className={`flex cursor-pointer items-start gap-3 px-4 py-2.5 text-sm ${
-                    active ? 'bg-slate-100' : 'hover:bg-slate-50'
-                  }`}
-                >
-                  <MapPinIcon className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate font-semibold text-slate-900">{suggestion.value}</div>
-                    <div className="truncate text-xs text-slate-500">{formatLocationMeta(suggestion)}</div>
-                  </div>
-                </li>
-              )
-            })}
-          </ul>
+          {suggestions.length ? (
+            <ul
+              id={listboxId}
+              role="listbox"
+              className="max-h-72 overflow-y-auto py-1"
+            >
+              {suggestions.map((suggestion: LocationSuggestion, index: number) => {
+                const active = index === highlight
+                return (
+                  <li
+                    key={`${suggestion.kind}-${suggestion.value}-${suggestion.region ?? ''}`}
+                    id={`${listboxId}-option-${index}`}
+                    role="option"
+                    aria-selected={active ? 'true' : 'false'}
+                    onMouseDown={(event) => {
+                      event.preventDefault()
+                      commit(suggestion.value)
+                    }}
+                    onMouseEnter={() => setHighlight(index)}
+                    className={`flex cursor-pointer items-start gap-3 px-4 py-2.5 text-sm ${
+                      active ? 'bg-slate-100' : 'hover:bg-slate-50'
+                    }`}
+                  >
+                    <MapPinIcon className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-semibold text-slate-900">{suggestion.value}</div>
+                      <div className="truncate text-xs text-slate-500">{formatLocationMeta(suggestion)}</div>
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          ) : null}
         </div>
       ) : null}
     </div>

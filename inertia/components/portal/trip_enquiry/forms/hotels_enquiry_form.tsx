@@ -28,7 +28,7 @@ export default function HotelsEnquiryForm({ fields, errors, minDate }: TripFormP
             fieldKey="location"
             value={location}
             onChange={setLocation}
-            kinds={['city', 'attraction']}
+            kinds={['city', 'attraction', 'hotel', 'lodge', 'apartment']}
             label={locationField?.label ?? 'Where to?'}
             placeholder={locationField?.placeholder ?? 'City, hotel, or region'}
             required={Boolean(locationField?.required)}

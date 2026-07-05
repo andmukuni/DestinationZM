@@ -57,6 +57,9 @@ router
           .get('bookings/create', [controllers.PortalBookings, 'create'])
           .as('portal.bookings.create')
         router
+          .get('locations/search', [controllers.PortalLocations, 'search'])
+          .as('portal.locations.search')
+        router
           .post('bookings/cart', [controllers.PortalBookings, 'addToCart'])
           .as('portal.bookings.cart.add')
         router
