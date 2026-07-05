@@ -67,23 +67,29 @@ export default function AccommodationNameCombobox({
   const [highlight, setHighlight] = useState(0)
   const [options, setOptions] = useState<AccommodationOption[]>([])
   const [loading, setLoading] = useState(false)
+  const [searchError, setSearchError] = useState(false)
 
   const locationReady = location.trim().length > 0
   const isDisabled = disabled || !locationReady
 
   useEffect(() => {
-    if (!locationReady) {
-      setOptions([])
-      setLoading(false)
+    if (!locationReady || !open) {
+      if (!locationReady) {
+        setOptions([])
+        setLoading(false)
+        setSearchError(false)
+      }
       return
     }
 
     const controller = new AbortController()
+    setLoading(true)
+    setSearchError(false)
+
     const timer = window.setTimeout(async () => {
-      setLoading(true)
       try {
         const params = new URLSearchParams({
-          location,
+          location: location.trim(),
           q: value,
           limit: '20',
         })
@@ -105,18 +111,19 @@ export default function AccommodationNameCombobox({
       } catch (error) {
         if (controller.signal.aborted) return
         setOptions([])
+        setSearchError(true)
       } finally {
         if (!controller.signal.aborted) {
           setLoading(false)
         }
       }
-    }, 220)
+    }, 150)
 
     return () => {
       controller.abort()
       window.clearTimeout(timer)
     }
-  }, [location, starRating, value, locationReady])
+  }, [location, starRating, value, locationReady, open])
 
   useEffect(() => {
     if (!open) return
@@ -173,7 +180,7 @@ export default function AccommodationNameCombobox({
       ? 'mt-0.5 w-full border-0 bg-transparent p-0 text-sm font-semibold text-slate-900 outline-none placeholder:font-normal placeholder:text-slate-400 disabled:cursor-not-allowed disabled:text-slate-400'
       : 'mt-1 w-full border-0 bg-transparent p-0 text-sm font-semibold text-slate-900 outline-none placeholder:font-normal placeholder:text-slate-400 disabled:cursor-not-allowed disabled:text-slate-400'
 
-  const showDropdown = open && !isDisabled && (options.length > 0 || loading)
+  const showDropdown = open && !isDisabled
 
   function focusInput() {
     inputRef.current?.focus()
@@ -231,8 +238,24 @@ export default function AccommodationNameCombobox({
       {showDropdown ? (
         <div className="absolute left-0 top-[calc(100%+10px)] z-[100] w-full min-w-[320px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl md:w-[420px]">
           <div className="border-b border-slate-100 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
-            {loading ? 'Searching…' : value.trim() ? 'Matching stays' : `Stays in ${location}`}
+            {loading
+              ? 'Searching…'
+              : value.trim()
+                ? 'Matching stays'
+                : `Stays in ${location.trim()}`}
           </div>
+          {searchError ? (
+            <p className="px-4 py-3 text-sm text-slate-500">
+              Could not load stays. Try again or type a property name.
+            </p>
+          ) : null}
+          {!loading && !searchError && options.length === 0 ? (
+            <p className="px-4 py-3 text-sm text-slate-500">
+              No stays found in {location.trim()}
+              {parseStarFilter(starRating) ? ` with ${starRating}` : ''}. Try another star rating or
+              location.
+            </p>
+          ) : null}
           {options.length ? (
             <ul id={listboxId} role="listbox" className="max-h-72 overflow-y-auto py-1">
               {options.map((option, index) => {

@@ -5,6 +5,8 @@ import {
   type StaticLocationSuggestion,
 } from '#data/portal_location_suggestions'
 import type { AccommodationKind } from '#types/accommodation'
+
+export type LocationSearchKind =
   | StaticLocationKind
   | AccommodationKind
 
@@ -170,18 +172,23 @@ export default class LocationSearchService {
 
     const limit = Math.min(Math.max(input.limit ?? 20, 1), 40)
     const needle = input.query?.trim() ?? ''
-    const pattern = `%${location}%`
+    const locationPattern = `%${location}%`
 
     let accommodationQuery = Accommodation.query().where('active', true).where((builder) => {
       builder
-        .whereILike('city', pattern)
-        .orWhereILike('region', pattern)
-        .orWhereILike('country', pattern)
+        .whereILike('city', locationPattern)
+        .orWhereILike('region', locationPattern)
+        .orWhereILike('country', locationPattern)
     })
 
     if (needle) {
       const namePattern = `%${needle}%`
-      accommodationQuery = accommodationQuery.whereILike('name', namePattern)
+      accommodationQuery = accommodationQuery.where((builder) => {
+        builder
+          .whereILike('name', namePattern)
+          .orWhereILike('city', namePattern)
+          .orWhereILike('region', namePattern)
+      })
     }
 
     if (input.starRating && input.starRating >= 1 && input.starRating <= 5) {
