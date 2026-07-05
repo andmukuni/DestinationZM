@@ -7,6 +7,31 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
+export class AccommodationSchema extends BaseModel {
+  static $columns = ['active', 'city', 'country', 'createdAt', 'id', 'keywords', 'kind', 'name', 'region', 'updatedAt'] as const
+  $columns = AccommodationSchema.$columns
+  @column()
+  declare active: boolean
+  @column()
+  declare city: string
+  @column()
+  declare country: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare keywords: any | null
+  @column()
+  declare kind: string
+  @column()
+  declare name: string
+  @column()
+  declare region: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
 export class AuditLogSchema extends BaseModel {
   static $columns = ['action', 'createdAt', 'entityId', 'entityType', 'id', 'ipAddress', 'metadata', 'userId'] as const
   $columns = AuditLogSchema.$columns
@@ -26,6 +51,29 @@ export class AuditLogSchema extends BaseModel {
   declare metadata: string | null
   @column()
   declare userId: number | null
+}
+
+export class BookingItemSchema extends BaseModel {
+  static $columns = ['bookingId', 'createdAt', 'description', 'id', 'lineTotal', 'quantity', 'supplierId', 'unitPrice', 'updatedAt'] as const
+  $columns = BookingItemSchema.$columns
+  @column()
+  declare bookingId: number
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare description: string
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare lineTotal: string
+  @column()
+  declare quantity: number
+  @column()
+  declare supplierId: number | null
+  @column()
+  declare unitPrice: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
 }
 
 export class BookingSchema extends BaseModel {
@@ -97,29 +145,6 @@ export class BookingSchema extends BaseModel {
   declare tripName: string | null
   @column()
   declare tripReason: string | null
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime | null
-}
-
-export class BookingItemSchema extends BaseModel {
-  static $columns = ['bookingId', 'createdAt', 'description', 'id', 'lineTotal', 'quantity', 'supplierId', 'unitPrice', 'updatedAt'] as const
-  $columns = BookingItemSchema.$columns
-  @column()
-  declare bookingId: number
-  @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime
-  @column()
-  declare description: string
-  @column({ isPrimary: true })
-  declare id: number
-  @column()
-  declare lineTotal: string
-  @column()
-  declare quantity: number
-  @column()
-  declare supplierId: number | null
-  @column()
-  declare unitPrice: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }
@@ -267,6 +292,17 @@ export class InvoiceSchema extends BaseModel {
   declare totalAmount: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
+}
+
+export class MigrationSchema extends BaseModel {
+  static $columns = ['batch', 'id', 'migration'] as const
+  $columns = MigrationSchema.$columns
+  @column()
+  declare batch: number
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare migration: string
 }
 
 export class NotificationSchema extends BaseModel {
@@ -650,43 +686,6 @@ export class ReceiptSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
-export class RecoveryReportSchema extends BaseModel {
-  static $columns = ['approvedAt', 'branchId', 'createdAt', 'createdById', 'currency', 'customerId', 'id', 'recoveredAt', 'reportPeriodEnd', 'reportPeriodStart', 'reportReference', 'reportType', 'sentAt', 'status', 'totalAmount', 'updatedAt'] as const
-  $columns = RecoveryReportSchema.$columns
-  @column.dateTime()
-  declare approvedAt: DateTime | null
-  @column()
-  declare branchId: number
-  @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime
-  @column()
-  declare createdById: number | null
-  @column()
-  declare currency: string
-  @column()
-  declare customerId: number
-  @column({ isPrimary: true })
-  declare id: number
-  @column.dateTime()
-  declare recoveredAt: DateTime | null
-  @column.date()
-  declare reportPeriodEnd: DateTime | null
-  @column.date()
-  declare reportPeriodStart: DateTime | null
-  @column()
-  declare reportReference: string
-  @column()
-  declare reportType: string
-  @column.dateTime()
-  declare sentAt: DateTime | null
-  @column()
-  declare status: string
-  @column()
-  declare totalAmount: string
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime | null
-}
-
 export class RecoveryReportAuditLogSchema extends BaseModel {
   static $columns = ['action', 'description', 'id', 'newStatus', 'oldStatus', 'performedAt', 'performedByClientId', 'performedByUserId', 'recoveryReportItemId'] as const
   $columns = RecoveryReportAuditLogSchema.$columns
@@ -791,6 +790,43 @@ export class RecoveryReportItemSchema extends BaseModel {
   declare updatedAt: DateTime | null
   @column()
   declare updatedById: number | null
+}
+
+export class RecoveryReportSchema extends BaseModel {
+  static $columns = ['approvedAt', 'branchId', 'createdAt', 'createdById', 'currency', 'customerId', 'id', 'recoveredAt', 'reportPeriodEnd', 'reportPeriodStart', 'reportReference', 'reportType', 'sentAt', 'status', 'totalAmount', 'updatedAt'] as const
+  $columns = RecoveryReportSchema.$columns
+  @column.dateTime()
+  declare approvedAt: DateTime | null
+  @column()
+  declare branchId: number
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdById: number | null
+  @column()
+  declare currency: string
+  @column()
+  declare customerId: number
+  @column({ isPrimary: true })
+  declare id: number
+  @column.dateTime()
+  declare recoveredAt: DateTime | null
+  @column.date()
+  declare reportPeriodEnd: DateTime | null
+  @column.date()
+  declare reportPeriodStart: DateTime | null
+  @column()
+  declare reportReference: string
+  @column()
+  declare reportType: string
+  @column.dateTime()
+  declare sentAt: DateTime | null
+  @column()
+  declare status: string
+  @column()
+  declare totalAmount: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
 }
 
 export class ReportRunSchema extends BaseModel {

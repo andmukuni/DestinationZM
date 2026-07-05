@@ -245,6 +245,9 @@ export default class PortalBookingTypeService {
           productType = normalized
           break
         case 'notes_line':
+          if (field.fieldKey === 'star_rating' && normalized === 'Any') {
+            break
+          }
           noteLines.push(`${field.label}: ${normalized}`)
           break
         default:

@@ -1,6 +1,6 @@
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
 import Accommodation from '#models/accommodation'
-import { ACCOMMODATION_SEED_DATA } from '#database/data/accommodations_seed'
+import { ACCOMMODATION_SEED_DATA, inferAccommodationStarRating } from '#database/data/accommodations_seed'
 
 export default class extends BaseSeeder {
   async run() {
@@ -15,6 +15,7 @@ export default class extends BaseSeeder {
           kind: entry.kind,
           region: entry.region ?? null,
           keywords: entry.keywords ?? null,
+          starRating: entry.starRating ?? inferAccommodationStarRating(entry.kind, entry.name),
           active: true,
         }
       )

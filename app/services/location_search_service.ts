@@ -5,8 +5,6 @@ import {
   type StaticLocationSuggestion,
 } from '#data/portal_location_suggestions'
 import type { AccommodationKind } from '#types/accommodation'
-
-export type LocationSearchKind =
   | StaticLocationKind
   | AccommodationKind
 
@@ -17,6 +15,17 @@ export type LocationSearchResult = {
   code?: string
   keywords?: string[]
   accommodationId?: number
+  starRating?: number | null
+}
+
+export type AccommodationOption = {
+  id: number
+  name: string
+  kind: AccommodationKind
+  city: string
+  region: string | null
+  country: string
+  starRating: number | null
 }
 
 const STATIC_KINDS = new Set<StaticLocationKind>(['city', 'airport', 'station', 'attraction'])
@@ -44,6 +53,7 @@ function toAccommodationResult(record: Accommodation): LocationSearchResult {
     region: regionParts.join(', '),
     keywords: record.keywords ?? undefined,
     accommodationId: record.id,
+    starRating: record.starRating,
   }
 }
 
@@ -145,5 +155,52 @@ export default class LocationSearchService {
     }
 
     return merged
+  }
+
+  async listAccommodationsForLocation(input: {
+    location: string
+    query?: string
+    starRating?: number | null
+    limit?: number
+  }): Promise<AccommodationOption[]> {
+    const location = input.location.trim()
+    if (!location) {
+      return []
+    }
+
+    const limit = Math.min(Math.max(input.limit ?? 20, 1), 40)
+    const needle = input.query?.trim() ?? ''
+    const pattern = `%${location}%`
+
+    let accommodationQuery = Accommodation.query().where('active', true).where((builder) => {
+      builder
+        .whereILike('city', pattern)
+        .orWhereILike('region', pattern)
+        .orWhereILike('country', pattern)
+    })
+
+    if (needle) {
+      const namePattern = `%${needle}%`
+      accommodationQuery = accommodationQuery.whereILike('name', namePattern)
+    }
+
+    if (input.starRating && input.starRating >= 1 && input.starRating <= 5) {
+      accommodationQuery = accommodationQuery.where('star_rating', input.starRating)
+    }
+
+    const records = await accommodationQuery
+      .orderBy('star_rating', 'desc')
+      .orderBy('name', 'asc')
+      .limit(limit)
+
+    return records.map((record) => ({
+      id: record.id,
+      name: record.name,
+      kind: record.kind,
+      city: record.city,
+      region: record.region,
+      country: record.country,
+      starRating: record.starRating,
+    }))
   }
 }

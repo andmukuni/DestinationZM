@@ -7,6 +7,45 @@ export type AccommodationSeed = {
   region?: string
   country: string
   keywords?: string[]
+  starRating?: number | null
+}
+
+export function inferAccommodationStarRating(
+  kind: AccommodationKind,
+  name: string
+): number | null {
+  const label = name.toLowerCase()
+
+  if (kind === 'hotel') {
+    if (
+      /radisson|intercontinental|taj|one&only|royal livingstone|table bay|atlantis|four seasons|hilton|fairmont/i.test(
+        label
+      )
+    ) {
+      return 5
+    }
+    if (
+      /protea|avani|southern sun|best western|hyatt|serena|marriott|garden court|michelangelo|hemingways|mika convention/i.test(
+        label
+      )
+    ) {
+      return 4
+    }
+    return 3
+  }
+
+  if (kind === 'lodge') {
+    if (/andbeyond|royal|bush camp|safari lodge & spa|manor house|island lodge/i.test(label)) {
+      return 5
+    }
+    return 4
+  }
+
+  if (kind === 'apartment') {
+    return 3
+  }
+
+  return null
 }
 
 export const ACCOMMODATION_SEED_DATA: AccommodationSeed[] = [

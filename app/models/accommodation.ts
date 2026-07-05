@@ -38,6 +38,9 @@ export default class Accommodation extends BaseModel {
   @column()
   declare active: boolean
 
+  @column()
+  declare starRating: number | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

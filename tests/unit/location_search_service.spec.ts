@@ -40,6 +40,50 @@ test.group('LocationSearchService', (group) => {
     assert.isTrue(results.some((item) => item.value === 'Copperbelt Stay Hotel'))
   })
 
+  test('filters accommodations by location and star rating', async ({ assert }) => {
+    await Accommodation.create({
+      name: 'Five Star Lusaka Hotel',
+      kind: 'hotel',
+      city: 'Lusaka',
+      region: 'Lusaka Province',
+      country: 'Zambia',
+      starRating: 5,
+      active: true,
+    })
+    await Accommodation.create({
+      name: 'Budget Lusaka Hotel',
+      kind: 'hotel',
+      city: 'Lusaka',
+      region: 'Lusaka Province',
+      country: 'Zambia',
+      starRating: 3,
+      active: true,
+    })
+    await Accommodation.create({
+      name: 'Livingstone Lodge',
+      kind: 'lodge',
+      city: 'Livingstone',
+      region: 'Southern Province',
+      country: 'Zambia',
+      starRating: 4,
+      active: true,
+    })
+
+    const service = new LocationSearchService()
+    const lusakaFiveStar = await service.listAccommodationsForLocation({
+      location: 'Lusaka',
+      starRating: 5,
+    })
+    const lusakaAll = await service.listAccommodationsForLocation({
+      location: 'Lusaka',
+    })
+
+    assert.equal(lusakaFiveStar.length, 1)
+    assert.equal(lusakaFiveStar[0]?.name, 'Five Star Lusaka Hotel')
+    assert.isTrue(lusakaAll.some((item) => item.name === 'Budget Lusaka Hotel'))
+    assert.isFalse(lusakaAll.some((item) => item.name === 'Livingstone Lodge'))
+  })
+
   test('returns accommodations before cities when both are requested', async ({ assert }) => {
     await Accommodation.create({
       name: 'Avani Victoria Falls Resort',

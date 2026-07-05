@@ -60,6 +60,9 @@ router
           .get('locations/search', [controllers.PortalLocations, 'search'])
           .as('portal.locations.search')
         router
+          .get('locations/accommodations', [controllers.PortalLocations, 'accommodations'])
+          .as('portal.locations.accommodations')
+        router
           .post('bookings/cart', [controllers.PortalBookings, 'addToCart'])
           .as('portal.bookings.cart.add')
         router
