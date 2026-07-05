@@ -12,6 +12,7 @@ esac
 
 if [ "$RUN_MIGRATIONS" = "true" ]; then
   node ace migration:run --force
+  node ace db:seed --files database/seeders/10_accommodations_seeder.ts
 fi
 
 exec "$@"

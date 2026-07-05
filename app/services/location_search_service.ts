@@ -70,59 +70,80 @@ export default class LocationSearchService {
       ACCOMMODATION_KINDS.has(kind as AccommodationKind)
     )
 
-    const results: LocationSearchResult[] = []
+    const trimmed = query.trim()
+    const accommodationLimit = accommodationKinds.length > 0 ? Math.min(Math.max(limit, 8), 20) : 0
+    const staticLimit = staticKinds.length > 0 ? Math.min(6, limit) : 0
 
-    if (staticKinds.length > 0) {
-      results.push(...filterStaticLocations(query, staticKinds, limit).map(toStaticResult))
-    }
+    const accommodations =
+      accommodationKinds.length > 0
+        ? await this.searchAccommodations(trimmed, accommodationKinds, accommodationLimit)
+        : []
+
+    const staticResults =
+      staticKinds.length > 0
+        ? filterStaticLocations(trimmed, staticKinds, staticLimit).map(toStaticResult)
+        : []
 
     if (accommodationKinds.length > 0) {
-      const trimmed = query.trim()
-      const needle = trimmed ? normalize(trimmed) : ''
-
-      let accommodationQuery = Accommodation.query().where('active', true).whereIn('kind', accommodationKinds)
-
-      if (needle) {
-        const pattern = `%${trimmed}%`
-        accommodationQuery = accommodationQuery.where((builder) => {
-          builder
-            .whereILike('name', pattern)
-            .orWhereILike('city', pattern)
-            .orWhereILike('region', pattern)
-            .orWhereILike('country', pattern)
-        })
-      }
-
-      const accommodations = await accommodationQuery.limit(60)
-
-      const ranked = accommodations
-        .map((record) => ({
-          record,
-          score: needle ? rankAccommodation(record, needle) : 0,
-        }))
-        .sort(
-          (a, b) =>
-            a.score - b.score ||
-            a.record.name.localeCompare(b.record.name) ||
-            a.record.city.localeCompare(b.record.city)
-        )
-        .slice(0, limit)
-        .map((entry) => toAccommodationResult(entry.record))
-
-      results.push(...ranked)
+      return this.mergeAccommodationFirst(accommodations, staticResults, limit)
     }
 
-    const seen = new Set<string>()
-    const deduped: LocationSearchResult[] = []
+    return staticResults.slice(0, limit)
+  }
 
-    for (const item of results) {
+  private async searchAccommodations(
+    query: string,
+    kinds: AccommodationKind[],
+    limit: number
+  ): Promise<LocationSearchResult[]> {
+    const needle = query ? normalize(query) : ''
+
+    let accommodationQuery = Accommodation.query().where('active', true).whereIn('kind', kinds)
+
+    if (needle) {
+      const pattern = `%${query}%`
+      accommodationQuery = accommodationQuery.where((builder) => {
+        builder
+          .whereILike('name', pattern)
+          .orWhereILike('city', pattern)
+          .orWhereILike('region', pattern)
+          .orWhereILike('country', pattern)
+      })
+    }
+
+    const records = await accommodationQuery.limit(needle ? 60 : 40)
+
+    return records
+      .map((record) => ({
+        record,
+        score: needle ? rankAccommodation(record, needle) : 0,
+      }))
+      .sort(
+        (a, b) =>
+          a.score - b.score ||
+          a.record.name.localeCompare(b.record.name) ||
+          a.record.city.localeCompare(b.record.city)
+      )
+      .slice(0, limit)
+      .map((entry) => toAccommodationResult(entry.record))
+  }
+
+  private mergeAccommodationFirst(
+    accommodations: LocationSearchResult[],
+    staticResults: LocationSearchResult[],
+    limit: number
+  ) {
+    const seen = new Set<string>()
+    const merged: LocationSearchResult[] = []
+
+    for (const item of [...accommodations, ...staticResults]) {
       const key = `${item.kind}:${item.value}:${item.region ?? ''}`
       if (seen.has(key)) continue
       seen.add(key)
-      deduped.push(item)
-      if (deduped.length >= limit) break
+      merged.push(item)
+      if (merged.length >= limit) break
     }
 
-    return deduped
+    return merged
   }
 }

@@ -40,10 +40,21 @@ test.group('LocationSearchService', (group) => {
     assert.isTrue(results.some((item) => item.value === 'Copperbelt Stay Hotel'))
   })
 
-  test('includes static cities when requested', async ({ assert }) => {
-    const service = new LocationSearchService()
-    const results = await service.search('Lusaka', ['city', 'hotel'], 10)
+  test('returns accommodations before cities when both are requested', async ({ assert }) => {
+    await Accommodation.create({
+      name: 'Avani Victoria Falls Resort',
+      kind: 'hotel',
+      city: 'Livingstone',
+      region: 'Southern Province',
+      country: 'Zambia',
+      active: true,
+    })
 
-    assert.isTrue(results.some((item) => item.kind === 'city' && item.value === 'Lusaka'))
+    const service = new LocationSearchService()
+    const results = await service.search('', ['city', 'hotel'], 12)
+
+    assert.isTrue(results.length > 0)
+    assert.equal(results[0]?.kind, 'hotel')
+    assert.isTrue(results.some((item) => item.kind === 'city'))
   })
 })

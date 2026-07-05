@@ -8,8 +8,7 @@ import {
 } from '~/lib/portal_locations'
 import { fieldName } from './field_bridge'
 
-const STATIC_KINDS = new Set<LocationKind>(['city', 'airport', 'station', 'attraction'])
-const REMOTE_KINDS = new Set<LocationKind>(['hotel', 'lodge', 'apartment'])
+const ACCOMMODATION_KINDS = new Set<LocationKind>(['hotel', 'lodge', 'apartment'])
 
 type LocationComboboxProps = {
   fieldKey: string
@@ -41,39 +40,36 @@ export default function LocationCombobox({
   const [highlight, setHighlight] = useState(0)
   const [remoteSuggestions, setRemoteSuggestions] = useState<LocationSuggestion[]>([])
   const [loading, setLoading] = useState(false)
+  const [searchError, setSearchError] = useState(false)
 
-  const localKinds = useMemo(
-    () => kinds.filter((kind) => STATIC_KINDS.has(kind)),
-    [kinds]
-  )
-  const remoteKinds = useMemo(
-    () => kinds.filter((kind) => REMOTE_KINDS.has(kind)),
-    [kinds]
-  )
+  const useServerSearch = useMemo(() => kinds.some((kind) => ACCOMMODATION_KINDS.has(kind)), [kinds])
 
   const localSuggestions = useMemo(
-    () => (localKinds.length ? filterLocations(value, localKinds, 8) : []),
-    [value, localKinds]
+    () => (useServerSearch ? [] : filterLocations(value, kinds, 8)),
+    [useServerSearch, value, kinds]
   )
 
   useEffect(() => {
-    if (remoteKinds.length === 0) {
+    if (!useServerSearch) {
       setRemoteSuggestions([])
       setLoading(false)
+      setSearchError(false)
       return
     }
 
     const controller = new AbortController()
     const timer = window.setTimeout(async () => {
       setLoading(true)
+      setSearchError(false)
       try {
         const params = new URLSearchParams({
           q: value,
-          kinds: remoteKinds.join(','),
+          kinds: kinds.join(','),
           limit: '12',
         })
         const response = await fetch(`/portal/locations/search?${params.toString()}`, {
           signal: controller.signal,
+          credentials: 'same-origin',
           headers: { Accept: 'application/json' },
         })
         if (!response.ok) {
@@ -84,6 +80,7 @@ export default function LocationCombobox({
       } catch (error) {
         if (controller.signal.aborted) return
         setRemoteSuggestions([])
+        setSearchError(true)
       } finally {
         if (!controller.signal.aborted) {
           setLoading(false)
@@ -95,23 +92,9 @@ export default function LocationCombobox({
       controller.abort()
       window.clearTimeout(timer)
     }
-  }, [value, remoteKinds])
+  }, [value, kinds, useServerSearch])
 
-  const suggestions = useMemo(() => {
-    const merged = [...remoteSuggestions, ...localSuggestions]
-    const seen = new Set<string>()
-    const deduped: LocationSuggestion[] = []
-
-    for (const item of merged) {
-      const key = `${item.kind}:${item.value}:${item.region ?? ''}`
-      if (seen.has(key)) continue
-      seen.add(key)
-      deduped.push(item)
-      if (deduped.length >= 12) break
-    }
-
-    return deduped
-  }, [remoteSuggestions, localSuggestions])
+  const suggestions = useServerSearch ? remoteSuggestions : localSuggestions
 
   useEffect(() => {
     if (!open) return
@@ -177,7 +160,19 @@ export default function LocationCombobox({
     setOpen(true)
   }
 
-  const showDropdown = open && (suggestions.length > 0 || loading)
+  const dropdownTitle = useServerSearch
+    ? loading
+      ? 'Searching…'
+      : value.trim()
+        ? 'Matching stays & destinations'
+        : 'Popular stays & destinations'
+    : loading
+      ? 'Searching…'
+      : value.trim()
+        ? 'Matching destinations'
+        : 'Popular destinations'
+
+  const showDropdown = open && (suggestions.length > 0 || loading || searchError)
 
   return (
     <div ref={rootRef} className={`relative ${className ?? ''}`}>
@@ -219,12 +214,13 @@ export default function LocationCombobox({
           className="absolute left-0 top-[calc(100%+10px)] z-50 w-full min-w-[320px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl md:w-[420px]"
         >
           <div className="border-b border-slate-100 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
-            {loading
-              ? 'Searching…'
-              : value.trim()
-                ? 'Matching destinations'
-                : 'Popular destinations'}
+            {dropdownTitle}
           </div>
+          {searchError && !suggestions.length ? (
+            <p className="px-4 py-3 text-sm text-slate-500">
+              Could not load stays. Try typing a city or hotel name.
+            </p>
+          ) : null}
           {suggestions.length ? (
             <ul
               id={listboxId}
